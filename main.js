@@ -3,7 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 function createWindow() {
+  //隐藏菜单栏
+  // app.on('browser-window-created', (e, window) => {
+  //   window.setMenu(null);
+  // });
+  // 隐藏
   const win = new BrowserWindow({
+    //setMenuBarVisibility: false,
     width: 800,
     height: 600,
     webPreferences: {
@@ -38,8 +44,17 @@ ipcMain.handle('get-mods', async () => {
   return mods;
 });
 
+ipcMain.handle('get-mod-info', async (event, mod) => {
+  const modDir = path.join(__dirname, 'modResourceBackpack', mod);
+  const modInfoPath = path.join(modDir, 'mod.json');
+  if (fs.existsSync(modInfoPath)) {
+    return JSON.parse(fs.readFileSync(modInfoPath));
+  }
+  return {};
+});
+
 ipcMain.handle('apply-mods', async (event, mods) => {
-  const modsDir = path.join(__dirname, 'mods');
+  const modsDir = path.join(__dirname, '3dmigoto','Mods');
   const modResourceDir = path.join(__dirname, 'modResourceBackpack');
 
   // 删除未选中的mod
@@ -82,4 +97,15 @@ ipcMain.handle('load-preset', async (event, presetName) => {
     return JSON.parse(fs.readFileSync(presetPath));
   }
   return [];
+});
+
+ipcMain.handle('delete-preset', async (event, presetName) => {
+  const presetDir = path.join(__dirname, 'presets');
+  const presetPath = path.join(presetDir, `${presetName}.json`);
+  console.log("delete preset: " + presetPath);
+  if (fs.existsSync(presetPath)) {
+    fs.rmSync(presetPath);
+    //debug
+    
+  }
 });

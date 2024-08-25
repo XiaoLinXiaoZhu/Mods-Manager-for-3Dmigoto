@@ -4,15 +4,27 @@
   "description": "这是一个便捷的mod管理工具。该工具会自动加载位于文件夹根目录的 `mods` 文件夹内的插件。通过将插件根据需求移动到 `mods` 文件夹来实现插件的启用和禁用。",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron-forge start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "author": "XLXZ",
   "license": "MIT",
   "devDependencies": {
+    "@electron-forge/cli": "^7.4.0",
+    "@electron-forge/maker-deb": "^7.4.0",
+    "@electron-forge/maker-rpm": "^7.4.0",
+    "@electron-forge/maker-squirrel": "^7.4.0",
+    "@electron-forge/maker-zip": "^7.4.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
+    "@electron-forge/plugin-fuses": "^7.4.0",
+    "@electron-forge/publisher-github": "^7.4.0",
+    "@electron/fuses": "^1.8.0",
     "electron": "^32.0.1"
   },
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
     "sober": "^0.2.21"
   }
 }
