@@ -1,52 +1,34 @@
-# 此工作流的名字
-name: Build 
-# 工作流的执行时机，可以设定为定时执行，每次push后执行，手动执行等
+name: Build and Release Electron App
+
 on:
-  # workflow_dispatch为在Github仓库的Actions面板中手动执行
-  workflow_dispatch:
-# 工作/任务，这里的工作是可以并行的。
+  push:
+    branches: [ main ] # 更改为主分支的名字，如 master 或者 main
+
 jobs:
-  # 工作的名称“编译windows版”
-  buildwin:
-    # 运行的操作系统 windows server 2022
-    runs-on: windows-2022
-    # 步骤
+  build:
+    runs-on: ubuntu-latest
+
     steps:
-    # 使用预制action：拉取最新的代码
-    - uses: actions/checkout@v2
-    # 步骤一的名称：
-    - name: Install and Build
-      # 该步骤运行的终端命令，进入仓库的src目录，安装依赖，运行编译命令
-      run:
-        cd src && npm install && npm run buildwin
-    # 步骤二的名称：将编译后的结果上传
-    - name: Upload File
-      # 使用预制action：上传文件，可以将执行路径打包成zip上传
-      uses: actions/upload-artifact@v2
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        # 上传后文件的名称
-        name: windows
-        # 打包的路径以及文件过滤，此为仅打包dist目录下的exe文件
-        path: dist/*exe
-  # 工作的名称“编译macOS版”
-  buildmac:
-    # 运行的操作系统 macOS BigSur
-    runs-on: macos-11
-    # 步骤
-    steps:
-    # 使用预制action：拉取最新的代码
-    - uses: actions/checkout@v2
-    # 步骤一的名称：
-    - name: Install and Build
-      # 该步骤运行的终端命令，进入仓库的src目录，安装依赖，运行编译命令
-      run:
-        cd src && npm install && npm run buildmac
-    # 步骤二的名称：将编译后的结果上传
-    - name: Upload File
-      # 使用预制action：上传文件，可以将执行路径打包成zip上传
-      uses: actions/upload-artifact@v2
+        node-version: 16 # 或者你所需的Node.js版本
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build and Package the app
+      run: npm run make
+      env:
+        # 如果make脚本需要环境变量，请在这里添加它们
+        # 例如：
+        # ELECTRON_GITHUB_TOKEN: ${{ secrets.ELECTRON_GITHUB_TOKEN }}
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
       with:
-        # 上传后文件的名称
-        name: mac
-        # 打包的路径以及文件过滤，此为仅打包dist目录下的dmg文件
-        path: dist/*dmg
+        name: app-release
+        path: out/ # 更改为你的输出目录路径
