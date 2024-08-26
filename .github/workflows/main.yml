@@ -9,21 +9,22 @@ jobs:
   build-and-release-on-windows:
     runs-on: windows-latest
     steps:
-
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: 16
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
-    - name: Build
-      run: npm run bulid
-
+    - name: Build and Package the app for Windows
+      run: npm run make
+      env:
+        FORGE_PLATFORM: win32
+        
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
