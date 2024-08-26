@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  
+jobs:
+  release:
+    name: build and release electron app
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v3.0.0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version: "16"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Electron App
+        run: npm run dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Cleanup Artifacts for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          npx rimraf "dist/!(*.exe)"
+      
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: ${{ matrix.os }}
+          path: dist
+
+      - name: release
+        uses: softprops/action-gh-release@v0.1.14
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: "dist/**"
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
