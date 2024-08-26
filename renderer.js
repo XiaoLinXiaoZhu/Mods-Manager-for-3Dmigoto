@@ -1,5 +1,6 @@
 const { ipcRenderer } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 document.addEventListener('DOMContentLoaded', async () => {
     //- 防止两次加载
@@ -75,7 +76,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             //尝试获取mod下的mod.json文件，获取mod的信息和图片
             const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
             var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
-            var modImagePath = modInfo.imagePath ? path.join(__dirname, 'modResourceBackpack', mod, modInfo.imagePath) : path.join(__dirname, 'default.png');
+            //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
+            var modImagePath;
+            if (modInfo.imagePath) {
+                var modImagePath = path.join(rootdir, 'modResourceBackpack', mod, modInfo.imagePath);
+            }
+            else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.png'))) {
+                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.png');
+            }
+            else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg'))) {
+                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg');
+            }
+            else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg'))) {
+                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg');
+            }
+            else {
+                // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
+                const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
+                const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
+                if (imageFiles.length > 0) {
+                    modImagePath = path.join(rootdir, 'modResourceBackpack', mod, imageFiles[0]);
+                }
+                else {
+                    modImagePath = path.join(__dirname, 'default.png');
+                }
+            }
+
             var modDescription = modInfo.description ? modInfo.description : 'No description';
 
             //debug
@@ -88,13 +114,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             modItem.checked = true;
             modItem.clickable = true;
             modItem.id = mod;
+            modItem.style = 'width: 250px; height: 350px;margin-bottom: -5px;';
             modItem.innerHTML = `
                   <div slot="image" style="height: 200px;">
                         <img src="${modImagePath}" alt="${mod}" style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" />
                   </div>
-                  <div slot="headline">${mod}</div>
-                  <div slot="subhead">${modCharacter}</div>
-                  <div slot="text">Cards are often used for grid lists, which provide click effects</div>`;
+                  <div slot="headline" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;margin-top:12px;">${mod}</div>
+                  <div slot="subhead" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;margin-top: -2px;">
+                  ${modCharacter}
+                  </div>
+                  
+                  <div slot="text" style="height: 100px;margin-top:-10px;">
+                    <s-scroll-view style="height: 100%;width: 110%;">
+                        <p>${modDescription}</p>
+                        <div style="height: 30px;"></div>
+                    </s-scroll-view>
+                </div>
+            `;
 
             modContainer.appendChild(modItem);
 
