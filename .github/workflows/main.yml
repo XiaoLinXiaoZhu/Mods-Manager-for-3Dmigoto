@@ -3,7 +3,8 @@ name: Build and Release Electron App
 on:
   push:
     branches: [ main ] # 更改为主分支的名字，如 master 或者 main
-
+  workflow_dispatch:
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,6 +24,7 @@ jobs:
     - name: Build and Package the app
       run: npm run make
       env:
+        ELECTRON_GITHUB_TOKEN: ${{ secrets.ELECTRON_GITHUB_TOKEN }}
         # 如果make脚本需要环境变量，请在这里添加它们
         # 例如：
         # ELECTRON_GITHUB_TOKEN: ${{ secrets.ELECTRON_GITHUB_TOKEN }}
