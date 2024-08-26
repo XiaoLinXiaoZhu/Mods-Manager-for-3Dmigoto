@@ -5,12 +5,13 @@
 这是一个便捷的插件管理工具，旨在通过一个美观的GUI界面来管理3dmigoto的mods。
 
 该工具利用sober库实现了Material You风格的界面。
+![alt text](readmeSrc/image-3.png)
 
 ## 功能列表
 
 1. 从 `modResourceBackpack` 文件夹内读取可选mod列表（每个文件夹即为一个mod）。
 2. 通过一个美观的可视化页面，选择开启哪些mod。
-3. 点击 `Apply` 按钮后，删除 `mods` 文件夹中已经关闭但是存在的插件，并从 `modResourceBackpack` 文件夹中复制开启但是不在 `mods` 文件夹中的文件。
+3. 点击 `Apply` 按钮后，根据选择的mod，将其复制到 `3dmigoto/Mods` 文件夹中。
 4. 点击 `创建预设` 可以创建预设，点击可以在预设之间切换，并且再次点击 `Apply` 以应用预设。
 
 ## 安装步骤
@@ -22,7 +23,35 @@ release页面里面有两个版本，一个是安装包版本，一个是松散�
 1. 下载最新版本的安装包或者松散文件。
 2. 解压文件。
 3. 运行 `ZZZmod管理器-1.0.0 Setup.exe` 或者 `ZZZmod管理器.exe`。
-4. 指定 `modResourceBackpack` 文件夹根目录的路径。比如：文件夹结构如下：
+
+### 从 源码 编译
+1. 克隆此仓库到本地：
+    ```bash
+    git clone https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto.git
+    ```
+2. 进入项目目录：
+    ```bash
+    cd Mods-Manager-for-3Dmigoto
+    ```
+3. 安装依赖：
+    ```bash
+    npm install electron@latest
+    npm install @soberjs/core
+    ```
+4. 启动项目：
+    ```bash
+    npm run start
+    ```
+5. 打包项目：安装electron forge 来打包项目
+    ```bash
+    npm install -g electron-forge
+    electron-forge make
+    ```
+    打包后的文件在out文件夹中
+    
+## 开始使用
+
+1. 启动应用后，界面会显示 `modResourceBackpack` 文件夹中的所有mod，首次使用时，需要指定 `modResourceBackpack` 文件夹根目录的路径。![alt text](readmeSrc/image-2.png)比如：文件夹结构如下：
     ```
     rootdir
     ├── modResourceBackpack
@@ -40,8 +69,9 @@ release页面里面有两个版本，一个是安装包版本，一个是松散�
         ├── preset3
         └── ...
     ```
-    那么指定 `modResourceBackpack` 文件夹的路径为 `modResourceBackpack` 文件夹的根目录`rootdir`。
-5. 将mod安装至 `modResourceBackpack` 文件夹中即可，你可能需要为每个mod增加一个 mod.json 文件，以便在管理器中显示mod的名称和描述。mod.json文件的格式如下：
+    那么指定的文件夹的路径应为 `modResourceBackpack` 文件夹的根目录 `rootdir`。
+![alt text](readmeSrc/image-1.png)
+1. 将mod安装至 `modResourceBackpack` 文件夹中即可，你可能需要为每个mod增加一个 mod.json 文件，以便在管理器中显示mod的名称和描述。mod.json文件的格式如下：
     ```json
     {
     "character": "Anby",
@@ -49,32 +79,27 @@ release页面里面有两个版本，一个是安装包版本，一个是松散�
     "imagePath": "preview.png"
     }
     ```
-    
 
-### 从 源码 编译
-1. 克隆此仓库到本地：
-    ```bash
-    git clone <仓库地址>
-    ```
-2. 进入项目目录：
-    ```bash
-    cd <项目目录>
-    ```
-3. 安装依赖：
-    ```bash
-    npm install
-    ```
-4. 启动项目：
-    ```bash
-    npm run start
-    ```
+> 工具里面也提供了 autog.bat 来帮助生成 mod.json，当然你也不必每个mod都设置，只需要保证文件夹名称的可读性，并在mod文件夹下防止一张图片即可达到比较好的视觉效果:![](readmeSrc/image.png)
+> 
+> 当加载mod列表的时候，会按照以下优先级获取显示的图片：
+> 1. mod.json 中的 imagePath 字段
+> 2. mod文件夹下的第一张 名称为 preview 的图片
+> 3. mod文件夹下的第一张图片
+> 4. 默认图片
+
 
 ## 使用说明
 
-1. 启动应用后，界面会显示 `modResourceBackpack` 文件夹中的所有mod。
-2. 通过勾选复选框选择要启用的mod。
-3. 点击 `Apply` 按钮应用更改。
-4. 点击 `创建预设` 按钮可以创建一个新的预设，之后可以在预设之间切换并应用。
+1. 单击mod的卡片即可选择或取消选择mod。
+2. 点击 `Apply` `应用配置` 按钮以应用更改。
+3. 点击 `创建预设` 按钮以创建预设。
+4. 点击 `预设` 按钮以切换预设。
+5. 点击 `管理预设` 按钮以管理预设。
+
+## 已知问题
+- 首次启动时，会出现 所有的mod都被选中/没被选中 的情况，这是因为没有选择 指定的预设。随便单击一个预设即可解决。
+- 有时候会出现 无法读取mod列表 的情况，这是因为没有指定 `modResourceBackpack` 文件夹的路径。重新指定即可解决。
 
 ## 技术栈
 
