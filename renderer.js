@@ -44,32 +44,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     let mods = [];
 
     //- 初始化
-    await ipcRenderer.invoke('set-rootdir', rootdir);
-    await loadModList();
+    // 检测是否是第一次打开
+    const firstOpen = localStorage.getItem('firstOpen');
+    if (!firstOpen) {
+        localStorage.setItem('firstOpen', 'false');
+        //debug
+        console.log("firstOpen");
+        //显示settingsDialog
+        settingsDialog.show();
+        snack('首次打开，请设置rootdir');
+    }
+    else {
+        await ipcRenderer.invoke('set-rootdir', rootdir);
+        await loadModList();
+        await loadPresets();
+    }
 
-    await loadPresets();
 
 
     //- 内部函数
     function snack(message) {
         customElements.get('s-snackbar').show(message);
     }
-    async function loadModList(){
+    async function loadModList() {
         //加载mod列表
         modContainer.innerHTML = '';
         mods = await ipcRenderer.invoke('get-mods');
         mods.forEach(async mod => {
             console.log("mod: " + mod);
             //尝试获取mod下的mod.json文件，获取mod的信息和图片
-            const modInfo = await ipcRenderer.invoke('get-mod-info', mod); 
+            const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
             var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
             var modImagePath = modInfo.imagePath ? path.join(__dirname, 'modResourceBackpack', mod, modInfo.imagePath) : path.join(__dirname, 'default.png');
             var modDescription = modInfo.description ? modInfo.description : 'No description';
-    
+
             //debug
             console.log(`mod:${mod} modCharacter:${modCharacter} modImagePath:${modImagePath} modDescription:${modDescription}`);
-    
-    
+
+
             //使用s-card以达到更好的显示效果
             const modItem = document.createElement('s-card');
             modItem.className = 'mod-item';
@@ -83,22 +95,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                   <div slot="headline">${mod}</div>
                   <div slot="subhead">${modCharacter}</div>
                   <div slot="text">Cards are often used for grid lists, which provide click effects</div>`;
-        
+
             modContainer.appendChild(modItem);
-    
+
             //点击modItem时，选中或取消选中
             modItem.addEventListener('click', () => {
                 //debug
                 console.log("clicked modItem");
-    
+
                 modItem.checked = !modItem.checked;
                 refreshModList();
             });
-            
+
         });
     }
 
-    async function loadPresets(){
+    async function loadPresets() {
         presetContainer.innerHTML = '';
         const presets = await ipcRenderer.invoke('get-presets');
         presets.forEach(preset => {
@@ -111,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.querySelectorAll('#preset-item').forEach(presetItem => {
             presetItem.addEventListener('click', async () => {
-                console.log("🔴presetItem"+presetItem.innerHTML);
+                console.log("🔴presetItem" + presetItem.innerHTML);
                 if (editMode) {
                     //innerHtml 现在包含了删除按钮，所以不再是presetName，而是presetName+删除按钮，所以需要提取presetName
                     const presetName = presetItem.innerHTML.split('<')[0].trim();
@@ -119,17 +131,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     //将自己的父元素隐藏
                     presetItem.style.display = 'none';
                     //debug
-                    console.log("delete presetItem"+presetItem.innerHTML);
+                    console.log("delete presetItem" + presetItem.innerHTML);
                 }
                 else {
                     //保存之前的preset
                     //检查是否有当前的preset，如果有，则保存
-                    if(presets.includes(currentPreset) && currentPreset != presetItem.innerHTML){
+                    if (presets.includes(currentPreset) && currentPreset != presetItem.innerHTML) {
                         await savePreset(currentPreset);
                     }
                     currentPreset = presetItem.innerHTML;
                     //debug
-                    console.log("clicked presetItem"+presetItem.innerHTML);
+                    console.log("clicked presetItem" + presetItem.innerHTML);
                     const presetName = presetItem.innerHTML;
                     const selectedMods = await ipcRenderer.invoke('load-preset', presetName);
                     document.querySelectorAll('.mod-item').forEach(item => {
@@ -144,14 +156,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     };
 
-    function refreshModList(){
+    function refreshModList() {
         document.querySelectorAll('.mod-item').forEach(item => {
-            if(item.checked == true){
+            if (item.checked == true) {
                 item.type = 'filled';
                 //让其背景变为绿色
                 item.style.backgroundColor = '#4CAF50';
             }
-            else{
+            else {
                 item.type = '';
                 //让其背景变回原来的颜色
                 item.style.backgroundColor = '';
@@ -160,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     }
 
-    async function savePreset(presetName){
+    async function savePreset(presetName) {
         if (presetName) {
             const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
             await ipcRenderer.invoke('save-preset', presetName, selectedMods);
@@ -232,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const presetName = presetNameInput.value.trim();
         //debug
         console.log("presetName: " + presetName);
-        if(presetName){
+        if (presetName) {
             const selectedMods = Array.from(document.querySelectorAll('.mod-item input:checked')).map(input => input.id);
             await ipcRenderer.invoke('save-preset', presetName, selectedMods);
             await loadPresets();
