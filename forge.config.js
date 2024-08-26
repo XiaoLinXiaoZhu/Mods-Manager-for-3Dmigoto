@@ -1,10 +1,12 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
+const { default: PublisherGithub } = require('@electron-forge/publisher-github');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
-    // config.json 不需要打包，其需要被修改
     asar: true,
+    icon: './icon.ico',
+    name: 'ZZZmod管理器',
   },
   rebuildConfig: {},
   makers: [
@@ -42,4 +44,17 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'xiaolinxiaozhu',
+          name: 'mods-manager-for-3dmigoto'
+        },
+        prerelease: false,
+        draft: true
+      }
+    }
+  ]
 };
