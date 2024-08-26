@@ -9,8 +9,7 @@ jobs:
   build-and-release-on-windows:
     runs-on: windows-latest
     steps:
-        runs-on: windows-latest
-    steps:
+        
     - name: Checkout repository
       uses: actions/checkout@v3
 
