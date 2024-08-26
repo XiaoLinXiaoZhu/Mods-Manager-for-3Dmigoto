@@ -1,55 +1,62 @@
-name: Build and Release Electron App
+name: Build
 
 on:
   push:
-    branches: [ main ] # 更改为主分支的名字，如 master 或者 main
-  workflow_dispatch:
-  
+    branches:
+      - main
+
 jobs:
-  build-and-release-on-windows:
-    runs-on: windows-latest
+  release:
+    name: build and release electron app
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
     steps:
-        
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Check out git repository
+        uses: actions/checkout@v3.0.0
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
+      - name: Install Node.js
+        uses: actions/setup-node@v3.0.0
+        with:
+          node-version: "16"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install Dependencies
+        run: npm install
 
-    - name: Build and Package the app for Windows
-      run: npm run make
-      env:
-        FORGE_PLATFORM: win32
+      - name: Build Electron App
+        run: npm run dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
-    - name: Upload Artifact (Windows)
-      uses: actions/upload-artifact@v3
-      with:
-        name: app-release-windows
-        path: dist/electron-app/
-        
-    - name: List files
-      run: tree
+      - name: Cleanup Artifacts for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          npx rimraf "dist/!(*.exe)"
+          
+      - name: Cleanup Artifacts for MacOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          npx rimraf "dist/!(*.dmg)"
       
-    - name: Create Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        files: .\**
-        tag_name: v${{ github.run_number }}
-        release_name: Release ${{ github.run_number }}
-        body: |
-          Changes in this Release:
-          - Add new feature
-          - Fix some bugs
-          - Improve performance
-
-    - name: Get the URL of the release
-      run: echo "The release is at ${{ steps.create_release.outputs.upload_url }}"
+      - name: Cleanup Artifacts for Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          npx rimraf "dist/!(*.AppImage)"
       
+      - name: upload artifacts
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: ${{ matrix.os }}
+          path: dist
+
+      - name: release
+        uses: softprops/action-gh-release@v0.1.14
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: "dist/**"
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
