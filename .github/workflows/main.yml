@@ -22,7 +22,7 @@ jobs:
       run: npm install
 
     - name: Build
-      run: npm run make
+      run: npm run bulid
 
     - name: Create Release
       id: create_release
