@@ -3,7 +3,8 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
-    asar: false,
+    // config.json 不需要打包，其需要被修改
+    asar: true,
   },
   rebuildConfig: {},
   makers: [
@@ -25,6 +26,10 @@ module.exports = {
     },
   ],
   plugins: [
+    {
+      name: '@electron-forge/plugin-auto-unpack-natives',
+      config: {},
+    },
     // Fuses are used to enable/disable various Electron functionality
     // at package time, before code signing the application
     new FusesPlugin({

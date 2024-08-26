@@ -1,7 +1,6 @@
 const { ipcRenderer } = require('electron');
 const path = require('path');
 
-
 document.addEventListener('DOMContentLoaded', async () => {
     //- 防止两次加载
     if (!global.isListenerAdded) {
@@ -19,6 +18,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     //- 获取元素
     const drawerPage = document.getElementById('drawer-page');
 
+    //rootdir相关
+    let rootdir = localStorage.getItem('rootdir') || __dirname;                //rootdir保存在localStorage中，如果没有则设置为默认值__dirname
+    const settingsButton = document.getElementById('settings-show-button');
+    const settingsDialog = document.getElementById('settings-dialog');
+    const rootdirInput = document.getElementById('set-rootdir-input');
+    const rootdirConfirmButton = document.getElementById('set-rootdir-confirm');
+
     //预设列表相关
     const presetContainer = document.getElementById('preset-container');
     const presetListDisplayButton = document.getElementById('preset-list-button');
@@ -35,23 +41,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     const applyBtn = document.getElementById('apply-btn');
 
     const savePresetBtn = document.getElementById('save-preset-btn');
-    const mods = await ipcRenderer.invoke('get-mods');
+    let mods = [];
 
-    loadModList();
+    //- 初始化
+    await ipcRenderer.invoke('set-rootdir', rootdir);
+    await loadModList();
 
     await loadPresets();
 
 
     //- 内部函数
-    function loadModList(){
+    function snack(message) {
+        customElements.get('s-snackbar').show(message);
+    }
+    async function loadModList(){
         //加载mod列表
+        modContainer.innerHTML = '';
+        mods = await ipcRenderer.invoke('get-mods');
         mods.forEach(async mod => {
             console.log("mod: " + mod);
             //尝试获取mod下的mod.json文件，获取mod的信息和图片
             const modInfo = await ipcRenderer.invoke('get-mod-info', mod); 
-            modCharacter = modInfo.character ? modInfo.character : 'Unknown';
-            modImagePath = modInfo.imagePath ? path.join(__dirname, 'modResourceBackpack', mod, modInfo.imagePath) : path.join(__dirname, 'default.png');
-            modDescription = modInfo.description ? modInfo.description : 'No description';
+            var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
+            var modImagePath = modInfo.imagePath ? path.join(__dirname, 'modResourceBackpack', mod, modInfo.imagePath) : path.join(__dirname, 'default.png');
+            var modDescription = modInfo.description ? modInfo.description : 'No description';
     
             //debug
             console.log(`mod:${mod} modCharacter:${modCharacter} modImagePath:${modImagePath} modDescription:${modDescription}`);
@@ -158,7 +171,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     //- 事件监听
     let editMode = false;
 
-    
+    //settings 相关
+    settingsButton.addEventListener('click', async () => {
+        // 显示或隐藏settingsDrawer
+        settingsDialog.show();
+        //获取当前rootdir
+        rootdirInput.value = rootdir;
+    });
+
+    rootdirConfirmButton.addEventListener('click', async () => {
+        //debug
+        console.log("rootdir: " + rootdirInput.value);
+        var dir = rootdirInput.value.trim();
+        //将特殊路径替换为几个预设路径
+        if (dir == 'default') {
+            dir = __dirname;
+        }
+
+        if (dir) {
+            //检查rootdir是否存在
+            const exists = await ipcRenderer.invoke('check-rootdir', dir);
+            if (exists) {
+                //保存rootdir
+                localStorage.setItem('rootdir', dir);
+                rootdir = dir;
+                await ipcRenderer.invoke('set-rootdir', dir);
+                //debug
+                console.log("rootdir: " + dir);
+                //重新加载mods
+                loadModList();
+                loadPresets();
+            }
+            else {
+                snack('Root directory does not exist');
+            }
+        }
+        else {
+            snack('Root directory cannot be empty');
+        }
+    }
+    );
+
     applyBtn.addEventListener('click', async () => {
         //获取选中的mods,mod 元素为 mod-item，当其checked属性为true时，表示选中
         const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
