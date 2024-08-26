@@ -33,7 +33,7 @@ jobs:
         path: dist/electron-app/
         
     - name: List files
-      run: ls -R
+      run: tree
       
     - name: Create Release
       id: create_release
