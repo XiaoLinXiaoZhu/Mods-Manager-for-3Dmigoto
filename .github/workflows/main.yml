@@ -9,15 +9,16 @@ jobs:
   build-and-release-on-windows:
     runs-on: windows-latest
     steps:
+        runs-on: windows-latest
+    steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v4.0.3
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        # Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.
-        node-version: '14'
-        
+        node-version: 16
+
     - name: Install dependencies
       run: npm ci
 
@@ -25,7 +26,13 @@ jobs:
       run: npm run make
       env:
         FORGE_PLATFORM: win32
-        
+
+    - name: Upload Artifact (Windows)
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-release-windows
+        path: dist/electron-app/
+
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
