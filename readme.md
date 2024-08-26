@@ -15,10 +15,41 @@
 
 ## 安装步骤
 ### 从 release 下载
-1. 下载最新的release版本。
-2. 解压缩。
-3. 运行 `ModsManagerFor3dmigoto.exe`。
-4. 在设置页面中设置 `3dmigoto` 文件夹路径。
+release页面里面有两个版本，一个是安装包版本，一个是松散文件版本。安装包版本是一个exe文件，松散文件版本是一个文件夹，里面包含了所有的文件。
+
+建议使用松散文件版本，因为这样加载速度会更快。
+
+1. 下载最新版本的安装包或者松散文件。
+2. 解压文件。
+3. 运行 `ZZZmod管理器-1.0.0 Setup.exe` 或者 `ZZZmod管理器.exe`。
+4. 指定 `modResourceBackpack` 文件夹根目录的路径。比如：文件夹结构如下：
+    ```
+    rootdir
+    ├── modResourceBackpack
+    │   ├── mod1
+    │   ├── mod2
+    │   ├── mod3
+    │   └── ...
+    ├── 3dmigoto
+    │   ├── Mods
+    │   ├── 3dmigoto.exe
+    │   └── ...
+    └── presets
+        ├── preset1
+        ├── preset2
+        ├── preset3
+        └── ...
+    ```
+    那么指定 `modResourceBackpack` 文件夹的路径为 `modResourceBackpack` 文件夹的根目录`rootdir`。
+5. 将mod安装至 `modResourceBackpack` 文件夹中即可，你可能需要为每个mod增加一个 mod.json 文件，以便在管理器中显示mod的名称和描述。mod.json文件的格式如下：
+    ```json
+    {
+    "character": "Anby",
+    "description": "This is a description of my mod.",
+    "imagePath": "preview.png"
+    }
+    ```
+    
 
 ### 从 源码 编译
 1. 克隆此仓库到本地：
