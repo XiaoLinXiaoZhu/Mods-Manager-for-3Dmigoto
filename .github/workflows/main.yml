@@ -31,14 +31,17 @@ jobs:
       with:
         name: app-release-windows
         path: dist/electron-app/
-
+        
+    - name: List files
+      run: ls -R
+      
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        files: .\out\**
+        files: .\**
         tag_name: v${{ github.run_number }}
         release_name: Release ${{ github.run_number }}
         body: |
