@@ -1,5 +1,7 @@
 # Mods Manager for 3dmigoto<br>——3dmigoto的插件管理工具
 
+english version: [readme-en.md](./readme-en.md)
+
 ## 项目简介
 
 这是一个便捷的插件管理工具，旨在通过一个美观的GUI界面来管理3dmigoto的mods。
