@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>First Load Page</title>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <style>
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :not(:defined) {
+            display: none;
+        }
+    </style>
+</head>
+
+
+<body>
+    <s-snackbar></s-snackbar>
+    <s-page id="app" theme="auto">
+        
+
+        <div
+            style="margin-top:-40px;position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);width: 100%;align-items: center;">
+            <h1 style="white-space: nowrap; text-align: center;" data-translate-key="ask-waiting">Creating user-config, please wait...</h1>
+            <div style="position: absolute; top: 100%; left: 50%; transform: translate(-50%, -50%);margin-top: 30px;">
+                <s-circular-progress indeterminate="true"></s-circular-progress>
+            </div>
+        </div>
+
+        <s-button type="outlined" id="preset-item-add" onclick="document.querySelector('#get-language').show()" data-translate-key="no-response-fix"> <s-icon
+                type="add" slot="start" style="margin-right: 10px;"></s-icon>get-language </s-button>
+
+    </s-page>
+
+    <s-dialog id="get-language" class="s-dialog">
+        <div slot="headline" data-translate-key="dialog-ask-for-language"> select your language </div>
+        <div slot="text">
+            <s-picker label="switch language" id="language-switcher" style="margin-top: 20px;--padding:150px">
+                <s-picker-item value="en">English</s-picker-item>
+                <s-picker-item value="zh-cn">简体中文</s-picker-item>
+            </s-picker>
+        </div>
+        <s-button slot="action" type="text" id="language-switcher-cancel" data-translate-key="cancle">取消</s-button>
+        <s-button slot="action" type="text" id="language-switcher-confirm" data-translate-key="confirm">确定</s-button>
+    </s-dialog>
+
+    <s-dialog id="dialog" class="s-dialog">
+        <div slot="headline" data-translate-key="dialog-ask-for-3dmigoto"> 选择你的3dmigoto.exe 文件 </div>
+        <div slot="text">
+            <s-text-field style="display: grid" label="select 3dmigoto.exe" id="select-rootdir">
+                <s-ripple attached="true"></s-ripple>
+            </s-text-field>
+        </div>
+        <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+        <s-button slot="action" type="text" id="dialog-confirm" data-translate-key="confirm">确定</s-button>
+    </s-dialog>
+
+    <s-dialog id="dialog" class="s-dialog">
+        <div slot="headline" data-translate-key="dialog-ask-for-modfile"> 将你的mod放入以下文件夹：</div>
+        <div slot="text">
+            <s-text-field style="display: grid" label="Click here!!" id="show-moddir">
+                <s-ripple attached="true"></s-ripple>
+            </s-text-field>
+        </div>
+        <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+        <s-button slot="action" type="text" id="dialog-confirm" data-translate-key="confirm">确定</s-button>
+    </s-dialog>
+
+</body>
+
+
+<script type="module" src="firstLoad.js"></script>
+<script type="module">
+    import './node_modules/sober/dist/sober.min.js';
+</script>
+
+</html>

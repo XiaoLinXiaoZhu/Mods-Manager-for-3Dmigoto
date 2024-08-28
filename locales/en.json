@@ -1,4 +1,9 @@
 {
-    "title": "Welcome",
-    "description": "This is an Electron application."
+    "ask-waiting": "Creating user-config, please wait...",
+    "no-response-fix": "No response, click to retry",
+    "dialog-ask-for-language": "Select your language",
+    "dialog-ask-for-3dmigoto": "Select your 3dmigoto.exe file",
+    "description": "This is an Electron application.",
+    "cancle": "Cancle",
+    "confirm": "Confirm"
   }

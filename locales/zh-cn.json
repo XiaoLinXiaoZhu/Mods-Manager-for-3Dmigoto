@@ -1,4 +1,9 @@
 {
-    "title": "欢迎",
-    "description": "这是一个Electron应用程序。"
-  }
+  "ask-waiting": "创建用户配置文件，请稍后……",
+  "no-response-fix": "没有响应,点击重试",
+  "dialog-ask-for-language": "选择你的语言",
+  "dialog-ask-for-3dmigoto": "选择你的3dmigoto.exe 文件",
+  "description": "这是一个Electron应用程序。",
+  "cancle": "取消",
+  "confirm": "确认"
+}
