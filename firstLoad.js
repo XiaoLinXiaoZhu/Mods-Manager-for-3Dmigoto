@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lang = 'en';
         }
         translatePage(lang);
+        userConfig.lang = lang;
         //ipcRenderer.invoke('save-user-config', { lang });
     });
 
