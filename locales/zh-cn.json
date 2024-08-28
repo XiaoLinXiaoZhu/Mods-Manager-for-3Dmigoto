@@ -1,9 +1,19 @@
 {
   "ask-waiting": "创建用户配置文件，请稍后……",
+  "finished-loading": "加载完成,请关闭该窗口",
   "no-response-fix": "没有响应,点击重试",
   "dialog-ask-for-language": "选择你的语言",
   "dialog-ask-for-3dmigoto": "选择你的3dmigoto.exe 文件",
   "description": "这是一个Electron应用程序。",
+  "close": "关闭",
   "cancle": "取消",
-  "confirm": "确认"
+  "confirm": "确认",
+  "creat-preset": "创建预设",
+  "edit-preset": "编辑预设",
+  "ask-preset-name": "请输入预设名称",
+  "available-mods": "可用的MOD",
+  "dialog-ask-for-modResourceBackup": "选择你的MOD资源备份文件夹",
+  "init": "初始化所有配置，重启生效",
+  "apply": "应用配置",
+  "close-window": "关闭窗口"
 }

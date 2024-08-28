@@ -38,6 +38,14 @@ function translatePage(lang) {
     }
 }
 
+// 获取 主窗口
+const mainWindow = window.open('index.html', 'mainWindow');
+
+// 发送消息到主窗口
+function sendMessageToWindowB() {
+    windowB.postMessage('refresh', '*');
+}
+
 //-=======================页面加载完成后的事件=======================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -65,6 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const languagePicker = document.querySelector('#language-switcher');
     const selectRootDir = document.querySelector('#select-rootdir');
     const showModDir = document.querySelector('#show-moddir');
+
+    //close按钮
+    const closeBtns = document.querySelector('#close-window');
 
     //debug
     console.log(sDialogs);
@@ -152,6 +163,24 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(modLoaderdir);
         //ipcRenderer.invoke('save-user-config', { modLoaderdir });
     });
+    
+    //最后一个 s-dialog 组件的事件监听
+    sDialogs[sDialogs.length - 1].addEventListener('dismissed', () => {
+        saveUserConfig();
+        //控制显隐，将标题显示的正在加载变为已完成
+        const loading = document.querySelector('#loading');
+        loading.style.display = 'none';
+        const loaded = document.querySelector('#loaded');
+        loaded.style.display = 'block';
+
+    }
+    );
+
+    //close按钮的事件监听
+    closeBtns.addEventListener('click', () => {
+        window.close();
+    }
+    );
 
 
     //- 默认触发

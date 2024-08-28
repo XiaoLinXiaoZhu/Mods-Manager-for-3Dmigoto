@@ -1,9 +1,19 @@
 {
     "ask-waiting": "Creating user-config, please wait...",
+    "finished-loading": "Loading finished, please close this window",
     "no-response-fix": "No response, click to retry",
     "dialog-ask-for-language": "Select your language",
     "dialog-ask-for-3dmigoto": "Select your 3dmigoto.exe file",
     "description": "This is an Electron application.",
+    "close": "Close",
     "cancle": "Cancle",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "creat-preset": "Create Preset",
+    "edit-preset": "Edit Preset",
+    "ask-preset-name": "Please enter the preset name",
+    "available-mods": "Available Mods",
+    "dialog-ask-for-modResourceBackup": "Select your MOD resource backup folder",
+    "init": "Initialize all configurations, restart to take effect",
+    "apply": "Apply Configuration",
+    "close-window": "Close Window"
   }

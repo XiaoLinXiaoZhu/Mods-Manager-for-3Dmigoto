@@ -24,19 +24,32 @@
 
 <body>
     <s-snackbar></s-snackbar>
-    <s-page id="app" theme="auto">
-        
+    <s-page id="app" theme="auto" style="display: flex; justify-content: center;">
 
-        <div
+
+        <div id="loading"
             style="margin-top:-40px;position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);width: 100%;align-items: center;">
-            <h1 style="white-space: nowrap; text-align: center;" data-translate-key="ask-waiting">Creating user-config, please wait...</h1>
+            <h1 style="white-space: nowrap; text-align: center;" data-translate-key="ask-waiting">Creating user-config,
+                please wait...</h1>
             <div style="position: absolute; top: 100%; left: 50%; transform: translate(-50%, -50%);margin-top: 30px;">
                 <s-circular-progress indeterminate="true"></s-circular-progress>
             </div>
         </div>
 
-        <s-button type="outlined" id="preset-item-add" onclick="document.querySelector('#get-language').show()" data-translate-key="no-response-fix"> <s-icon
-                type="add" slot="start" style="margin-right: 10px;"></s-icon>get-language </s-button>
+        <div id="loaded"
+            style="margin-top:-40px;position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);width: 100%;align-items: center;display: none;">
+            <h1 style="white-space: nowrap; text-align: center;" data-translate-key="finished-loading">User-config
+                created successfully!</h1>
+            <div style="position: absolute; top: 100%; left: 50%; transform: translate(-50%, -50%);margin-top: 30px;">
+                <s-icon type="done" style="font-size: 400px;"></s-icon>
+                <s-button type="outlined" id="close-window" data-translate-key="close-window">Close Window</s-button>
+            </div>
+        </div>
+
+
+        <s-button type="outlined" id="preset-item-add" onclick="document.querySelector('#get-language').show()"
+            data-translate-key="no-response-fix"> <s-icon type="add" slot="start"
+                style="margin-right: 10px;"></s-icon>get-language </s-button>
 
     </s-page>
 

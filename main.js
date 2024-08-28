@@ -81,6 +81,8 @@ ipcMain.handle('create-mod-resource-backpack', async () => {
     //将mods文件夹里面的文件夹复制到 modResourceBackpack 文件夹
     fs.readdirSync(modsDir).forEach(file => {
       fs.cpSync(path.join(modsDir, file), path.join(modResourceDir, file), { recursive: true });
+      //删除mods文件夹里面的文件夹
+      fs.rmSync(path.join(modsDir, file), { recursive: true, force: true });
     }
     );
   }

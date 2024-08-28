@@ -2,19 +2,11 @@ const { ipcRenderer } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+
 document.addEventListener('DOMContentLoaded', async () => {
-    //- 防止两次加载
-    if (!global.isListenerAdded) {
-        global.isListenerAdded = true;
-        //debug
-        console.log("Add event listener");
-    }
-    else {
-        //debug
-        console.log("isListenerAdded is true, return");
-        return;
-    }
-    console.log("DOMContentLoaded，add event listener");
+    let lang = localStorage.getItem('lang') || 'en';
+    //翻译页面
+    translatePage(lang);
 
     //- 获取元素
     const drawerPage = document.getElementById('drawer-page');
@@ -44,16 +36,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savePresetBtn = document.getElementById('save-preset-btn');
     let mods = [];
 
+    //设置初始化按钮
+    const initConfigButton = document.getElementById('init-config-button');
+
     //- 初始化
     // 检测是否是第一次打开
     const firstOpen = localStorage.getItem('firstOpen');
     if (!firstOpen) {
         localStorage.setItem('firstOpen', 'false');
-        //debug
-        console.log("firstOpen");
-        //显示settingsDialog
-        settingsDialog.show();
-        snack('首次打开，请设置rootdir');
+        //创建 firset-opne-window
+        ipcRenderer.invoke('open-first-load-window');
     }
     else {
         await ipcRenderer.invoke('set-rootdir', rootdir);
@@ -64,6 +56,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     //- 内部函数
+    function translatePage(lang) {
+        //获取所有需要翻译的元素
+        const elements = document.querySelectorAll('[data-translate-key]');
+        //获取翻译文件
+        const translationPath = path.join(__dirname, 'locales', `${lang}.json`);
+        //读取翻译文件
+        const translation = JSON.parse(fs.readFileSync(translationPath));
+        //debug
+        if (translation) {
+            //翻译元素
+            elements.forEach((element) => {
+                const key = element.getAttribute('data-translate-key');
+                if (key in translation) {
+                    element.textContent = translation[key];
+                    //debug
+                    console.log(`Translate ${key} to ${translation[key]}`);
+                }
+            });
+        }
+        else {
+            console.log('Translation file not found');
+        }
+    }
+
     function snack(message) {
         customElements.get('s-snackbar').show(message);
     }
@@ -317,5 +333,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 presetItem.appendChild(deleteButton);
             });
         }
+    });
+
+    //初始化按钮
+    initConfigButton.addEventListener('click', async () => {
+        //debug
+        console.log("clicked initConfigButton");
+        localStorage.clear();
     });
 });
