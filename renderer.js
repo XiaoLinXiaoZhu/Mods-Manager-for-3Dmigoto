@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 
+
 document.addEventListener('DOMContentLoaded', async () => {
     let lang = localStorage.getItem('lang') || 'en';
     //翻译页面
@@ -36,16 +37,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const savePresetBtn = document.getElementById('save-preset-btn');
     let mods = [];
 
+    //mod info 相关
+    const modInfoName = document.getElementById('mod-info-name');
+    const modInfoCharacter = document.getElementById('mod-info-character');
+    const modInfoDescription = document.getElementById('mod-info-description');
+    const modInfoImage = document.getElementById('mod-info-image');
+    let currentMod = '';
+
+    const infoShowButton = document.getElementById('info-show-button');
+
+    //打开mod文件夹
+    const openModFolderButton = document.getElementById('open-mod-dir');
+
+    //编辑mod.json文件
+    const editModInfoButton = document.getElementById('edit-mod-info');
+
     //设置初始化按钮
     const initConfigButton = document.getElementById('init-config-button');
 
     //- 初始化
     // 检测是否是第一次打开
     const firstOpen = localStorage.getItem('firstOpen');
+
     if (!firstOpen) {
         localStorage.setItem('firstOpen', 'false');
         //创建 firset-opne-window
         ipcRenderer.invoke('open-first-load-window');
+
+        //展示要求刷新的提示
+        document.getElementById('refresh-dialog').show();
     }
     else {
         await ipcRenderer.invoke('set-rootdir', rootdir);
@@ -153,7 +173,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             //点击modItem时，选中或取消选中
             modItem.addEventListener('click', () => {
                 //debug
-                console.log("clicked modItem");
+                console.log("clicked modItem " + modItem.id);
+                currentMod = modItem.id;
+                showModInfo(modItem.id);
 
                 modItem.checked = !modItem.checked;
                 refreshModList();
@@ -232,10 +254,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    //- 事件监听
+    async function showModInfo(mod) {
+        const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+        //将info显示在 modInfo 中
+        modInfoName.textContent = mod;
+        modInfoCharacter.textContent = modInfo.character ? modInfo.character : 'Unknown';
+        modInfoDescription.textContent = modInfo.description ? modInfo.description : 'No description';
+        //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
+        var modImagePath;
+        if (modInfo.imagePath) {
+            var modImagePath = path.join(rootdir, 'modResourceBackpack', mod, modInfo.imagePath);
+        }
+        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.png'))) {
+            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.png');
+        }
+        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg'))) {
+            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg');
+        }
+        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg'))) {
+            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg');
+        }
+        else {
+            // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
+            const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
+            const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
+            if (imageFiles.length > 0) {
+                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, imageFiles[0]);
+            }
+            else {
+                modImagePath = path.join(__dirname, 'default.png');
+            }
+        }
+        modInfoImage.src = modImagePath;
+    }
+
+    //-----------------------------事件监听--------------------------------
     let editMode = false;
 
-    //settings 相关
+    //-settings 相关
     settingsButton.addEventListener('click', async () => {
         // 显示或隐藏settingsDrawer
         settingsDialog.show();
@@ -276,6 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     );
 
+    //-mod启用
     applyBtn.addEventListener('click', async () => {
         //获取选中的mods,mod 元素为 mod-item，当其checked属性为true时，表示选中
         const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
@@ -284,6 +341,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await ipcRenderer.invoke('apply-mods', selectedMods);
     })
 
+
+
+//-预设列表相关
     presetListDisplayButton.addEventListener('click', async () => {
         // 显示或隐藏presetListDrawer
         drawerPage.toggle();
@@ -308,6 +368,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         //清空输入框
         presetNameInput.value = '';
     });
+
+    presetAddButton.addEventListener('click', async () => {
+        //显示添加预设对话框
+        presetNameInput.value = '';
+        const dialog = document.getElementById('add-preset-dialog');
+        dialog.show();
+    }
+    );
 
     // 管理预设 按钮
     presetEditButton.addEventListener('click', async () => {
@@ -340,5 +408,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         console.log("clicked initConfigButton");
         localStorage.clear();
+    });
+
+//-mod info 相关
+    infoShowButton.addEventListener('click', async () => {
+        //显示或隐藏modInfoDrawer
+        //如果当前的type="outlined" 则将其切换为"filled"，并且开启drawer
+        //debug
+        console.log("clicked infoShowButton");
+        if (infoShowButton.type == 'default') {
+            infoShowButton.type = 'filled';
+            drawerPage.show('end');
+        }
+        else {
+            infoShowButton.type = 'default';
+            drawerPage.dismiss('end');
+        }
+    });
+
+    //打开mod文件夹
+    openModFolderButton.addEventListener('click', async () => {
+        //debug
+        console.log("clicked openModFolderButton");
+        if (currentMod == '') {
+            snack('Please select a mod');
+            return;
+        }
+        await ipcRenderer.invoke('open-mod-folder', currentMod);
+    });
+
+    //编辑mod.json文件
+    editModInfoButton.addEventListener('click', async () => {
+        //debug
+        console.log("clicked editModInfoButton");
+        if (currentMod == '') {
+            snack('Please select a mod');
+            return;
+        }
+        await ipcRenderer.invoke('edit-mod-info', currentMod);
     });
 });

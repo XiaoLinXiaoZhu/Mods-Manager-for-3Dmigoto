@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <title>Mod Manager</title>
   <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <link rel="stylesheet" href="sober-theme.css">
   <style>
     html,
     body {
@@ -38,6 +39,7 @@
 
     #preset-list-drawer {
       width: 200px;
+      height: 100%;
       display: flex;
       flex-direction: column;
       flex-wrap: nowrap;
@@ -86,12 +88,15 @@
     }
 
     #apply-btn {
-      position: fixed;
-      bottom: 50px;
+      position: relative;
+      bottom: 70px;
       right: 50px;
-      font-size: 20px;
-      width: 200px;
+      font-size: 25px;
+      height: 50px;
+      width: fit-content;
+      align-items: center;
     }
+
 
     .mod-list,
     .preset-list {
@@ -106,6 +111,8 @@
 </head>
 
 <body>
+  <div id="drag-bar" style="position: fixed;width: 100%;height: 30px;-webkit-app-region: drag;">
+  </div>
   <s-page id="app" theme="auto">
     <!-- -alert -->
     <s-snackbar>
@@ -120,55 +127,64 @@
         <s-divider></s-divider>
         <div id="preset-container"></div>
         <!-- -新建预设 -->
-        <s-button type="outlined" id="preset-item-add" onclick="document.querySelector('#dialog').show()"> <s-icon
-            type="add" slot="start" style="margin-left: -80px;"></s-icon>
+        <s-button type="outlined" id="preset-item-add"> <s-icon type="add" slot="start"
+            style="margin-left: -80px;"></s-icon>
           <p data-translate-key="creat-preset" style="align-self: center;margin-top: 21px;margin-left: 10px;">新建预设</p>
         </s-button>
-        <s-dialog id="dialog">
-          <div slot="headline" data-translate-key="ask-preset-name"> 请输入预设名称 </div>
-          <div slot="text">
-            <s-text-field style="display: grid" label="please input preset name">
-              <input type="text" id="add-preset-name">
-            </s-text-field>
-          </div>
-          <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
-          <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
-        </s-dialog>
         <!-- -编辑预设 -->
         <s-button type="outlined" id="preset-item-edit" style="align-items: center;"> <s-icon type="more_horiz"
             slot="start" style="margin-left: -80px;"></s-icon>
           <p data-translate-key="edit-preset" style="align-self: center;margin-top: 21px;margin-left: 10px;">编辑预设</p>
         </s-button>
+        <div id="placeholder" style="flex: 1;"></div>
+        <!-- -设置按钮 -->
+        <s-icon-button slot="action" style="align-self:flex-end;position: relative; left: -145px; bottom: 15px;"
+          id="settings-show-button">
+          <s-icon>
+            <svg viewBox="0 -960 960 960">
+              <path
+                d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
+              </path>
+            </svg>
+          </s-icon>
+        </s-icon-button>
       </div>
 
 
       <!-- -主页面 -->
       <div id="main-page">
         <!-- -顶部导航栏 -->
-        <s-appbar style="width: 100%;height: 50px;">
-          <!--左侧菜单按钮-->
-          <s-icon-button slot="navigation" id="preset-list-button">
-            <s-icon type="menu"></s-icon>
-          </s-icon-button>
-          <!--标题-->
-          <div slot="headline" data-translate-key="available-mods"> Available Mods </div>
-          <s-icon-button slot="action" style="margin-right: 20px;" id="settings-show-button">
-            <s-icon type="home"></s-icon>
-          </s-icon-button>
 
-          <!-- -询问文件保存位置 -->
-          <s-dialog id="settings-dialog">
-            <div slot="headline" data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </div>
-            <div slot="text">
-              <s-text-field style="display: grid" label="请输入文件保存位置">
-                <input type="text" id="set-rootdir-input">
-              </s-text-field>
-              <s-button type="outlined" id="init-config-button" style="margin-top: 10px;"
-                data-translate-key="init">初始化所有配置</s-button>
+        <s-appbar style="width: 100%;height: 60px;padding: 10px 0px;"><s-appbar style="width: 100%;height: 100px;">
+            <!--左侧菜单按钮-->
+            <s-icon-button slot="navigation" id="preset-list-button">
+              <s-icon type="menu"></s-icon>
+            </s-icon-button>
+            <!--标题-->
+            <div slot="headline" style="display: flex;align-items: center;justify-content: center;-webkit-app-region: drag;">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+                y="0px" width="50px" height="41px" viewBox="0 0 229 244">
+                <image id="image0" width="229" height="244" x="0" y="0" xlink:href="icon.ico" />
+              </svg>
+              <p style="margin-left: 10px;" data-translate-key="title">绝区零mod管理器</p>
             </div>
-            <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
-            <s-button slot="action" type="text" id="set-rootdir-confirm" data-translate-key="confirm">确定</s-button>
-          </s-dialog>
+            <div id="drag-bar" style="height: 100%;-webkit-app-region: drag;flex: 1;">
+            </div>
+            <!--右侧信息开关-->
+            <div slot="action">
+              <s-icon-button style="margin-right: 20px;" id="info-show-button" type="filled">
+                <s-icon>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z">
+                    </path>
+                  </svg>
+                </s-icon>
+              </s-icon-button>
+
+            </div>
+
+          </s-appbar>
         </s-appbar>
 
         <!-- -模组列表 -->
@@ -179,19 +195,92 @@
         </s-scroll-view>
 
         <!-- -应用按钮 -->
-        <s-fab extended="true" id="apply-btn" style="width: fit-content;">
-          <s-icon
-            type="arrow_forward" slot="start"></s-icon>
-          <p style="align-self:center;margin-top: 21px;margin-left: 10px;" data-translate-key="apply">应用配置</p>
-          
-        </s-fab>
+        <div style="display: flex;flex-direction: row-reverse;flex-wrap: nowrap;height: 0;">
+          <s-button id="apply-btn">
+            <s-icon slot="start" style="height:fit-content;width: fit-content;margin-right: -5px;">
+              <svg width="40" height="40" viewBox="0 -960 960 960">
+                <path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"></path>
+              </svg>
+            </s-icon>
+            <p style="position: relative;top: -5px;margin-left: 10px;width: fit-content;" data-translate-key="apply">
+              应用配置</p>
+          </s-button>
+        </div>
+
       </div>
 
 
+      <!-- -属性详情界面 -->
+
+      <div slot="end" id="info-page"
+        style="display: flex;justify-content: flex-start;flex-wrap: nowrap;flex-direction: column;align-items: center;width:300px;">
+        <div style="width: 83%;height: fit-content;">
+          <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all">Mod Name</h2>
+        </div>
+        <p id="mod-info-character" style="margin-top:-20px; font-size: small; color: gray;">Character</p>
+        <s-divider style="margin-top: -5px;"></s-divider>
+        <s-scroll-view style="height: 100%;width: 100%;">
+          <div id="mod-info-container" style="display: flex;flex-direction: column;align-items: center;">
+
+            <div id="img-container" style="width: 280px;height: 224px;">
+              <img id="mod-info-image"
+                style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" src=""
+                alt="Mod Image"> </img>
+            </div>
+            <div slot="text" style="height: auto;width: 250px;display:flex;">
+              <s-scroll-view style="height: 100%;width: 110%;">
+                <p id="mod-info-description" style="white-space: normal;">Mod Description</p>
+                <div style="height: 30px;"></div>
+              </s-scroll-view>
+            </div>
+            <s-divider></s-divider>
+
+
+            <s-button id="open-mod-dir" type="outlined" style="width: 83%;"
+              data-translate-key="open-mod-dir">打开mod文件夹</s-button>
+            <s-button id="edit-mod-info" type="outlined" style="width: 83%;margin-top: 7px;" data-translate-key="edit-mod-info">编辑信息</s-button>
+          </div>
+        </s-scroll-view>
+
+      </div>
     </s-drawer>
-
-
   </s-page>
+
+  <!-- -dialog -->
+  <!-- -询问文件保存位置 -->
+  <s-dialog id="settings-dialog">
+    <div slot="headline" data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </div>
+    <div slot="text">
+      <s-text-field style="display: grid" label="请输入文件保存位置">
+        <input type="text" id="set-rootdir-input">
+      </s-text-field>
+      <s-button type="outlined" id="init-config-button" style="margin-top: 10px;"
+        data-translate-key="init">初始化所有配置</s-button>
+    </div>
+    <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+    <s-button slot="action" type="text" id="set-rootdir-confirm" data-translate-key="confirm">确定</s-button>
+  </s-dialog>
+
+  <!-- -创建预设 -->
+  <s-dialog id="add-preset-dialog">
+    <div slot="headline" data-translate-key="ask-preset-name"> 请输入预设名称 </div>
+    <div slot="text">
+      <s-text-field style="display: grid" label="please input preset name">
+        <input type="text" id="add-preset-name">
+      </s-text-field>
+    </div>
+    <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+    <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
+  </s-dialog>
+
+  <!-- -要求刷新 -->
+  <s-dialog id="refresh-dialog">
+    <div slot="headline" data-translate-key="dialog-ask-for-refresh"> 点击下方按钮或者重新打开程序以应用配置 </div>
+    <div slot="text" style="display: flex;justify-content: center;">
+      <s-button type="outlined" id="refresh-button" style="width: 83%;" data-translate-key="refresh"
+        onclick="location.reload()">刷新</s-button>
+    </div>
+  </s-dialog>
 
   <script type="module" src="renderer.js"></script>
   <script type="module">

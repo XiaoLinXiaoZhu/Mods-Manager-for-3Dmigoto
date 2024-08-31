@@ -38,14 +38,6 @@ function translatePage(lang) {
     }
 }
 
-// 获取 主窗口
-const mainWindow = window.open('index.html', 'mainWindow');
-
-// 发送消息到主窗口
-function sendMessageToWindowB() {
-    windowB.postMessage('refresh', '*');
-}
-
 //-=======================页面加载完成后的事件=======================
 
 document.addEventListener('DOMContentLoaded', () => {

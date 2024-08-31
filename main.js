@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const shell = require('electron').shell;
 
 // 实际上 ___dirname 是当前文件所在的目录,但是 最终的目标是要找到 modResourceBackpack 的根文件夹，所以要找到这个文件夹的路径
 // 通过 在第一次打开时询问 rootdir 来 确认文件保存的位置
@@ -26,6 +27,7 @@ ipcMain.handle('get-translate', async (event, lang) => {
 ipcMain.handle('open-first-load-window', async (event) => {
   //创建一个新的窗口
   const firstLoadWindow = new BrowserWindow({
+    frame: false,
     width: 800,
     height: 600,
     webPreferences: {
@@ -34,6 +36,7 @@ ipcMain.handle('open-first-load-window', async (event) => {
       nodeIntegration: true,
     },
   });
+  firstLoadWindow.setMenuBarVisibility(false);
   firstLoadWindow.loadFile('firstLoad.html');
 }
 );
@@ -43,7 +46,7 @@ ipcMain.handle('create-mod-resource-backpack', async () => {
   const modResourceDir = path.join(rootdir, 'modResourceBackpack');
   const modsDir = path.join(rootdir, 'Mods');
 
-  
+
   let modCount = 0;
   if (fs.existsSync(modsDir)) {
     fs.readdirSync(modsDir).forEach(file => {
@@ -100,7 +103,7 @@ ipcMain.handle('create-mod-resource-backpack', async () => {
       }
     }
   }
-  
+
   //创建 presets 文件夹
   const presetsDir = path.join(rootdir, 'presets');
   if (!fs.existsSync(presetsDir)) {
@@ -168,9 +171,10 @@ function createWindow() {
   // });
   // 隐藏
   const win = new BrowserWindow({
-    //setMenuBarVisibility: false,
-    width: 800,
-    height: 600,
+    setMenuBarVisibility: false,
+    frame: false,
+    width: 1200,
+    height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'renderer-preload.js'),
       nodeIntegration: true,
@@ -220,7 +224,17 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
   if (fs.existsSync(modInfoPath)) {
     return JSON.parse(fs.readFileSync(modInfoPath));
   }
-  return {};
+  else {
+    console.log(`modInfoPath not found: ${modInfoPath}`);
+    //创建默认的mod.json文件
+    const modInfo = {
+      character: 'unknown',
+      description: 'no description',
+      cover: 'cover.jpg'
+    };
+    fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
+    return modInfo;
+  }
 });
 
 ipcMain.handle('apply-mods', async (event, mods) => {
@@ -244,6 +258,8 @@ ipcMain.handle('apply-mods', async (event, mods) => {
   });
 });
 
+
+//-------------------presets-------------------
 ipcMain.handle('save-preset', async (event, presetName, mods) => {
   const presetDir = path.join(rootdir, 'presets');
   if (!fs.existsSync(presetDir)) {
@@ -279,3 +295,41 @@ ipcMain.handle('delete-preset', async (event, presetName) => {
 
   }
 });
+
+ //-----------------------modInfo-----------------------
+  //打开mod文件夹
+  ipcMain.handle('open-mod-folder', async (event, mod) => {
+    //判断mod是否存在
+    if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+      console.log(`mod ${mod} not found`);
+      return;
+    }
+    shell.openPath(path.join(rootdir, 'modResourceBackpack', mod));
+  });
+
+  //打开mod.json文件
+  ipcMain.handle('edit-mod-info', async (event, mod) => {
+    //判断mod是否存在
+    if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+      console.log(`mod ${mod} not found`);
+      return;
+    }
+    //判断mod.json文件是否存在，如果不存在则创建一个默认的mod.json文件
+    if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'))) {
+      const modInfo = {
+        character: 'unknown',
+        description: 'no description',
+        cover: 'preview.png'
+      };
+      fs.writeFileSync(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'), JSON.stringify(modInfo));
+    }
+
+    //判断mod.json文件是否存在，如果存在则打开mod.json文件
+    if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'))) {
+      shell.openPath(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'));
+    }
+    else {
+      console.log(`mod.json not found in ${mod}`);
+      return;
+    }
+  });

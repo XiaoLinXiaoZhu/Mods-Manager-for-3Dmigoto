@@ -18,14 +18,29 @@
         :not(:defined) {
             display: none;
         }
+
+        #control-bar {
+            width: 100%;
+            margin: 10px 0;
+            height: 20px;
+            display: flex;
+            -webkit-app-region: drag;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
     </style>
 </head>
 
 
 <body>
+    <div id="control-bar">
+        <div id="rectangle" style="width: 73%; height: 8px; background-color: #aca4b3; border-radius: 10px;align-self: center;
+        "></div>
+    </div>
     <s-snackbar></s-snackbar>
     <s-page id="app" theme="auto" style="display: flex; justify-content: center;">
-
 
         <div id="loading"
             style="margin-top:-40px;position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);width: 100%;align-items: center;">
