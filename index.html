@@ -114,8 +114,6 @@
       align-items: center;
     }
 
-
-    .mod-list,
     .preset-list {
       margin: 10px 10px;
     }
@@ -144,14 +142,14 @@
         <s-divider></s-divider>
         <div id="preset-container"></div>
         <!-- -新建预设 -->
-        <s-button type="outlined" id="preset-item-add"> <s-icon type="add" slot="start"
-            style="margin-left: -80px;"></s-icon>
-          <p data-translate-key="creat-preset" style="align-self: center;margin-top: 21px;margin-left: 10px;">新建预设</p>
+        <s-button type="outlined" id="preset-item-add"> 
+          <s-icon type="add" slot="start" style="position: absolute;left:20px"></s-icon>
+          <p data-translate-key="creat-preset" style="align-self: auto;width: fit-content;height: fit-content;">新建预设</p>
         </s-button>
         <!-- -编辑预设 -->
-        <s-button type="outlined" id="preset-item-edit" style="align-items: center;"> <s-icon type="more_horiz"
-            slot="start" style="margin-left: -80px;"></s-icon>
-          <p data-translate-key="edit-preset" style="align-self: center;margin-top: 21px;margin-left: 10px;">编辑预设</p>
+        <s-button type="outlined" id="preset-item-edit" style="align-items: center;"> 
+          <s-icon type="more_horiz" slot="start" style="position: absolute;left:20px"></s-icon>
+          <p data-translate-key="edit-preset" style="align-self: auto;width: fit-content;height: fit-content;">编辑预设</p>
         </s-button>
         <div id="placeholder" style="flex: 1;"></div>
         <div id="bottom-buttons"
@@ -219,28 +217,18 @@
         </s-appbar>
 
         <!-- -模组筛选选项（根据角色筛选mod） -->
-        <div id="mod-filter-container" style="display: flex;flex-wrap: nowrap;align-items: center;margin: -1px 12px;">
+        <div id="mod-filter-container" style="display: flex;flex-wrap: nowrap;align-items: center;margin: -6px 7px;">
           <s-chip selectable="ture" type="default;" id="mod-filter-all" data-translate-key="all">全部</s-chip>
           <s-scroll-view
             style="margin-left:-6px;height: 100%;width: 100%;overflow-x: hidden;overflow-y: hidden;white-space: nowrap;"
             id="mod-filter-scroll">
             <div id="mod-filter" style="display: flex;flex-wrap: nowrap;align-items: center;width: fit-content;">
-              <s-chip>Chip1</s-chip>
-              <s-chip type="filled-tonal">Chip2</s-chip>
-              <s-chip>Chip1</s-chip>
-              <s-chip type="filled-tonal">Chip2</s-chip>
-              <s-chip>Chip1</s-chip>
-              <s-chip type="filled-tonal">Chip2</s-chip>
-              <s-chip>Chip1</s-chip>
-              <s-chip type="filled-tonal">Chip2</s-chip>
-              <s-chip>Chip1</s-chip>
-              <s-chip type="filled-tonal">Chip2</s-chip>
             </div>
           </s-scroll-view>
 
         </div>
         <!-- -模组列表 -->
-        <s-scroll-view class="mod-list">
+        <s-scroll-view class="mod-list" style="margin-left: 10px;">
           <div id="mod-container" style="width: 100%">
           </div>
           <div style="height: 250px"></div>
