@@ -70,10 +70,10 @@
 
     <s-dialog id="get-language" class="s-dialog">
         <div slot="headline" data-translate-key="dialog-ask-for-language"> select your language </div>
-        <div slot="text">
-            <s-picker label="switch language" id="language-switcher" style="margin-top: 20px;--padding:150px">
-                <s-picker-item value="en">English</s-picker-item>
-                <s-picker-item value="zh-cn">简体中文</s-picker-item>
+        <div slot="text" style="display: flex;flex-direction: column;align-items: center;">
+            <s-picker label="switch language" id="language-switcher" style="margin-top: 20px;--padding:160px;">
+                <s-picker-item value="en" style="width: 180px; text-align: center; display: flex; justify-content: center;">English</s-picker-item>
+                <s-picker-item value="zh-cn" style="width: 180px; text-align: center; display: flex; justify-content: center;">简体中文</s-picker-item>
             </s-picker>
         </div>
         <s-button slot="action" type="text" id="language-switcher-cancel" data-translate-key="cancle">取消</s-button>
@@ -93,13 +93,15 @@
 
     <s-dialog id="dialog" class="s-dialog">
         <div slot="headline" data-translate-key="dialog-ask-for-modfile"> 将你的mod放入以下文件夹：</div>
-        <div slot="text">
+        <div slot="text" >
             <s-text-field style="display: grid" label="Click here!!" id="show-moddir">
                 <s-ripple attached="true"></s-ripple>
             </s-text-field>
+            <p data-translate-key="dialog-ask-if-auto-move"> 是否将当前所有mod移动到mod文件夹?</p>
         </div>
-        <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
-        <s-button slot="action" type="text" id="dialog-confirm" data-translate-key="confirm">确定</s-button>
+        
+        <s-button slot="action" type="outlined" id="auto-move-mod" data-translate-key="auto-move-mod">自动移动</s-button>
+        <s-button slot="action" type="outlined" id="manual-move-mod" data-translate-key="manual-move-mod">手动移动</s-button>
     </s-dialog>
 
 </body>

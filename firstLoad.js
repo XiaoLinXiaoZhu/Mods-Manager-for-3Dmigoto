@@ -66,6 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectRootDir = document.querySelector('#select-rootdir');
     const showModDir = document.querySelector('#show-moddir');
 
+    //自动移动和手动移动的按钮
+    const autoMove = document.querySelector('#auto-move-mod');
+    const manualMove = document.querySelector('#manual-move-mod');
+
     //close按钮
     const closeBtns = document.querySelector('#close-window');
 
@@ -133,7 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
             userConfig.modLoaderDir = exeDir;
 
             ipcRenderer.invoke('set-rootdir', rootdir);
-            ipcRenderer.invoke('create-mod-resource-backpack');
+            //新建 modResourceBackpack 文件夹
+            const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
+            if (!fs.existsSync(modBackpackDir)) {
+                fs.mkdirSync(modBackpackDir);
+            }
         }
         else {
             selectRootDir.label = 'Please select your 3dmigoto.exe file';
@@ -150,10 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
             showModDir.label = modBackpackDir;
             userConfig.modBackpackDir = modBackpackDir;
+            if (!fs.existsSync(modBackpackDir)) {
+                fs.mkdirSync(modBackpackDir);
+            }
 
             openFolder(modBackpackDir);
-        }
-        console.log(modLoaderdir);
+            console.log(modBackpackDir);
+            saveUserConfig();
+        } 
         //ipcRenderer.invoke('save-user-config', { modLoaderdir });
     });
     
@@ -166,6 +178,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const loaded = document.querySelector('#loaded');
         loaded.style.display = 'block';
 
+    }
+    );
+
+    //autoMove按钮的事件监听
+    autoMove.addEventListener('click', async () => {
+        let ret = await ipcRenderer.invoke('auto-move-mod');
+        alert(ret);
+    }
+    );
+
+    //manualMove按钮的事件监听
+    manualMove.addEventListener('click', () => {
+        const modBackpackDir = userConfig.modBackpackDir;
+        if (fs.existsSync(modBackpackDir)) {
+            openFolder(modBackpackDir);
+        }
     }
     );
 

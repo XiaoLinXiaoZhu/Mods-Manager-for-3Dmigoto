@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //rootdir相关
     let rootdir = localStorage.getItem('rootdir') || __dirname;                //rootdir保存在localStorage中，如果没有则设置为默认值__dirname
-    const settingsButton = document.getElementById('settings-show-button');
+    
     const settingsDialog = document.getElementById('settings-dialog');
     const rootdirInput = document.getElementById('set-rootdir-input');
     const rootdirConfirmButton = document.getElementById('set-rootdir-confirm');
@@ -30,12 +30,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let currentPreset = '';
 
+    //控制按钮
+    const settingsShowButton = document.getElementById('settings-show-button');
+    const fullScreenButton = document.getElementById('fullscreen-button');
+    const fullScreenSvgpath = document.getElementById('fullscreen-button-svgpath');
+
+    //mod筛选相关
+    const modFilterScroll = document.getElementById('mod-filter-scroll');
+    const modFilter = document.getElementById('mod-filter');
+    const modFilterAll = document.getElementById('mod-filter-all');
+
     //mod列表相关
     const modContainer = document.getElementById('mod-container');
     const applyBtn = document.getElementById('apply-btn');
 
     const savePresetBtn = document.getElementById('save-preset-btn');
     let mods = [];
+    let modCharacters = [];
+    let modFilterCharacter = 'All';
 
     //mod info 相关
     const modInfoName = document.getElementById('mod-info-name');
@@ -71,6 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await ipcRenderer.invoke('set-rootdir', rootdir);
         await loadModList();
         await loadPresets();
+        refreshModFilter();
     }
 
 
@@ -103,6 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function snack(message) {
         customElements.get('s-snackbar').show(message);
     }
+
     async function loadModList() {
         //加载mod列表
         modContainer.innerHTML = '';
@@ -112,6 +126,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             //尝试获取mod下的mod.json文件，获取mod的信息和图片
             const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
             var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
+
+            if (!modCharacters.includes(modCharacter)) {
+                modCharacters.push(modCharacter);
+                //debug
+                console.log(`add modCharacter:${modCharacter}`);
+            }
             //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
             var modImagePath;
             if (modInfo.imagePath) {
@@ -147,9 +167,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             //使用s-card以达到更好的显示效果
             const modItem = document.createElement('s-card');
             modItem.className = 'mod-item';
-            modItem.checked = true;
+            modItem.checked = false;
             modItem.clickable = true;
             modItem.id = mod;
+            modItem.character = modCharacter;
             modItem.style = 'width: 250px; height: 350px;margin-bottom: -5px;';
             modItem.innerHTML = `
                   <div slot="image" style="height: 200px;">
@@ -178,9 +199,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showModInfo(modItem.id);
 
                 modItem.checked = !modItem.checked;
-                refreshModList();
+                //改变modItem的背景颜色
+                let item = modItem;
+                if (item.checked == true) {
+                    item.type = 'filled';
+                    //让其背景变为绿色
+                    item.style.backgroundColor = '#4CAF50';
+                }
+                else {
+                    item.type = '';
+                    //让其背景变回原来的颜色
+                    item.style.backgroundColor = '';
+                }
+                //refreshModList();
             });
-
         });
     }
 
@@ -246,6 +278,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     }
 
+    function filterMods() {
+        document.querySelectorAll('.mod-item').forEach(item => {
+            if (modFilterCharacter == 'All' || modFilterCharacter == item.character) {
+                item.style.display = 'block';
+            }
+            else {
+                item.style.display = 'none';
+            }
+        }
+        );
+    }
+
+    function refreshModFilter() {
+        //debug
+        console.log(`modCharacters:${modCharacters}`);
+
+        modFilter.innerHTML = '';
+        modCharacters.forEach(character => {
+            const filterItem = document.createElement('s-chip');
+            filterItem.type = 'default';
+            filterItem.selectable = true;
+            filterItem.innerHTML = character;
+            filterItem.style = 'margin-right: 5px;';
+            filterItem.addEventListener('click', () => {
+                modFilterCharacter = character;
+                modFilterAll.type = 'default';
+                //将自己的type设置为filled，其他的设置为default
+                const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
+                allfilterItems.forEach(item => {
+                    if (item.innerHTML != character) {
+                        item.type = 'default';
+                    }
+                    else {
+                        item.type = 'filled-tonal';
+                    }
+                });
+
+                filterMods();
+            });
+            modFilter.appendChild(filterItem);
+        }
+        );
+    }
+
     async function savePreset(presetName) {
         if (presetName) {
             const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
@@ -291,14 +367,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     //-----------------------------事件监听--------------------------------
     let editMode = false;
 
-    //-settings 相关
-    settingsButton.addEventListener('click', async () => {
+    //-控制按钮
+    settingsShowButton.addEventListener('click', async () => {
         // 显示或隐藏settingsDrawer
         settingsDialog.show();
         //获取当前rootdir
         rootdirInput.value = rootdir;
     });
 
+    //-全屏按钮
+    fullScreenButton.addEventListener('click', async () => {
+        const isFullScreen = await ipcRenderer.invoke('toggle-fullscreen');
+        if (!isFullScreen) {
+            fullScreenSvgpath.setAttribute('d', 'M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z');
+        }
+        else {
+            fullScreenSvgpath.setAttribute('d', 'M240-120v-120H120v-80h200v200h-80Zm400 0v-200h200v80H720v120h-80ZM120-640v-80h120v-120h80v200H120Zm520 0v-200h80v120h120v80H640Z');
+        }
+    }
+    );
+
+
+    //-dialog相关
     rootdirConfirmButton.addEventListener('click', async () => {
         //debug
         console.log("rootdir: " + rootdirInput.value);
@@ -319,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //debug
                 console.log("rootdir: " + dir);
                 //重新加载mods
-                loadModList();
+                loadModList().then(() => {refreshModFilter();});
                 loadPresets();
             }
             else {
@@ -341,9 +431,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         await ipcRenderer.invoke('apply-mods', selectedMods);
     })
 
+    //-mod筛选相关
+
+    modFilterScroll.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        modFilterScroll.scrollLeft += e.deltaY;
+    }
+    );
+
+    modFilterAll.addEventListener('click', () => {
+        modFilterCharacter = 'All';
+        modFilterAll.type = 'filled-tonal';
+        //将其他的type设置为default
+        const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
+        allfilterItems.forEach(item => {
+            item.type = 'default';
+        });
+        filterMods();
+    }
+    );
 
 
-//-预设列表相关
+    //-预设列表相关
     presetListDisplayButton.addEventListener('click', async () => {
         // 显示或隐藏presetListDrawer
         drawerPage.toggle();
@@ -410,7 +519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.clear();
     });
 
-//-mod info 相关
+    //-mod info 相关
     infoShowButton.addEventListener('click', async () => {
         //显示或隐藏modInfoDrawer
         //如果当前的type="outlined" 则将其切换为"filled"，并且开启drawer

@@ -15,6 +15,12 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    img {
+      -webkit-user-drag: none;
+      -moz-user-drag: none;
+      -ms-user-drag: none;
+    }
+
     s-divider {
       width: 83%;
       margin: 10px 0;
@@ -73,6 +79,17 @@
       flex-direction: column;
       flex-wrap: nowrap;
       justify-content: flex-start;
+    }
+
+    #mod-filter {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      margin: 7px 12px;
+    }
+
+    #mod-filter>* {
+      margin: 6px
     }
 
     #mod-container {
@@ -137,17 +154,30 @@
           <p data-translate-key="edit-preset" style="align-self: center;margin-top: 21px;margin-left: 10px;">编辑预设</p>
         </s-button>
         <div id="placeholder" style="flex: 1;"></div>
-        <!-- -设置按钮 -->
-        <s-icon-button slot="action" style="align-self:flex-end;position: relative; left: -145px; bottom: 15px;"
-          id="settings-show-button">
-          <s-icon>
-            <svg viewBox="0 -960 960 960">
-              <path
-                d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
-              </path>
-            </svg>
-          </s-icon>
-        </s-icon-button>
+        <div id="bottom-buttons"
+          style="width: 83%;display: flex;padding: 15px 21px;flex-direction: row;flex-wrap: nowrap;align-items: center;">
+          <!-- -设置按钮 -->
+          <s-icon-button slot="action" id="settings-show-button">
+            <s-icon>
+              <svg viewBox="0 -960 960 960">
+                <path
+                  d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
+                </path>
+              </svg>
+            </s-icon>
+          </s-icon-button>
+          <!-- -全屏按钮-->
+          <s-icon-button slot="action" id="fullscreen-button">
+            <s-icon>
+              <svg viewBox="0 -960 960 960">
+                <path id="fullscreen-button-svgpath"
+                  d="M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z">
+                </path>
+              </svg>
+            </s-icon>
+          </s-icon-button>
+        </div>
+
       </div>
 
 
@@ -155,38 +185,60 @@
       <div id="main-page">
         <!-- -顶部导航栏 -->
 
-        <s-appbar style="width: 100%;height: 60px;padding: 10px 0px;"><s-appbar style="width: 100%;height: 100px;">
-            <!--左侧菜单按钮-->
-            <s-icon-button slot="navigation" id="preset-list-button">
-              <s-icon type="menu"></s-icon>
+        <s-appbar style="width: 100%;height: 60px;padding: 10px 0px;display: flex;">
+          <!--左侧菜单按钮-->
+          <s-icon-button slot="navigation" id="preset-list-button">
+            <s-icon type="menu"></s-icon>
+          </s-icon-button>
+          <!--标题-->
+          <div slot="headline"
+            style="display: flex;align-items: center;justify-content: center;-webkit-app-region: drag;">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+              y="0px" width="50px" height="41px" viewBox="0 0 229 244">
+              <image id="image0" width="229" height="244" x="0" y="0" xlink:href="icon.ico" />
+            </svg>
+            <p style="margin-left: 10px;" data-translate-key="title">绝区零mod管理器</p>
+          </div>
+          <div id="drag-bar" style="height: 100%;-webkit-app-region: drag;flex: 1;">
+          </div>
+          <!--右侧信息开关-->
+          <div slot="action">
+            <s-icon-button style="margin-right: 20px;" id="info-show-button" type="filled">
+              <s-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z">
+                  </path>
+                </svg>
+              </s-icon>
             </s-icon-button>
-            <!--标题-->
-            <div slot="headline" style="display: flex;align-items: center;justify-content: center;-webkit-app-region: drag;">
-              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
-                y="0px" width="50px" height="41px" viewBox="0 0 229 244">
-                <image id="image0" width="229" height="244" x="0" y="0" xlink:href="icon.ico" />
-              </svg>
-              <p style="margin-left: 10px;" data-translate-key="title">绝区零mod管理器</p>
-            </div>
-            <div id="drag-bar" style="height: 100%;-webkit-app-region: drag;flex: 1;">
-            </div>
-            <!--右侧信息开关-->
-            <div slot="action">
-              <s-icon-button style="margin-right: 20px;" id="info-show-button" type="filled">
-                <s-icon>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path
-                      d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z">
-                    </path>
-                  </svg>
-                </s-icon>
-              </s-icon-button>
 
-            </div>
+          </div>
 
-          </s-appbar>
+
         </s-appbar>
 
+        <!-- -模组筛选选项（根据角色筛选mod） -->
+        <div id="mod-filter-container" style="display: flex;flex-wrap: nowrap;align-items: center;margin: -1px 12px;">
+          <s-chip selectable="ture" type="default;" id="mod-filter-all" data-translate-key="all">全部</s-chip>
+          <s-scroll-view
+            style="margin-left:-6px;height: 100%;width: 100%;overflow-x: hidden;overflow-y: hidden;white-space: nowrap;"
+            id="mod-filter-scroll">
+            <div id="mod-filter" style="display: flex;flex-wrap: nowrap;align-items: center;width: fit-content;">
+              <s-chip>Chip1</s-chip>
+              <s-chip type="filled-tonal">Chip2</s-chip>
+              <s-chip>Chip1</s-chip>
+              <s-chip type="filled-tonal">Chip2</s-chip>
+              <s-chip>Chip1</s-chip>
+              <s-chip type="filled-tonal">Chip2</s-chip>
+              <s-chip>Chip1</s-chip>
+              <s-chip type="filled-tonal">Chip2</s-chip>
+              <s-chip>Chip1</s-chip>
+              <s-chip type="filled-tonal">Chip2</s-chip>
+            </div>
+          </s-scroll-view>
+
+        </div>
         <!-- -模组列表 -->
         <s-scroll-view class="mod-list">
           <div id="mod-container" style="width: 100%">
@@ -214,31 +266,38 @@
 
       <div slot="end" id="info-page"
         style="display: flex;justify-content: flex-start;flex-wrap: nowrap;flex-direction: column;align-items: center;width:300px;">
-        <div style="width: 83%;height: fit-content;">
-          <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all">Mod Name</h2>
-        </div>
-        <p id="mod-info-character" style="margin-top:-20px; font-size: small; color: gray;">Character</p>
-        <s-divider style="margin-top: -5px;"></s-divider>
+
+        <s-card style="height: fit-content;width: 100%;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
+          <div style="width: 83%;height: fit-content;">
+            <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all">Mod name</h2>
+          </div>
+          <p id="mod-info-character" style="margin-top:-20px; font-size: small; color: gray;">Character</p>
+        </s-card>
+
+        <s-divider style="margin-top: 0px;"></s-divider>
         <s-scroll-view style="height: 100%;width: 100%;">
           <div id="mod-info-container" style="display: flex;flex-direction: column;align-items: center;">
 
-            <div id="img-container" style="width: 280px;height: 224px;">
+            <div id="img-container" style="width: 280px;height: 224px; border-radius: 10px; overflow: hidden;">
               <img id="mod-info-image"
-                style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" src=""
+                style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" src="default.png"
                 alt="Mod Image"> </img>
             </div>
-            <div slot="text" style="height: auto;width: 250px;display:flex;">
-              <s-scroll-view style="height: 100%;width: 110%;">
-                <p id="mod-info-description" style="white-space: normal;">Mod Description</p>
-                <div style="height: 30px;"></div>
-              </s-scroll-view>
-            </div>
+            <s-card style="height: auto;width: 100%;display:flex;">
+              <div slot="text" style="height: auto;width: 250px;display:flex;">
+                <s-scroll-view style="height: 100%;width: 110%;">
+                  <p id="mod-info-description" style="white-space: normal;">Mod Description</p>
+                  <div style="height: 30px;"></div>
+                </s-scroll-view>
+              </div>
+            </s-card>
             <s-divider></s-divider>
 
 
             <s-button id="open-mod-dir" type="outlined" style="width: 83%;"
               data-translate-key="open-mod-dir">打开mod文件夹</s-button>
-            <s-button id="edit-mod-info" type="outlined" style="width: 83%;margin-top: 7px;" data-translate-key="edit-mod-info">编辑信息</s-button>
+            <s-button id="edit-mod-info" type="outlined" style="width: 83%;margin-top: 7px;"
+              data-translate-key="edit-mod-info">编辑信息</s-button>
           </div>
         </s-scroll-view>
 
