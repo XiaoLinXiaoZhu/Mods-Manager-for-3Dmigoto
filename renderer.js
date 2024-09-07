@@ -5,6 +5,7 @@ const fs = require('fs');
 
 
 document.addEventListener('DOMContentLoaded', async () => {
+
     let lang = localStorage.getItem('lang') || 'en';
     //翻译页面
     translatePage(lang);
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //rootdir相关
     let rootdir = localStorage.getItem('rootdir') || __dirname;                //rootdir保存在localStorage中，如果没有则设置为默认值__dirname
-    
+
     const settingsDialog = document.getElementById('settings-dialog');
     const rootdirInput = document.getElementById('set-rootdir-input');
     const rootdirConfirmButton = document.getElementById('set-rootdir-confirm');
@@ -198,18 +199,65 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentMod = modItem.id;
                 showModInfo(modItem.id);
 
+                //获取鼠标相对于卡片的位置（百分比）
+                let x = (event.clientX - modItem.getBoundingClientRect().left) / modItem.offsetWidth;
+                let y = (event.clientY - modItem.getBoundingClientRect().top) / modItem.offsetHeight;
+                //根据鼠标相对于卡片的位置设置反转程度
+                let rotateX = 2 * (y - 0.5);
+                let rotateY = -2 * (x - 0.5);
+                let rotateLevel = -20;
+                //设置卡片的反转程度
+                //!debug
+                //console.log(`x:${x} y:${y} rotateX:${rotateX} rotateY:${rotateY}`);
+
                 modItem.checked = !modItem.checked;
                 //改变modItem的背景颜色
                 let item = modItem;
                 if (item.checked == true) {
                     item.type = 'filled';
-                    //让其背景变为绿色
-                    item.style.backgroundColor = '#4CAF50';
+                    //让其背景变为荧光黄
+                    item.style.backgroundColor = '#c6e40450';
+                    item.style.border = '5px solid transparent';
+                    item.style.backgroundClip = 'padding-box, border-box';
+                    item.style.backgroundOrigin = 'padding-box, border-box';
+                    item.style.backgroundImage = 'linear-gradient(to right, #222, #222), linear-gradient(90deg, #c6e404, #e4d403)';
+                    item.style.boxSizing = 'border-box';
+
+                    modItem.animate([
+                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` },
+                        { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1.05)` },
+                        //缩小一点
+                        { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1)` },
+                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` }
+                    ], {
+                        duration: 700,
+                        easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                        iterations: 1
+                    });
+
+                    modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)`;
                 }
                 else {
                     item.type = '';
                     //让其背景变回原来的颜色
                     item.style.backgroundColor = '';
+                    item.style.border = '';
+
+
+                    modItem.animate([
+                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` },
+
+                        { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(0.9)` },
+                        //缩小一点
+                        { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(1)` },
+                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` }
+                    ], {
+                        duration: 700,
+                        easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                        iterations: 1
+                    });
+
+                    modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg)`;
                 }
                 //refreshModList();
             });
@@ -299,19 +347,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             const filterItem = document.createElement('s-chip');
             filterItem.type = 'default';
             filterItem.selectable = true;
-            filterItem.innerHTML = character;
+            filterItem.innerHTML = `<p style='width:fit-content; font-weight: bold;'>${character}</p>`;
             filterItem.style = 'margin-right: 5px;';
             filterItem.addEventListener('click', () => {
+                //debug
+                console.log("clicked filterItem " + character);
                 modFilterCharacter = character;
                 modFilterAll.type = 'default';
                 //将自己的type设置为filled，其他的设置为default
                 const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
                 allfilterItems.forEach(item => {
-                    if (item.innerHTML != character) {
+                    //获取当前的innerHTML内的p元素内的文本
+                    let itemCharacter = item.innerHTML.split('<')[1].split('>')[1].split('<')[0];
+                    if (itemCharacter != character) {
                         item.type = 'default';
+                        //debug
+                        console.log(`set ${item.innerHTML} to default`);
                     }
                     else {
                         item.type = 'filled-tonal';
+                        //debug
+                        console.log(`set ${item.innerHTML} to filled`);
                     }
                 });
 
@@ -364,6 +420,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         modInfoImage.src = modImagePath;
     }
 
+    const createTapeButton = document.getElementById('create-tape');
+    createTapeButton.addEventListener('click', () => {
+        const tape = createTape('test', 'test', './src/tape-cover.png');
+        document.querySelector('.swiper-container').appendChild(tape);
+    });
+    function createTape(title,subtitle,imgPath) {
+        const tape = document.createElement('div');
+        tape.className = 'tape-container';
+        tape.innerHTML = `
+      <!-- -磁带开始 -->
+      <div class="tape-container">
+        <!-- 点击区域 -->
+        <div class="tape-click-area">
+        </div>
+        <!-- -磁带脊柱 -->
+        <div class='tape-spine'>
+          <div class="tape-spine-mask"></div>
+          <div class="tape-spine-cover">
+            <img src="${imgPath}" alt="tape-cover">
+            <!-- 白色衬底 -->
+            <div class="tape-spine-cover-mask"></div>
+          </div>
+          <p class="tape-spine-text font-num">${title}</p>
+        </div>
+        <!-- -磁带封面 -->
+        <!-- 结构为：tape-box > tape-cover-container -->
+        <!-- tape-box > tape-body -->
+        <div class="tape-box">
+          <div class="tape-cover-container">
+            <img src="./src/tape-mask.png" alt="tape-mask">
+            <div class="tape-cover fit-parent-width" style="background-image: url(${imgPath});">
+            </div>
+            <!-- 文本 -->
+            <p class="tape-cover-title font-num">${title}</p>
+            <p class="tape-cover-subtitle font-hongmeng">${subtitle}</p>
+          </div>
+          <!-- -磁带本体 -->
+          <div class="tape-body fit-parent-width"></div>
+        </div>
+      </div>
+      <!-- -磁带结束 -->
+        `;
+
+        //事件绑定
+        initTapeEvent(tape);
+        return tape;
+    }
+
     //-----------------------------事件监听--------------------------------
     let editMode = false;
 
@@ -409,7 +513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //debug
                 console.log("rootdir: " + dir);
                 //重新加载mods
-                loadModList().then(() => {refreshModFilter();});
+                loadModList().then(() => { refreshModFilter(); });
                 loadPresets();
             }
             else {
@@ -518,6 +622,135 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("clicked initConfigButton");
         localStorage.clear();
     });
+
+    //-轮换预设卡片相关
+
+    const translateToDegree = (tape, rotationAngle) => {
+        const spine = tape.querySelector('.tape-spine');
+        const box = tape.querySelector('.tape-box');
+        //debug
+        console.log(`tape:${tape}spine:${spine} box:${box}`);
+        //打印tape的所有子元素
+        //debug
+        console.log(tape.children);
+
+        spine.animate([
+            { transform: `${spine.style.transform}` },
+            { transform: `perspective( 500px ) rotateY(${rotationAngle}deg)` },
+        ], {
+            duration: 700,
+            easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+            iterations: 1
+        });
+
+        spine.style.transform = `perspective( 500px ) rotateY(${rotationAngle}deg)`;
+
+        box.animate([
+            { transform: `${box.style.transform}` },
+            { transform: `perspective( 500px ) rotateY(${90 + rotationAngle}deg)` },
+        ], {
+            duration: 700,
+            easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+            iterations: 1
+        });
+
+        box.style.transform = `perspective( 500px ) rotateY(${90 + rotationAngle}deg)`;
+
+        //调整可点击区域
+        const tapeClickArea = tape.querySelector('.tape-click-area');
+        //整个形状围绕 20%  处旋转，所以说点击区域从 0% 到 20% 为tape-cover，从 20% 到 100% 为tape-spine
+        //其中，因为旋转，左边缘会向右移动，实际宽度为 20% * cos(rotationAngle) + 80%*sin(rotationAngle)
+        const spineWidth = 77;
+        const boxWidth = 240;
+        tapeClickArea.style.width = `${spineWidth*Math.abs(Math.cos(rotationAngle*Math.PI/180)) + boxWidth*Math.abs(Math.sin(rotationAngle*Math.PI/180))}px`;
+        tapeClickArea.style.left = `${spineWidth-spineWidth*Math.abs(Math.cos(rotationAngle*Math.PI/180))}px`;
+
+        // tape.style.marginLeft = `${-spineWidth*(1-Math.abs(Math.cos(rotationAngle*Math.PI/180))) + 10}px`;
+        // tape.style.marginRight = `${-boxWidth*(1-Math.abs(Math.sin(rotationAngle*Math.PI/180))) + 10}px`;
+        //debug
+        //console.log(`marginLeft:${spineWidth-spineWidth*Math.abs(Math.cos(rotationAngle*Math.PI/180))} marginRight:${boxWidth - boxWidth*Math.abs(Math.sin(rotationAngle*Math.PI/180))}`);
+
+        setTimeout(() => {
+            let spineWidth = spine.getBoundingClientRect().width;
+            let boxWidth = box.getBoundingClientRect().width;
+            tapeClickArea.style.width = `${spineWidth + boxWidth}px`;
+            tapeClickArea.style.left= `${77-spineWidth}px`;
+        }, 700);
+    }
+
+    function initTapeEvent(container){
+        const mouseoverEvent = () => {
+            //将其子元素tape-cover左移，tape-body右移，以展示tape-body的内容
+            container.querySelector('.tape-cover-container').style.transform = 'translateX(-40%)';
+            //增加过渡动画
+            container.querySelector('.tape-cover-container').style.transition = 'transform 0.5s';
+
+            //spine也左移
+            //container.querySelector('.tape-spine').style.transform = 'translateX(-40%)';
+            //增加过渡动画
+            container.querySelector('.tape-spine').style.transition = 'transform 0.5s';
+
+            container.querySelector('.tape-body').style.transform = 'translateX(40%)';
+            //增加过渡动画
+            container.querySelector('.tape-body').style.transition = 'transform 0.5s';
+        }
+
+        const mouseoutEvent = () => {
+            container.querySelector('.tape-cover-container').style.transform = 'translateX(0)';
+            container.querySelector('.tape-spine').style.transform += 'translateX(0)';
+            container.querySelector('.tape-body').style.transform = 'translateX(0)';
+        }
+
+        container.clicked = false;
+        const offAngle = 0;
+        const onAngle = -90;
+        translateToDegree(container, offAngle);
+
+        const tapeClickArea = container.querySelector('.tape-click-area');
+        //点击时，切换展示 侧面tape-spine 或者 tape-cover。
+        tapeClickArea.addEventListener('click', () => {
+            //debug
+            console.log("clicked tapeContainer");
+            
+            if (!container.clicked) {
+                //spine向后折叠，cover向前展开，container向左移动
+                translateToDegree(container, onAngle);
+
+                container.style.transform = 'translateX(-30%)';
+                container.style.transition = 'transform 0.7s';
+
+
+                //延时0.7s，增加鼠标移入移出事件
+                mouseoutEvent();
+
+                setTimeout(() => {
+                    container.addEventListener('mouseover', mouseoverEvent);
+                    container.addEventListener('mouseout', mouseoutEvent);
+                    container.clicked = true;
+                }, 700);
+
+            }
+            else {
+                //移除鼠标移入移出事件
+                container.removeEventListener('mouseover', mouseoverEvent);
+                container.removeEventListener('mouseout', mouseoutEvent);
+                mouseoutEvent();
+
+
+                //spine向前展开，cover向后折叠
+                translateToDegree(container, offAngle);
+
+                container.style.transform = 'translateX(30%)';
+                container.style.transition = 'transform 0.7s';
+
+                container.clicked = false;
+            }
+        }
+        );
+    }
+
+    const tapeContainer = document.querySelectorAll('.tape-container');
+    tapeContainer.forEach(container => initTapeEvent(container));
 
     //-mod info 相关
     infoShowButton.addEventListener('click', async () => {

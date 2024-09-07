@@ -5,6 +5,84 @@
   <meta charset="UTF-8" />
   <title>Mod Manager</title>
   <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+
+
+  <style type="text/css">
+    @font-face {
+      font-family: "Impact";
+      src: url(./fonts/zzz-eng.TTF) format("truetype");
+      font-weight: normal
+    }
+
+    @font-face {
+      font-family: "hongmengti";
+      src: url(./fonts/zzz-chs.ttf) format("truetype");
+      font-weight: bold
+    }
+
+    .font-num {
+      font-family: Impact, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif
+    }
+
+    .font-hongmeng {
+      font-family: hongmengti, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif
+    }
+
+    s-chip {
+      transform: skew(-20deg);
+      position: relative;
+    }
+
+    s-chip p {
+      display: block;
+      transform: skew(20deg);
+    }
+
+    .parallelogram {
+      transform: skew(-20deg);
+      border-radius: 10px;
+    }
+
+    .parallelogram * {
+      display: block;
+      transform: skew(20deg);
+    }
+
+    body {
+      background-color: #efefef;
+      -webkit-overflow-scrolling: touch;
+      height: 100%
+    }
+
+    a {
+      text-decoration: none
+    }
+
+    .fit-parent-width {
+      height: 100%;
+      width: 0;
+      padding-left: 100%;
+      overflow: hidden;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .fit-image-width {
+      height: 100%;
+      width: fit-content;
+      object-fit: cover;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+  </style>
+
+
   <link rel="stylesheet" href="sober-theme.css">
   <style>
     html,
@@ -41,7 +119,10 @@
       align-items: flex-start;
       padding: 0px;
       height: 100%;
+      background-image: url(./src/background.png);
+      background-size: cover;
     }
+
 
     #preset-list-drawer {
       width: 200px;
@@ -123,12 +204,239 @@
       margin: 5px 0;
     }
   </style>
+  <style>
+    .tape-container {
+      height: 100%;
+      width: fit-content;
+      position: relative;
+      display: flex;
+      flex-direction: row;
+    }
+
+    .tape-click-area {
+      height: 100%;
+      width: 100px;
+      position: absolute;
+      z-index: 99;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 100, 0, 0);
+    }
+
+    .tape-spine {
+      height: 100%;
+      width: fit-content;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: -1;
+      transform-origin: 100% 50%;
+      background-color: blue;
+    }
+
+    .tape-spine-mask {
+      height: 100%;
+      width: 100%;
+      background-image: url(./src/tape-spine.png);
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      z-index: 1;
+      mix-blend-mode: multiply;
+      opacity: 1;
+    }
+
+    .tape-spine-cover {
+      height: 100%;
+      width: 100%;
+      background-image: url(./src/tape-cover.png);
+      z-index: 0;
+      position: absolute;
+    }
+
+    .tape-spine-cover img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      opacity: 1;
+    }
+
+    .tape-spine-cover-mask {
+      height: 100%;
+      width: 100%;
+      background-color: white;
+      position: absolute;
+      z-index: 1;
+      opacity: 0.7;
+      top: 0;
+      left: 0;
+    }
+
+    .tape-spine-text {
+      height: fit-content;
+      width: fit-content;
+      text-align: center;
+      writing-mode: vertical-rl;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 1.5rem;
+      color: rgb(42, 42, 42);
+      z-index: 2;
+    }
+
+    .tape-box {
+      height: 100%;
+      width: fit-content;
+      position: relative;
+      transform-origin: 0% 50%;
+    }
+
+    .tape-cover-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .tape-cover-container img {
+      height: 100%;
+      object-fit: cover;
+      opacity: 1;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      position: relative;
+    }
+
+    .tape-cover {
+      background-image: url(./src/tape-cover.png);
+      z-index: 1;
+      clip-path: polygon(0 0, 100% 0, 100% 50%, 20% 100%, 0 100%);
+    }
+
+    .tape-cover-title {
+      height: fit-content;
+      width: fit-content;
+      text-align: left;
+      overflow: hidden;
+      line-break: normal;
+      text-overflow: ellipsis;
+      color: rgb(255, 255, 255);
+      z-index: 3;
+      position: absolute;
+      font-size: 2.9rem;
+      text-transform: uppercase;
+      top: 7%;
+      left: 7%;
+      max-width: 200px;
+      line-height: 1.1;
+    }
+
+    .tape-cover-subtitle {
+      height: fit-content;
+      width: fit-content;
+      text-align: left;
+      overflow: hidden;
+      line-break: normal;
+      text-overflow: ellipsis;
+      color: rgb(200, 255, 36);
+      z-index: 3;
+      position: absolute;
+      font-size: 1rem;
+      text-transform: uppercase;
+      top: 40%;
+      left: 7%;
+      max-width: 200px;
+      line-height: 1.1;
+      font-weight: 600;
+    }
+
+    .tape-body {
+      background-image: url(./src/tape.png);
+      z-index: -1;
+    }
+  </style>
+
 </head>
+
 
 <body>
   <div id="drag-bar" style="position: fixed;width: 100%;height: 30px;-webkit-app-region: drag;">
   </div>
-  <s-page id="app" theme="auto">
+
+
+  <s-page id="tape-show" theme="dark" style="display: flex;z-index: -1;">
+    <!-- -background -->
+    <div class="background"
+      style="background-image: url(./src/television.jpg);position:absolute;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;filter: blur(10px);z-index: 0;">
+    </div>
+    <s-button id='create-tape'
+      style="position: absolute;top: 70%;left: 50%;transform: translate(-50%,-50%);z-index: 1;">创建磁带</s-button>
+
+      <s-button id='next-page' onclick="document.getElementById('app').style.display='block';document.getElementById('tape-show').style.display='none';"
+      style="position: absolute;top: 80%;left: 50%;transform: translate(-50%,-50%);z-index: 1;">下一页</s-button>
+    <!-- -轮播图效果 -->
+    <div class="swiper-container"
+      style="height: 50%;width: 100%;position: fixed;top: 20%;display: flex;background-color: rgb(0, 255, 255,0);justify-content: center;align-items: center;flex-wrap: nowrap;flex-direction: row;">
+
+
+      <!-- -磁带开始 -->
+      <div class="tape-container">
+        <!-- 点击区域 -->
+        <div class="tape-click-area">
+        </div>
+        <!-- -磁带脊柱 -->
+        <div class='tape-spine'>
+          <div class="tape-spine-mask"></div>
+          <div class="tape-spine-cover">
+            <img src="./src/tape-cover.png" alt="tape-cover">
+            <!-- 白色衬底 -->
+            <div class="tape-spine-cover-mask"></div>
+          </div>
+          <p class="tape-spine-text font-num">The city life</p>
+        </div>
+        <!-- -磁带封面 -->
+        <!-- 结构为：tape-box > tape-cover-container -->
+        <!-- tape-box > tape-body -->
+        <div class="tape-box">
+          <div class="tape-cover-container">
+            <img src="./src/tape-mask.png" alt="tape-mask">
+            <div class="tape-cover fit-parent-width"></div>
+            <!-- 文本 -->
+            <p class="tape-cover-title font-num">The city life</p>
+            <p class="tape-cover-subtitle font-hongmeng">城市生活</p>
+          </div>
+          <!-- -磁带本体 -->
+          <div class="tape-body fit-parent-width"></div>
+        </div>
+      </div>
+      <!-- -磁带结束 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+
+  </s-page>
+  <s-page id="app" theme="dark">
     <!-- -alert -->
     <s-snackbar>
       Snackbar Message
@@ -142,15 +450,18 @@
         <s-divider></s-divider>
         <div id="preset-container"></div>
         <!-- -新建预设 -->
-        <s-button type="outlined" id="preset-item-add"> 
+        <s-button type="outlined" id="preset-item-add">
           <s-icon type="add" slot="start" style="position: absolute;left:20px"></s-icon>
           <p data-translate-key="creat-preset" style="align-self: auto;width: fit-content;height: fit-content;">新建预设</p>
         </s-button>
         <!-- -编辑预设 -->
-        <s-button type="outlined" id="preset-item-edit" style="align-items: center;"> 
+        <s-button type="outlined" id="preset-item-edit" style="align-items: center;">
           <s-icon type="more_horiz" slot="start" style="position: absolute;left:20px"></s-icon>
           <p data-translate-key="edit-preset" style="align-self: auto;width: fit-content;height: fit-content;">编辑预设</p>
         </s-button>
+
+
+
         <div id="placeholder" style="flex: 1;"></div>
         <div id="bottom-buttons"
           style="width: 83%;display: flex;padding: 15px 21px;flex-direction: row;flex-wrap: nowrap;align-items: center;">
@@ -174,6 +485,8 @@
               </svg>
             </s-icon>
           </s-icon-button>
+          <!-- -关闭按钮 -->
+
         </div>
 
       </div>
@@ -183,7 +496,8 @@
       <div id="main-page">
         <!-- -顶部导航栏 -->
 
-        <s-appbar style="width: 100%;height: 60px;padding: 10px 0px;display: flex;">
+        <s-appbar
+          style="width: 100%;height: 60px;padding: 10px 0px;display: flex;backdrop-filter: blur(7px);border-bottom:1px solid var(--s-color-on-surface);">
           <!--左侧菜单按钮-->
           <s-icon-button slot="navigation" id="preset-list-button">
             <s-icon type="menu"></s-icon>
@@ -218,7 +532,9 @@
 
         <!-- -模组筛选选项（根据角色筛选mod） -->
         <div id="mod-filter-container" style="display: flex;flex-wrap: nowrap;align-items: center;margin: -6px 7px;">
-          <s-chip selectable="ture" type="default;" id="mod-filter-all" data-translate-key="all">全部</s-chip>
+          <s-chip selectable="ture" type="default;" id="mod-filter-all">
+            <p style="width: fit-content;" data-translate-key="all">全部</p>
+          </s-chip>
           <s-scroll-view
             style="margin-left:-6px;height: 100%;width: 100%;overflow-x: hidden;overflow-y: hidden;white-space: nowrap;"
             id="mod-filter-scroll">
@@ -245,6 +561,7 @@
             <p style="position: relative;top: -5px;margin-left: 10px;width: fit-content;" data-translate-key="apply">
               应用配置</p>
           </s-button>
+
         </div>
 
       </div>
@@ -255,13 +572,16 @@
       <div slot="end" id="info-page"
         style="display: flex;justify-content: flex-start;flex-wrap: nowrap;flex-direction: column;align-items: center;width:300px;">
 
-        <s-card style="height: fit-content;width: 100%;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
+        <s-card
+          style="height: fit-content;width: 100%;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
           <div style="width: 83%;height: fit-content;padding: 10px 0px;">
             <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;">Mod name</h2>
             <s-divider style="margin-top: -11px;width: 100%;"></s-divider>
-            
+
           </div>
-          <p id="mod-info-character" style="margin-top: -12px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 10px;padding-bottom: 10px;">Character</p>
+          <p id="mod-info-character"
+            style="margin-top: -12px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 10px;padding-bottom: 10px;">
+            Character</p>
         </s-card>
 
         <s-divider style="margin-top: 0px;"></s-divider>
@@ -293,44 +613,44 @@
 
       </div>
     </s-drawer>
+
+
+    <!-- -dialog -->
+    <!-- -询问文件保存位置 -->
+    <s-dialog id="settings-dialog">
+      <div slot="headline" data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </div>
+      <div slot="text">
+        <s-text-field style="display: grid" label="请输入文件保存位置">
+          <input type="text" id="set-rootdir-input">
+        </s-text-field>
+        <s-button type="outlined" id="init-config-button" style="margin-top: 10px;"
+          data-translate-key="init">初始化所有配置</s-button>
+      </div>
+      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+      <s-button slot="action" type="text" id="set-rootdir-confirm" data-translate-key="confirm">确定</s-button>
+    </s-dialog>
+
+    <!-- -创建预设 -->
+    <s-dialog id="add-preset-dialog">
+      <div slot="headline" data-translate-key="ask-preset-name"> 请输入预设名称 </div>
+      <div slot="text">
+        <s-text-field style="display: grid" label="please input preset name">
+          <input type="text" id="add-preset-name">
+        </s-text-field>
+      </div>
+      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+      <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
+    </s-dialog>
+
+    <!-- -要求刷新 -->
+    <s-dialog id="refresh-dialog">
+      <div slot="headline" data-translate-key="dialog-ask-for-refresh"> 点击下方按钮或者重新打开程序以应用配置 </div>
+      <div slot="text" style="display: flex;justify-content: center;">
+        <s-button type="outlined" id="refresh-button" style="width: 83%;" data-translate-key="refresh"
+          onclick="location.reload()">刷新</s-button>
+      </div>
+    </s-dialog>
   </s-page>
-
-  <!-- -dialog -->
-  <!-- -询问文件保存位置 -->
-  <s-dialog id="settings-dialog">
-    <div slot="headline" data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </div>
-    <div slot="text">
-      <s-text-field style="display: grid" label="请输入文件保存位置">
-        <input type="text" id="set-rootdir-input">
-      </s-text-field>
-      <s-button type="outlined" id="init-config-button" style="margin-top: 10px;"
-        data-translate-key="init">初始化所有配置</s-button>
-    </div>
-    <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
-    <s-button slot="action" type="text" id="set-rootdir-confirm" data-translate-key="confirm">确定</s-button>
-  </s-dialog>
-
-  <!-- -创建预设 -->
-  <s-dialog id="add-preset-dialog">
-    <div slot="headline" data-translate-key="ask-preset-name"> 请输入预设名称 </div>
-    <div slot="text">
-      <s-text-field style="display: grid" label="please input preset name">
-        <input type="text" id="add-preset-name">
-      </s-text-field>
-    </div>
-    <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
-    <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
-  </s-dialog>
-
-  <!-- -要求刷新 -->
-  <s-dialog id="refresh-dialog">
-    <div slot="headline" data-translate-key="dialog-ask-for-refresh"> 点击下方按钮或者重新打开程序以应用配置 </div>
-    <div slot="text" style="display: flex;justify-content: center;">
-      <s-button type="outlined" id="refresh-button" style="width: 83%;" data-translate-key="refresh"
-        onclick="location.reload()">刷新</s-button>
-    </div>
-  </s-dialog>
-
   <script type="module" src="renderer.js"></script>
   <script type="module">
     import './node_modules/sober/dist/sober.min.js';
