@@ -195,10 +195,17 @@ ipcMain.handle('apply-mods', async (event, mods) => {
   const modsDir = path.join(rootdir, 'Mods');
   const modResourceDir = path.join(rootdir, 'modResourceBackpack');
 
-  // 删除未选中的mod
+  // 删除 未选中的mod 且 存在在modResourceBackpack文件夹中的mod
   fs.readdirSync(modsDir).forEach(file => {
-    if (!mods.includes(file)) {
-      fs.rmSync(path.join(modsDir, file), { recursive: true, force: true });
+    if (!mods.includes(file) && fs.existsSync(path.join(modResourceDir, file))) {
+      // 删除文件夹,包括文件夹内的文件，使用异步方法
+      fs.rm(path.join(modsDir, file), { recursive: true, force: true }, (err) => {
+        if (err) {
+          console.log(`failed to delete ${file}: ${err}`);
+        }
+      }
+      );
+      //fs.rmSync(path.join(modsDir, file), { recursive: true, force: true });
     }
   });
 
@@ -207,7 +214,14 @@ ipcMain.handle('apply-mods', async (event, mods) => {
     const src = path.join(modResourceDir, mod);
     const dest = path.join(modsDir, mod);
     if (!fs.existsSync(dest)) {
-      fs.cpSync(src, dest, { recursive: true });
+      // 复制文件夹,包括文件夹内的文件，使用异步方法
+      fs.cp(src, dest, { recursive: true }, (err) => {
+        if (err) {
+          console.log(`failed to copy ${mod}: ${err}`);
+        }
+      }
+      );
+      //fs.cpSync(src, dest, { recursive: true });
     }
   });
 });

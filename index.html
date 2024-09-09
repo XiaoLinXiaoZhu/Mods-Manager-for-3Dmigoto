@@ -57,31 +57,7 @@
     a {
       text-decoration: none
     }
-
-    .fit-parent-width {
-      height: 100%;
-      width: 0;
-      padding-left: 100%;
-      overflow: hidden;
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    .fit-image-width {
-      height: 100%;
-      width: fit-content;
-      object-fit: cover;
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      position: relative;
-    }
   </style>
-
 
   <link rel="stylesheet" href="sober-theme.css">
   <style>
@@ -91,6 +67,16 @@
       overflow: hidden;
       margin: 0;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    s-tooltip p {
+      margin: 0;
+      line-height: 1;
+    }
+
+    p {
+      height: fit-content;
+      width: fit-content;
     }
 
     img {
@@ -211,6 +197,9 @@
       position: relative;
       display: flex;
       flex-direction: row;
+      margin-left: -200px;
+      left: 15%;
+      transition: 0.7s;
     }
 
     .tape-click-area {
@@ -237,17 +226,19 @@
       background-color: blue;
     }
 
-    .tape-spine-mask {
+    .tape-spine img {
       height: 100%;
-      width: 100%;
-      background-image: url(./src/tape-spine.png);
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      position: absolute;
+      width: fit-content;
+      object-fit: cover;
       z-index: 1;
       mix-blend-mode: multiply;
       opacity: 1;
+    }
+
+    .tape-spine p {
+      line-height: 1;
+      margin: 0;
+      position: absolute;
     }
 
     .tape-spine-cover {
@@ -258,13 +249,7 @@
       position: absolute;
     }
 
-    .tape-spine-cover img {
-      height: 100%;
-      width: 100%;
-      object-fit: cover;
-      opacity: 1;
-    }
-
+    /* 白色衬底 */
     .tape-spine-cover-mask {
       height: 100%;
       width: 100%;
@@ -365,6 +350,32 @@
     }
   </style>
 
+  <style>
+    /*====================*/
+    .fit-parent-width {
+      height: 100%;
+      width: 0;
+      padding-left: 100%;
+      overflow: hidden;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .fit-image-width {
+      height: 100%;
+      width: fit-content;
+      object-fit: cover;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+  </style>
+
 </head>
 
 
@@ -373,76 +384,26 @@
   </div>
 
 
-  <s-page id="tape-show" theme="dark" style="display: flex;z-index: -1;">
+  <s-page id="tape-show" theme="dark" style="display: none;z-index: -1;transition: 0.7s;">
     <!-- -background -->
     <div class="background"
       style="background-image: url(./src/television.jpg);position:absolute;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;filter: blur(10px);z-index: 0;">
     </div>
     <s-button id='create-tape'
-      style="position: absolute;top: 70%;left: 50%;transform: translate(-50%,-50%);z-index: 1;">创建磁带</s-button>
+      style="position: absolute;top: 70%;left: 50%;transform: translate(-50%,-50%);z-index: 1;">create-tape</s-button>
 
-      <s-button id='next-page' onclick="document.getElementById('app').style.display='block';document.getElementById('tape-show').style.display='none';"
-      style="position: absolute;top: 80%;left: 50%;transform: translate(-50%,-50%);z-index: 1;">下一页</s-button>
+    <s-button id='next-page'
+      onclick="document.getElementById('app').style.display='flex';document.getElementById('tape-show').style.height='0%';document.getElementById('tape-show').style.display='none';"
+      style="position: absolute;top: 80%;left: 50%;transform: translate(-50%,-50%);z-index: 1;">back</s-button>
     <!-- -轮播图效果 -->
     <div class="swiper-container"
       style="height: 50%;width: 100%;position: fixed;top: 20%;display: flex;background-color: rgb(0, 255, 255,0);justify-content: center;align-items: center;flex-wrap: nowrap;flex-direction: row;">
-
-
-      <!-- -磁带开始 -->
-      <div class="tape-container">
-        <!-- 点击区域 -->
-        <div class="tape-click-area">
-        </div>
-        <!-- -磁带脊柱 -->
-        <div class='tape-spine'>
-          <div class="tape-spine-mask"></div>
-          <div class="tape-spine-cover">
-            <img src="./src/tape-cover.png" alt="tape-cover">
-            <!-- 白色衬底 -->
-            <div class="tape-spine-cover-mask"></div>
-          </div>
-          <p class="tape-spine-text font-num">The city life</p>
-        </div>
-        <!-- -磁带封面 -->
-        <!-- 结构为：tape-box > tape-cover-container -->
-        <!-- tape-box > tape-body -->
-        <div class="tape-box">
-          <div class="tape-cover-container">
-            <img src="./src/tape-mask.png" alt="tape-mask">
-            <div class="tape-cover fit-parent-width"></div>
-            <!-- 文本 -->
-            <p class="tape-cover-title font-num">The city life</p>
-            <p class="tape-cover-subtitle font-hongmeng">城市生活</p>
-          </div>
-          <!-- -磁带本体 -->
-          <div class="tape-body fit-parent-width"></div>
-        </div>
-      </div>
-      <!-- -磁带结束 -->
-
-
-
-
-
-
-
-
-
-
-
-
-
     </div>
 
 
   </s-page>
   <s-page id="app" theme="dark">
     <!-- -alert -->
-    <s-snackbar>
-      Snackbar Message
-      <s-button type="text" slot="action" data-translate-key="close"> 关闭 </s-button>
-    </s-snackbar>
-
     <s-drawer style="width: 100%;" id="drawer-page">
       <!-- -预设控制 -->
       <div slot="start" id="preset-list-drawer">
@@ -466,26 +427,59 @@
         <div id="bottom-buttons"
           style="width: 83%;display: flex;padding: 15px 21px;flex-direction: row;flex-wrap: nowrap;align-items: center;">
           <!-- -设置按钮 -->
-          <s-icon-button slot="action" id="settings-show-button">
-            <s-icon>
-              <svg viewBox="0 -960 960 960">
-                <path
-                  d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
-                </path>
-              </svg>
-            </s-icon>
-          </s-icon-button>
+          <s-tooltip>
+            <s-icon-button slot="trigger" id="settings-show-button">
+              <s-icon>
+                <svg viewBox="0 -960 960 960">
+                  <path
+                    d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
+                  </path>
+                </svg>
+              </s-icon>
+            </s-icon-button>
+
+            <p data-translate-key="settings">设置</p>
+          </s-tooltip>
           <!-- -全屏按钮-->
-          <s-icon-button slot="action" id="fullscreen-button">
-            <s-icon>
-              <svg viewBox="0 -960 960 960">
-                <path id="fullscreen-button-svgpath"
-                  d="M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z">
-                </path>
-              </svg>
-            </s-icon>
-          </s-icon-button>
+          <s-tooltip>
+            <s-icon-button slot="trigger" id="fullscreen-button">
+              <s-icon>
+                <svg viewBox="0 -960 960 960">
+                  <path id="fullscreen-button-svgpath"
+                    d="M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z">
+                  </path>
+                </svg>
+              </s-icon>
+            </s-icon-button>
+            <p data-translate-key="fullscreen">全屏</p>
+          </s-tooltip>
           <!-- -关闭按钮 -->
+          <s-tooltip>
+            <s-icon-button slot="trigger" id="close-button" onclick="window.close()">
+              <s-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z">
+                  </path>
+                </svg>
+              </s-icon>
+            </s-icon-button>
+            <p data-translate-key="close">关闭</p>
+          </s-tooltip>
+          <!-- -打开实验性功能页面 -->
+          <s-tooltip>
+            <s-icon-button slot="trigger" id="open-test-page"
+              onclick="document.getElementById('tape-show').style.display='flex';document.getElementById('tape-show').style.height='100%';document.getElementById('app').style.display='none';">
+              <s-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z">
+                  </path>
+                </svg>
+              </s-icon>
+            </s-icon-button>
+            <p data-translate-key="open-test-page">打开实验性功能页面</p>
+          </s-tooltip>
 
         </div>
 
@@ -614,18 +608,53 @@
       </div>
     </s-drawer>
 
+    <!-- -snackbar -->
+    <s-snackbar>
+      Snackbar Message
+      <s-button type="text" slot="action" data-translate-key="close"> 关闭 </s-button>
+    </s-snackbar>
 
     <!-- -dialog -->
     <!-- -询问文件保存位置 -->
     <s-dialog id="settings-dialog">
-      <div slot="headline" data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </div>
+      <div slot="headline" data-translate-key="settings"> 设置 </div>
+
       <div slot="text">
-        <s-text-field style="display: grid" label="请输入文件保存位置">
-          <input type="text" id="set-rootdir-input">
-        </s-text-field>
+        <div id="setting-get-theme">
+          <h3 data-translate-key="theme"> 主题 </h3>
+          <p data-translate-key="dialog-ask-for-theme"> 请选择主题 </p>
+          <div id="theme-picker">
+            <s-chip selectable="true" type="default" selectable="true" id="auto">
+              <p data-translate-key="auto" >自动</p>
+            </s-chip>
+            <s-chip selectable="true" type="default" selectable="true" id="dark">
+              <p data-translate-key="dark">暗色</p>
+            </s-chip>
+            <s-chip selectable="true" type="default" selectable="true" id="light">
+              <p data-translate-key="light">亮色</p>
+            </s-chip>
+          </div>
+        </div>
+        <div id="settings-get-rootdir" >
+          <h3 data-translate-key="mod-source-path">模组资源位置 </h2>
+          <p data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </p>
+
+          <s-text-field style="display: grid" label="请输入文件保存位置">
+            <input type="text" id="set-rootdir-input">
+          </s-text-field>
+        </div>
+        <div id="settings-init-config" >
+          <h3 data-translate-key="init-config"> 初始化配置 </h3>
+          <p data-translate-key="dialog-ask-for-initConfig"> 确定要初始化所有配置吗？ </p>
         <s-button type="outlined" id="init-config-button" style="margin-top: 10px;"
-          data-translate-key="init">初始化所有配置</s-button>
+          data-translate-key="init">
+          初始化所有配置
+        </s-button>
+        </div>
       </div>
+
+      
+
       <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
       <s-button slot="action" type="text" id="set-rootdir-confirm" data-translate-key="confirm">确定</s-button>
     </s-dialog>
@@ -641,6 +670,22 @@
       <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
       <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
     </s-dialog>
+
+    <!-- -警告未知mod -->
+    <s-dialog id="unknown-mod-dialog">
+      <div slot="headline" data-translate-key="unknown-mod"> 未知mod </div>
+      <div slot="text">
+        <p data-translate-key="dialog-ask-for-unknown-mod">
+          在mod列表中发现了未知mod，是否添加到modResourceBackup中?
+          如果选择不添加，程序将会忽略这些mod，但是可能会导致这些mod无法被该程序管理，并且可能会导致其他mod无法正常运行。
+        </p>
+        <p data-translate-key="unknown-mod-list"> 未知mod列表： </p>
+        <ul id="unknown-mod-list">
+        
+        </ul>
+              </div>
+      <s-button slot="action" type="text" id="unknown-mod-ignore" data-translate-key="ignore">忽略</s-button>
+      <s-button slot="action" type="text" id="unknown-mod-confirm" data-translate-key="add-to-modResourceBackpack">添加到modResourceBackup</s-button>
 
     <!-- -要求刷新 -->
     <s-dialog id="refresh-dialog">

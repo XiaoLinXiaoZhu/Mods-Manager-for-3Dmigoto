@@ -90,6 +90,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     //- 内部函数
+    function setTheme(theme) {
+        const sPages = document.querySelectorAll('s-page');
+        localStorage.setItem('theme', theme);
+        sPages.forEach(page => {
+            page.theme = theme;
+        }
+        );
+
+        if (theme != 'dark') {
+            //将背景图片取消显示
+            sPages.forEach(page => {
+                page.style.backgroundImage = 'none';
+            }
+            );
+        }
+        else {
+            //将背景图片显示
+            sPages.forEach(page => {
+                page.style.backgroundImage = 'url(./src/background.png)';
+            }
+            );
+        }
+    }
+    setTheme(localStorage.getItem('theme') || 'dark');
+
     function translatePage(lang) {
         //获取所有需要翻译的元素
         const elements = document.querySelectorAll('[data-translate-key]');
@@ -116,6 +141,90 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function snack(message) {
         customElements.get('s-snackbar').show(message);
+    }
+
+    function clickModItem(modItem, event = null) {
+        //debug
+        console.log("clicked modItem " + modItem.id);
+        //显示mod的信息
+        showModInfo(modItem.id);
+
+        //获取鼠标相对于卡片的位置（百分比）
+        let x, y, rotateX, rotateY;
+        let rotateLevel = -20;
+        if (event != null) {
+            //如果传入了event，则使用event的位置
+            x = (event.clientX - modItem.getBoundingClientRect().left) / modItem.offsetWidth;
+            y = (event.clientY - modItem.getBoundingClientRect().top) / modItem.offsetHeight;
+        }
+        else {
+            //如果没有传入event，则使用卡片的右上角位置
+            if(modItem.checked){
+                x = 0.5;
+                y = 0.5;
+            }
+            else{
+                x = 1;
+                y = 0;
+            }
+        }
+        //根据鼠标相对于卡片的位置设置反转程度
+        rotateX = 2 * (y - 0.5);
+        rotateY = -2 * (x - 0.5);
+
+
+        //!debug
+        //console.log(`x:${x} y:${y} rotateX:${rotateX} rotateY:${rotateY}`);
+
+        modItem.checked = !modItem.checked;
+        //改变modItem的背景颜色
+        let item = modItem;
+        if (item.checked == true) {
+            item.type = 'filled';
+            //让其背景变为荧光黄
+            item.style.backgroundColor = 'var(--s-color-surface-container-low)';
+            item.style.border = '5px solid transparent';
+            item.style.backgroundClip = 'padding-box, border-box';
+            item.style.backgroundOrigin = 'padding-box, border-box';
+            item.style.backgroundImage = 'linear-gradient(to right, var(--s-color-surface-container-low), var(--s-color-surface-container-low)), linear-gradient(90deg, var(--s-color-primary), #e4d403)';
+            item.style.boxSizing = 'border-box';
+
+            modItem.animate([
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` },
+                { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1.05)` },
+                //缩小一点
+                { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1)` },
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` }
+            ], {
+                duration: 700,
+                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                iterations: 1
+            });
+
+            modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)`;
+        }
+        else {
+            item.type = '';
+            //让其背景变回原来的颜色
+            item.style.backgroundColor = 'var(--s-color-surface-container-low)';
+            item.style.border = '';
+
+
+            modItem.animate([
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` },
+
+                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(0.9)` },
+                //缩小一点
+                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(1)` },
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` }
+            ], {
+                duration: 700,
+                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                iterations: 1
+            });
+
+            modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg)`;
+        }
     }
 
     async function loadModList() {
@@ -194,72 +303,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             //点击modItem时，选中或取消选中
             modItem.addEventListener('click', () => {
-                //debug
-                console.log("clicked modItem " + modItem.id);
+                clickModItem(modItem, event);
                 currentMod = modItem.id;
-                showModInfo(modItem.id);
-
-                //获取鼠标相对于卡片的位置（百分比）
-                let x = (event.clientX - modItem.getBoundingClientRect().left) / modItem.offsetWidth;
-                let y = (event.clientY - modItem.getBoundingClientRect().top) / modItem.offsetHeight;
-                //根据鼠标相对于卡片的位置设置反转程度
-                let rotateX = 2 * (y - 0.5);
-                let rotateY = -2 * (x - 0.5);
-                let rotateLevel = -20;
-                //设置卡片的反转程度
-                //!debug
-                //console.log(`x:${x} y:${y} rotateX:${rotateX} rotateY:${rotateY}`);
-
-                modItem.checked = !modItem.checked;
-                //改变modItem的背景颜色
-                let item = modItem;
-                if (item.checked == true) {
-                    item.type = 'filled';
-                    //让其背景变为荧光黄
-                    item.style.backgroundColor = '#c6e40450';
-                    item.style.border = '5px solid transparent';
-                    item.style.backgroundClip = 'padding-box, border-box';
-                    item.style.backgroundOrigin = 'padding-box, border-box';
-                    item.style.backgroundImage = 'linear-gradient(to right, #222, #222), linear-gradient(90deg, #c6e404, #e4d403)';
-                    item.style.boxSizing = 'border-box';
-
-                    modItem.animate([
-                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` },
-                        { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1.05)` },
-                        //缩小一点
-                        { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1)` },
-                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` }
-                    ], {
-                        duration: 700,
-                        easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-                        iterations: 1
-                    });
-
-                    modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)`;
+                //一旦点击了modItem，将其保存在currentPreset中
+                if (currentPreset != '') {
+                    savePreset(currentPreset);
                 }
-                else {
-                    item.type = '';
-                    //让其背景变回原来的颜色
-                    item.style.backgroundColor = '';
-                    item.style.border = '';
-
-
-                    modItem.animate([
-                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` },
-
-                        { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(0.9)` },
-                        //缩小一点
-                        { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(1)` },
-                        { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` }
-                    ], {
-                        duration: 700,
-                        easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-                        iterations: 1
-                    });
-
-                    modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg)`;
-                }
-                //refreshModList();
             });
         });
     }
@@ -277,7 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.querySelectorAll('#preset-item').forEach(presetItem => {
             presetItem.addEventListener('click', async () => {
-                console.log("🔴presetItem" + presetItem.innerHTML);
+
                 if (editMode) {
                     //innerHtml 现在包含了删除按钮，所以不再是presetName，而是presetName+删除按钮，所以需要提取presetName
                     const presetName = presetItem.innerHTML.split('<')[0].trim();
@@ -288,43 +337,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.log("delete presetItem" + presetItem.innerHTML);
                 }
                 else {
-                    //保存之前的preset
-                    //检查是否有当前的preset，如果有，则保存
-                    if (presets.includes(currentPreset) && currentPreset != presetItem.innerHTML) {
-                        await savePreset(currentPreset);
-                    }
+                    console.log("🟢load presetItem" + presetItem.innerHTML);
+
                     currentPreset = presetItem.innerHTML;
-                    //debug
-                    console.log("clicked presetItem" + presetItem.innerHTML);
+
+                    //将其他的type设置为elevated，自己的type设置为filled
+                    const allpresetItems = document.querySelectorAll('#preset-item');
+                    allpresetItems.forEach(item => {
+                        item.type = 'elevated';
+                    }
+                    );
+                    presetItem.type = 'filled';
+
                     const presetName = presetItem.innerHTML;
                     const selectedMods = await ipcRenderer.invoke('load-preset', presetName);
                     document.querySelectorAll('.mod-item').forEach(item => {
                         //debug
                         console.log(`item.id:${item.id} selectedMods:${selectedMods.includes(item.id)}`);
-                        item.checked = selectedMods.includes(item.id);
+                        if (item.checked != selectedMods.includes(item.id)) {
+                            clickModItem(item);
+                        }
                     });
-                    refreshModList();
                 }
             });
         }
         );
     };
 
-    function refreshModList() {
-        document.querySelectorAll('.mod-item').forEach(item => {
-            if (item.checked == true) {
-                item.type = 'filled';
-                //让其背景变为绿色
-                item.style.backgroundColor = '#4CAF50';
-            }
-            else {
-                item.type = '';
-                //让其背景变回原来的颜色
-                item.style.backgroundColor = '';
-            }
-        }
-        );
-    }
 
     function filterMods() {
         document.querySelectorAll('.mod-item').forEach(item => {
@@ -382,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (presetName) {
             const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
             await ipcRenderer.invoke('save-preset', presetName, selectedMods);
-            await loadPresets();
+            // await loadPresets();
         }
     }
 
@@ -425,7 +464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tape = createTape('test', 'test', './src/tape-cover.png');
         document.querySelector('.swiper-container').appendChild(tape);
     });
-    function createTape(title,subtitle,imgPath) {
+    function createTape(title, subtitle, imgPath) {
         const tape = document.createElement('div');
         tape.className = 'tape-container';
         tape.innerHTML = `
@@ -436,9 +475,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
         <!-- -磁带脊柱 -->
         <div class='tape-spine'>
-          <div class="tape-spine-mask"></div>
-          <div class="tape-spine-cover">
-            <img src="${imgPath}" alt="tape-cover">
+          <img src="./src/tape-spine.png" alt="tape-spine">
+          <div class="tape-spine-cover  fit-parent-width" style="background-image: url(${imgPath});">
             <!-- 白色衬底 -->
             <div class="tape-spine-cover-mask"></div>
           </div>
@@ -475,6 +513,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     settingsShowButton.addEventListener('click', async () => {
         // 显示或隐藏settingsDrawer
         settingsDialog.show();
+
+        //显示主题为当前主题
+        const theme = localStorage.getItem('theme') || 'dark';
+        const themePicker = document.getElementById('theme-picker');
+        //获取 themePicker 下的所有 s-chip 元素
+        const themes = themePicker.querySelectorAll('s-chip');
+        themes.forEach(item => {
+            //将所有的type设置为default
+            if (item.id == theme) {
+                item.type = 'filled-tonal';
+            }
+            else {
+                item.type = 'default';
+            }
+
+            item.addEventListener('click', () => {
+                //将所有的type设置为default
+                themes.forEach(item => {
+                    item.type = 'default';
+                });
+                //将当前点击的type设置为filled-tonal
+                item.type = 'filled-tonal';
+                //保存当前的主题
+                setTheme(item.id);
+            }
+            );
+        });
         //获取当前rootdir
         rootdirInput.value = rootdir;
     });
@@ -532,8 +597,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
         //debug
         console.log("selectedMods: " + selectedMods);
-        await ipcRenderer.invoke('apply-mods', selectedMods);
+        //检查mods文件夹下是否有modResourceBackpack文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modResourceBackpack文件夹
+        const modLoaderDir = path.join(rootdir, 'Mods');
+        const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
+        const unknownDirs = fs.readdirSync(modLoaderDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
+        if (unknownDirs.length > 0) {
+            const dialog = document.getElementById('unknown-mod-dialog');
+            dialog.show();
+            //显示未知文件夹
+            const unknownModList = document.getElementById('unknown-mod-list');
+            unknownModList.innerHTML = '';
+            unknownDirs.forEach(dir => {
+                const listItem = document.createElement('li');
+                listItem.textContent = dir;
+                unknownModList.appendChild(listItem);
+            });
+        }
+        else await ipcRenderer.invoke('apply-mods', selectedMods);
     })
+
+    const unknownModConfirmButton = document.getElementById('unknown-mod-confirm'); 
+    const unknownModIgnoreButton = document.getElementById('unknown-mod-ignore'); 
+    unknownModConfirmButton.addEventListener('click', async () => {
+        //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹，跳过已经存在的文件夹
+        const modLoaderDir = path.join(rootdir, 'Mods');
+        const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
+        const unknownDirs = fs.readdirSync(modLoaderDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
+        unknownDirs.forEach(dir => {
+            //移动文件夹,使用异步函数
+            fs.rename(path.join(modLoaderDir, dir), path.join(modBackpackDir, dir), (err) => {
+                if (err) {
+                    alert(err);
+                }
+                else {
+                    console.log(`move ${dir} to modResourceBackpack`);
+                }
+            });
+        });
+    });
+
+    unknownModIgnoreButton.addEventListener('click', async () => {
+        //忽略未知文件夹
+        const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
+        await ipcRenderer.invoke('apply-mods', selectedMods);
+    });
 
     //-mod筛选相关
 
@@ -624,7 +731,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     //-轮换预设卡片相关
-
     const translateToDegree = (tape, rotationAngle) => {
         const spine = tape.querySelector('.tape-spine');
         const box = tape.querySelector('.tape-box');
@@ -660,10 +766,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tapeClickArea = tape.querySelector('.tape-click-area');
         //整个形状围绕 20%  处旋转，所以说点击区域从 0% 到 20% 为tape-cover，从 20% 到 100% 为tape-spine
         //其中，因为旋转，左边缘会向右移动，实际宽度为 20% * cos(rotationAngle) + 80%*sin(rotationAngle)
-        const spineWidth = 77;
-        const boxWidth = 240;
-        tapeClickArea.style.width = `${spineWidth*Math.abs(Math.cos(rotationAngle*Math.PI/180)) + boxWidth*Math.abs(Math.sin(rotationAngle*Math.PI/180))}px`;
-        tapeClickArea.style.left = `${spineWidth-spineWidth*Math.abs(Math.cos(rotationAngle*Math.PI/180))}px`;
+        const spineOriginalWidth = 70;
+        const boxOriginalWidth = 240;
+        tapeClickArea.style.width = `${spineOriginalWidth * Math.abs(Math.cos(rotationAngle * Math.PI / 180)) + boxOriginalWidth * Math.abs(Math.sin(rotationAngle * Math.PI / 180))}px`;
+        tapeClickArea.style.left = `${spineOriginalWidth - spineOriginalWidth * Math.abs(Math.cos(rotationAngle * Math.PI / 180))}px`;
 
         // tape.style.marginLeft = `${-spineWidth*(1-Math.abs(Math.cos(rotationAngle*Math.PI/180))) + 10}px`;
         // tape.style.marginRight = `${-boxWidth*(1-Math.abs(Math.sin(rotationAngle*Math.PI/180))) + 10}px`;
@@ -674,11 +780,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             let spineWidth = spine.getBoundingClientRect().width;
             let boxWidth = box.getBoundingClientRect().width;
             tapeClickArea.style.width = `${spineWidth + boxWidth}px`;
-            tapeClickArea.style.left= `${77-spineWidth}px`;
+            tapeClickArea.style.left = `${spineOriginalWidth - spineWidth}px`;
         }, 700);
     }
 
-    function initTapeEvent(container){
+    function initTapeEvent(container) {
         const mouseoverEvent = () => {
             //将其子元素tape-cover左移，tape-body右移，以展示tape-body的内容
             container.querySelector('.tape-cover-container').style.transform = 'translateX(-40%)';
@@ -711,12 +817,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         tapeClickArea.addEventListener('click', () => {
             //debug
             console.log("clicked tapeContainer");
-            
+
             if (!container.clicked) {
                 //spine向后折叠，cover向前展开，container向左移动
                 translateToDegree(container, onAngle);
 
-                container.style.transform = 'translateX(-30%)';
+                container.style.transform = 'translateX(-50%)';
                 container.style.transition = 'transform 0.7s';
 
 
@@ -740,7 +846,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //spine向前展开，cover向后折叠
                 translateToDegree(container, offAngle);
 
-                container.style.transform = 'translateX(30%)';
+                container.style.transform = 'translateX(0)';
                 container.style.transition = 'transform 0.7s';
 
                 container.clicked = false;
@@ -751,6 +857,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const tapeContainer = document.querySelectorAll('.tape-container');
     tapeContainer.forEach(container => initTapeEvent(container));
+
+    const tapeClickArea = document.querySelectorAll('.tape-click-area');
+    tapeClickArea.forEach(area => {
+    }
+    );
+
+    //当鼠标移出swipe-container时，恢复tape-container的缩放比例
+    const swiperContainer = document.querySelector('.swiper-container');
+    swiperContainer.onmouseleave = () => {
+        const tapeContainer = document.querySelectorAll('.tape-container');
+        for (let i = 0; i < tapeContainer.length; i++) {
+            tapeContainer[i].style.transform = 'scale(1)';
+            tapeContainer[i].style.transition = 'transform 0.5s';
+        }
+    }
 
     //-mod info 相关
     infoShowButton.addEventListener('click', async () => {
