@@ -1,40 +1,39 @@
-## Mods Manager for 3dmigoto<br>--Plugin management tools for 3dmigoto
+# Mods Manager for 3dmigoto<br>——3dmigoto的插件管理工具
 
-I use ai to translate the text for me, there may be something that is not clear ......
-## Project Information
+## Project Introduction
 
-This is a handy plugin management tool designed to manage 3dmigoto's mods through a beautiful GUI interface.
+This is a convenient plugin management tool designed to manage mods for 3dmigoto through a beautiful GUI interface.
 
-The tool utilizes the sober library to achieve a Material You style interface.
-! [alt text](readmeSrc/image-3.png)
+The tool uses the sober library to implement a Material You-style interface.
+![alt text](readmeSrc/image-3.png)
 
-## List of features
+## Feature List
 
-1. read the list of available mods from the `modResourceBackpack` folder (each folder is a mod). 2. read the list of available mods from the `modResourceBackpack` folder (each folder is a mod).
-2. Select which mods to enable via a nice visualization page. 3.
-3. Click the `Apply` button and copy the selected mods to the `3dmigoto/Mods` folder. 4.
-4. Click `Create Preset` to create a preset, click to switch between presets, and click `Apply` again to apply the preset.
+1. Read the optional mod list from the `modResourceBackpack` folder (each folder represents a mod).
+2. Select which mods to enable through a beautiful visual page.
+3. After clicking the `Apply` button, copy the selected mods to the `3dmigoto/Mods` folder.
+4. Click `Create Preset` to create presets, click to switch between presets, and click `Apply` again to apply the preset.
 
-## Installation steps
-### Download from release
-There are two versions on the release page, an installer version and a loose file version. The installer version is an exe file and the loose file version is a folder containing all the files.
+## Installation Steps
+### Download from Release
+There are two versions on the release page, one is the installer version and the other is the loose file version. The installer version is an exe file, and the loose file version is a folder that contains all the files.
 
-It is recommended to use the loose file version as it will load faster.
+It is recommended to use the loose file version as it loads faster.
 
-1. Download the latest version of the installer or loose file.
-2. Unzip the file.
-3. Run `ZZZmod Manager-1.0.0 Setup.exe` or `ZZZmod Manager.exe`.
+1. Download the latest version of the installer or loose files.
+2. Extract the files.
+3. Run `ZZZmod管理器-1.0.0 Setup.exe` or `ZZZmod管理器.exe`.
 
-### Compile from source
-1. Clone the repository locally:
+### Compile from Source Code
+1. Clone this repository to your local machine:
     ```bash
     git clone https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto.git
     ```
-2. Go to the project directory:
-    ``bash
+2. Enter the project directory:
+    ```bash
     cd Mods-Manager-for-3Dmigoto
     ```
-3. Install the dependencies:
+3. Install dependencies:
     ```bash
     npm install electron@latest
     npm install @soberjs/core
@@ -43,64 +42,64 @@ It is recommended to use the loose file version as it will load faster.
     ```bash
     npm run start
     ```
-5. Package the project: Install electron forge to package the project.
+5. Package the project: Install electron forge to package the project
     ```bash
     npm install -g electron-forge
     electron-forge make
     ```
-    The packaged files are in the out folder.
-    
+    The packaged files will be in the out folder.
+
 ## Getting Started
 
-1. When you start the application, the interface will show all the mods in the `modResourceBackpack` folder. The first time you use the application, you need to specify the path to the root of the `modResourceBackpack` folder.! [alt text](readmeSrc/image-2.png) For example: the folder structure is as follows:
-    ``
+1. After launching the application, the interface will display all the mods in the `modResourceBackpack` folder. When using it for the first time, you need to specify the root directory path of the `modResourceBackpack` folder.![alt text](readmeSrc/image-2.png)For example, if the folder structure is as follows:
+    ```
     rootdir
     ├── modResourceBackpack
-    │ ├── mod1
-    │ ├── mod2
-    │ ├── mod3
-    │ └── ...
+    │   ├── mod1
+    │   ├── mod2
+    │   ├── mod3
+    │   └── ...
     ├── 3dmigoto
-    │ ├── Mods
-    │ ├── 3dmigoto.exe
-    │ └── ...
+    │   ├── Mods
+    │   ├── 3dmigoto.exe
+    │   └── ...
     └── presets
         ├── preset1
         ├── preset2
         ├── preset3
         └── ...
     ```
-    Then the path to the specified folder should be `rootdir`, the root directory of the `modResourceBackpack` folder.
-! [alt text](readmeSrc/image-1.png)
-1. Simply install the mods into the `modResourceBackpack` folder. You may need to add a mod.json file for each mod in order to display the name and description of the mod in the manager. mod.json files have the following format:
-    ``json
+    Then the specified folder path should be the root directory `rootdir` of the `modResourceBackpack` folder.
+![alt text](readmeSrc/image-1.png)
+1. Simply install the mods into the `modResourceBackpack` folder. You may need to add a mod.json file for each mod to display the mod's name and description in the manager. The format of the mod.json file is as follows:
+    ```json
     {
-    “character": ‘Anby’,
-    “description": ‘This is a description of my mod.’,
-    “imagePath": ”preview.png”
+    "character": "Anby",
+    "description": "This is a description of my mod.",
+    "imagePath": "preview.png"
     }
     ```
 
-> The tool also provides autog.bat to help generate the mod.json, but you don't have to set it up for every mod, just make sure the folder name is readable and prevent an image in the mod folder to achieve a better visual effect :! [](readmeSrc/image.png)
+> The tool also provides autog.bat to help generate mod.json. Of course, you don't need to set it for each mod. Just ensure the readability of the folder name and place an image under the mod folder to achieve a better visual effect:![](readmeSrc/image.png)
 > 
-> When loading the mod list, the displayed image is fetched in the following priority:
-> 1. the imagePath field in mod.json
-> 2. the first image in the mod folder with the name preview
-> 3. the first image in the mod folder
-> 4. the default image
+> When loading the mod list, the displayed image will be obtained according to the following priority:
+> 1. The imagePath field in mod.json
+> 2. The first image named preview under the mod folder
+> 3. The first image under the mod folder
+> 4. Default image
 
 
-## Instructions for use
+## Usage Instructions
 
-1. Click on a mod's card to select or deselect the mod. 2.
-2. Click the `Apply` `Apply Configuration` button to apply the changes. 3.
-3. Click the `Create Preset` button to create a preset. 4.
-4. Click the `Presets` button to switch presets. 5.
+1. Click on a mod card to select or deselect the mod.
+2. Click the `Apply` button to apply the changes.
+3. Click the `Create Preset` button to create presets.
+4. Click the `Preset` button to switch between presets.
 5. Click the `Manage Presets` button to manage presets.
 
 ## Known Issues
-- The first time you start up, all mods are selected/unselected because the specified preset is not selected. This is because the assigned preset is not selected. Clicking on a random preset will fix it.
-- Sometimes the mod list cannot be read because the path to the `modResourceBackpack` folder is not specified. This is because the path to the `modResourceBackpack` folder was not specified.
+
+None.
 
 ## Technology Stack
 
@@ -108,15 +107,12 @@ It is recommended to use the loose file version as it will load faster.
 - [sober library](https://soberjs.com/)
 - Material You style
 
-## Follow-up plans
-- [ ] Support downloading mods
-- [ ] Support for customizing mod folders
-
+## Future Plans
 
 
 ## Contribution Guidelines
 
-Contributions of any kind are welcome! Please follow the steps below:
+Welcome any form of contribution! Please follow these steps:
 
 1. Fork this repository.
 2. Create a new branch:
@@ -128,13 +124,29 @@ Contributions of any kind are welcome! Please follow the steps below:
     git commit -m 'Add some feature'
     ```
 4. Push to the branch:
-    ``bash
+    ```bash
     git push origin feature/your-feature-name
     ```
 5. Create a Pull Request.
 
+## Version History
+### What's new in version 1.5:
+#### New functions:
+- Added theme selection function (dark theme is recommended, I imitated it according to the design style of zzz)  
+-  Added a button to close the window, which is placed in the bottom left corner  
+-  Added text descriptions for icon buttons  
+-  The mod files in your mods folder will now never be delete now, and a warning window and action selection will pop up in case of conflicts  
+
+#### Better visuals :
+- The color scheme is modeled after the ZZZ design  
+-  Optimized the display effect of filtering by role
+-  Added a very, very good display effect of mod cards, which will have corresponding animations and display effects when they are selected or unselected.
+-  Added a highlight when a preset is selected  
+#### Bugs fixed:
+-  When program find a folder in the Mods folder that is not being managed, a warning window and action options will appear, and you can choose what to do with the mods that are not managed (ignore: ignore, the file will not be deleted or moved; Move to ModResourceBackpack: Move the mod to the modResourceBackpack folder for program management  
+-  Presets are automatically saved when you change the choice of mod cards  now.
+- Some of the text has not been replaced with the translated text  
+
 ## License
 
-This project is open source under the MIT license. See the [LICENSE](. /LICENSE) file for more information.
-
-Translated with DeepL.com (free version)
+This project is open source under the MIT License. For more information, see the [LICENSE](./LICENSE) file.
