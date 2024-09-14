@@ -1,4 +1,4 @@
-const { ipcRenderer } = require('electron');
+const { ipcRenderer, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const presetAddConfirmButton = document.getElementById('preset-add-confirm');
     const presetEditButton = document.getElementById('preset-item-edit');
 
+    const addPresetDialog = document.getElementById('add-preset-dialog');
+
     let currentPreset = '';
 
     //控制按钮
@@ -44,6 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     //mod列表相关
     const modContainer = document.getElementById('mod-container');
     const applyBtn = document.getElementById('apply-btn');
+
+    const unknownModDialog = document.getElementById('unknown-mod-dialog');
 
     const savePresetBtn = document.getElementById('save-preset-btn');
     let mods = [];
@@ -64,9 +68,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //编辑mod.json文件
     const editModInfoButton = document.getElementById('edit-mod-info');
+    const editModInfoDialog = document.getElementById('edit-mod-info-dialog');
+    const ifSaveChangeDialog = document.getElementById('save-change-dialog');
 
     //设置初始化按钮
     const initConfigButton = document.getElementById('init-config-button');
+    const refreshDialog = document.getElementById('refresh-dialog');
 
     //- 初始化
     // 检测是否是第一次打开
@@ -78,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ipcRenderer.invoke('open-first-load-window');
 
         //展示要求刷新的提示
-        document.getElementById('refresh-dialog').show();
+        showDialog(refreshDialog);
     }
     else {
         await ipcRenderer.invoke('set-rootdir', rootdir);
@@ -90,6 +97,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     //- 内部函数
+    function showDialog(dialog) {
+        // 将 Dialog 的 display 设置为 block
+        if (dialog.style.display != 'block') {
+            dialog.style.display = 'block';
+        }
+        dialog.show();
+    }
+
     function setTheme(theme) {
         const sPages = document.querySelectorAll('s-page');
         localStorage.setItem('theme', theme);
@@ -122,21 +137,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const translationPath = path.join(__dirname, 'locales', `${lang}.json`);
         //读取翻译文件
         const translation = JSON.parse(fs.readFileSync(translationPath));
-        //debug
-        if (translation) {
-            //翻译元素
-            elements.forEach((element) => {
-                const key = element.getAttribute('data-translate-key');
-                if (key in translation) {
-                    element.textContent = translation[key];
-                    //debug
-                    console.log(`Translate ${key} to ${translation[key]}`);
-                }
-            });
-        }
-        else {
-            console.log('Translation file not found');
-        }
+        //直接替换元素的textContent，不使用文档片段，比较两者的性能
+        elements.forEach(async element => {
+            const key = element.getAttribute('data-translate-key');
+            if (key in translation) {
+                element.textContent = translation[key];
+                //debug
+                //console.log(`Translate ${key} to ${translation[key]}`);
+            }
+            else {
+                console.log(`Translation for ${key} not found`);
+            }
+        });
     }
 
     function snack(message) {
@@ -145,9 +157,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function clickModItem(modItem, event = null) {
         //debug
-        console.log("clicked modItem " + modItem.id);
+        ////console.log("clicked modItem " + modItem.id);
         //显示mod的信息
-        showModInfo(modItem.id);
+        
 
         //获取鼠标相对于卡片的位置（百分比）
         let x, y, rotateX, rotateY;
@@ -159,13 +171,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         else {
             //如果没有传入event，则使用卡片的右上角位置
-            if(modItem.checked){
-                x = 0.5;
-                y = 0.5;
+            if (modItem.checked) {
+                x = 0;
+                y = 0.7;
             }
-            else{
-                x = 1;
-                y = 0;
+            else {
+                // x = 1;
+                // y = 0;
+                //随机生成x和y
+                x = Math.random()/5 +0.7;
+                y = Math.random()/5 ;
             }
         }
         //根据鼠标相对于卡片的位置设置反转程度
@@ -177,17 +192,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         //console.log(`x:${x} y:${y} rotateX:${rotateX} rotateY:${rotateY}`);
 
         modItem.checked = !modItem.checked;
+        modItem.setAttribute('checked', modItem.checked ? 'true' : 'false');
         //改变modItem的背景颜色
         let item = modItem;
+
+        //检查是否在屏幕外一定距离，如果在屏幕外一定距离则不进行动画
+        const rect = item.getBoundingClientRect();
+        if (rect.top < -250 || rect.bottom > window.innerHeight + 250 || rect.left < -100 || rect.right > window.innerWidth + 100) {
+            return;
+        }
+
         if (item.checked == true) {
-            item.type = 'filled';
-            //让其背景变为荧光黄
-            item.style.backgroundColor = 'var(--s-color-surface-container-low)';
-            item.style.border = '5px solid transparent';
-            item.style.backgroundClip = 'padding-box, border-box';
-            item.style.backgroundOrigin = 'padding-box, border-box';
-            item.style.backgroundImage = 'linear-gradient(to right, var(--s-color-surface-container-low), var(--s-color-surface-container-low)), linear-gradient(90deg, var(--s-color-primary), #e4d403)';
-            item.style.boxSizing = 'border-box';
+            //item.type = 'filled';
+            // //让其背景变为荧光黄
+            //改为使用css控制
+            //// item.style.backgroundColor = 'var(--s-color-surface-container-low)';
+            //// item.style.border = '5px solid transparent';
+            //// item.style.backgroundClip = 'padding-box, border-box';
+            //// item.style.backgroundOrigin = 'padding-box, border-box';
+            //// item.style.backgroundImage = 'linear-gradient(to right, var(--s-color-surface-container-low), var(--s-color-surface-container-low)), linear-gradient(90deg, var(--s-color-primary), #e4d403)';
+            //// item.style.boxSizing = 'border-box';
 
             modItem.animate([
                 { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` },
@@ -196,122 +220,166 @@ document.addEventListener('DOMContentLoaded', async () => {
                 { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1)` },
                 { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` }
             ], {
-                duration: 700,
+                duration: 600,
                 easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
                 iterations: 1
             });
 
-            modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)`;
+            //modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)`;
         }
         else {
-            item.type = '';
-            //让其背景变回原来的颜色
-            item.style.backgroundColor = 'var(--s-color-surface-container-low)';
-            item.style.border = '';
+            //item.type = '';
+            ////让其背景变回原来的颜色
+            //改为使用css控制
+            //// item.style.backgroundColor = 'var(--s-color-surface-container-low)';
+            //// item.style.border = '';
 
 
             modItem.animate([
                 { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` },
 
-                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(0.9)` },
+                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(0.88)` },
                 //缩小一点
                 { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(1)` },
                 { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` }
             ], {
-                duration: 700,
+                duration: 800,
                 easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
                 iterations: 1
             });
 
-            modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg)`;
+            //modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg)`;
         }
     }
 
-    async function loadModList() {
-        //加载mod列表
-        modContainer.innerHTML = '';
-        mods = await ipcRenderer.invoke('get-mods');
-        mods.forEach(async mod => {
-            console.log("mod: " + mod);
-            //尝试获取mod下的mod.json文件，获取mod的信息和图片
-            const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
-            var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
-
-            if (!modCharacters.includes(modCharacter)) {
-                modCharacters.push(modCharacter);
-                //debug
-                console.log(`add modCharacter:${modCharacter}`);
-            }
-            //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
-            var modImagePath;
-            if (modInfo.imagePath) {
-                var modImagePath = path.join(rootdir, 'modResourceBackpack', mod, modInfo.imagePath);
-            }
-            else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.png'))) {
-                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.png');
-            }
-            else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg'))) {
-                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg');
-            }
-            else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg'))) {
-                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg');
+    //获得mod的显示图片
+    function getModImagePath(mod) {
+        //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
+        var modImagePath;
+        const modInfo = ipcRenderer.invoke('get-mod-info', mod);
+        if (modInfo.imagePath) {
+            var modImagePath = path.join(rootdir, 'modResourceBackpack', mod, modInfo.imagePath);
+        }
+        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.png'))) {
+            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.png');
+        }
+        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg'))) {
+            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg');
+        }
+        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg'))) {
+            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg');
+        }
+        else {
+            // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
+            const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
+            const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
+            if (imageFiles.length > 0) {
+                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, imageFiles[0]);
             }
             else {
-                // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
-                const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
-                const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
-                if (imageFiles.length > 0) {
-                    modImagePath = path.join(rootdir, 'modResourceBackpack', mod, imageFiles[0]);
+                modImagePath = path.join(__dirname, 'default.png');
+            }
+        }
+
+        //debug
+        console.log(`modImagePath:${modImagePath}`);
+        return modImagePath;
+    }
+
+    //使用替换的方式而不是清空再添加的方式实现loadModList，减少页面重绘次数
+    async function loadModList() {
+        //加载mod列表
+        mods = await ipcRenderer.invoke('get-mods');
+        //获取当前modContainer的所有子元素
+        const modContainerCount = modContainer.childElementCount;
+
+        //使用fragment来批量添加modItem，减少重绘次数
+        const fragment = document.createDocumentFragment();
+
+        mods.forEach(async (mod, index) => {
+            if (index < modContainerCount) {
+                //存在现有的card，直接替换内容
+                //判断是否被选中，如果被选中则切换为未选中状态
+                modContainer.children[index].checked = false;
+                modContainer.children[index].setAttribute('checked', 'false');
+
+                const modItem = modContainer.children[index];
+                const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+                var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
+                var modImagePath = getModImagePath(mod);
+                var modDescription = modInfo.description ? modInfo.description : 'No description';
+                modItem.id = mod;
+                modItem.character = modCharacter;
+                modItem.querySelector('#mod-item-headline').textContent = mod;
+                modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
+                modItem.querySelector('img').src = modImagePath;
+                modItem.querySelector('img').alt = mod;
+                modItem.querySelector('#mod-item-description').textContent = modDescription;
+
+                //debug
+                console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
+            }
+            else {
+                //不存在现有的card，添加新的card
+                const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+                var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
+                if (!modCharacters.includes(modCharacter)) {
+                    modCharacters.push(modCharacter);
                 }
-                else {
-                    modImagePath = path.join(__dirname, 'default.png');
+                var modImagePath = getModImagePath(mod);
+                var modDescription = modInfo.description ? modInfo.description : 'No description';
+                const modItem = document.createElement('s-card');
+                modItem.className = 'mod-item';
+                modItem.checked = false;
+                modItem.clickable = true;
+                modItem.id = mod;
+                modItem.character = modCharacter;
+                modItem.style = '';
+                modItem.innerHTML = `
+                    <div slot="image" style="height: 200px;">
+                        <img src="${modImagePath}" alt="${mod}" loading="lazy"/>
+                    </div>
+                    <div slot="headline" id="mod-item-headline">${mod}</div>
+                    <div slot="subhead" id="mod-item-subhead">
+                        ${modCharacter}
+                    </div>
+                    <div slot="text" id="mod-item-text">
+                        <s-scroll-view>
+                            <p id="mod-item-description">${modDescription}</p>
+                            <div class="placeholder"></div>
+                        </s-scroll-view>
+                    </div>
+                `;
+                fragment.appendChild(modItem);
+                if (fragment.children.length == mods.length - modContainerCount) {
+                    modContainer.appendChild(fragment);
+                    //debug
+                    console.log(`🟢successfully loaded mods`);
                 }
             }
-
-            var modDescription = modInfo.description ? modInfo.description : 'No description';
-
-            //debug
-            console.log(`mod:${mod} modCharacter:${modCharacter} modImagePath:${modImagePath} modDescription:${modDescription}`);
-
-
-            //使用s-card以达到更好的显示效果
-            const modItem = document.createElement('s-card');
-            modItem.className = 'mod-item';
-            modItem.checked = false;
-            modItem.clickable = true;
-            modItem.id = mod;
-            modItem.character = modCharacter;
-            modItem.style = 'width: 250px; height: 350px;margin-bottom: -5px;';
-            modItem.innerHTML = `
-                  <div slot="image" style="height: 200px;">
-                        <img src="${modImagePath}" alt="${mod}" style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" />
-                  </div>
-                  <div slot="headline" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;margin-top:12px;">${mod}</div>
-                  <div slot="subhead" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;margin-top: -2px;">
-                  ${modCharacter}
-                  </div>
-                  
-                  <div slot="text" style="height: 100px;margin-top:-10px;">
-                    <s-scroll-view style="height: 100%;width: 110%;">
-                        <p>${modDescription}</p>
-                        <div style="height: 30px;"></div>
-                    </s-scroll-view>
-                </div>
-            `;
-
-            modContainer.appendChild(modItem);
-
-            //点击modItem时，选中或取消选中
-            modItem.addEventListener('click', () => {
-                clickModItem(modItem, event);
-                currentMod = modItem.id;
-                //一旦点击了modItem，将其保存在currentPreset中
-                if (currentPreset != '') {
-                    savePreset(currentPreset);
-                }
-            });
         });
+        //删除多余的modItem
+        if (mods.length < modContainerCount) {
+            for (let i = mods.length; i < modContainerCount; i++) {
+                modContainer.removeChild(modContainer.children[mods.length]);
+            }
+        }
     }
+
+    //使用事件委托处理点击事件，减少事件绑定次数
+    modContainer.addEventListener('click', (event) => {
+        const modItem = event.target.closest('.mod-item');
+        if (modItem) {
+            clickModItem(modItem, event);
+            currentMod = modItem.id;
+            showModInfo(currentMod);
+            //一旦点击了modItem，将其保存在currentPreset中
+            if (currentPreset != '') {
+                savePreset(currentPreset);
+            }
+        }
+    }
+    );
 
     async function loadPresets() {
         presetContainer.innerHTML = '';
@@ -323,47 +391,52 @@ document.addEventListener('DOMContentLoaded', async () => {
             presetItem.innerHTML = preset;
             presetContainer.appendChild(presetItem);
         });
-
-        document.querySelectorAll('#preset-item').forEach(presetItem => {
-            presetItem.addEventListener('click', async () => {
-
-                if (editMode) {
-                    //innerHtml 现在包含了删除按钮，所以不再是presetName，而是presetName+删除按钮，所以需要提取presetName
-                    const presetName = presetItem.innerHTML.split('<')[0].trim();
-                    await ipcRenderer.invoke('delete-preset', presetName);
-                    //将自己的父元素隐藏
-                    presetItem.style.display = 'none';
-                    //debug
-                    console.log("delete presetItem" + presetItem.innerHTML);
-                }
-                else {
-                    console.log("🟢load presetItem" + presetItem.innerHTML);
-
-                    currentPreset = presetItem.innerHTML;
-
-                    //将其他的type设置为elevated，自己的type设置为filled
-                    const allpresetItems = document.querySelectorAll('#preset-item');
-                    allpresetItems.forEach(item => {
-                        item.type = 'elevated';
-                    }
-                    );
-                    presetItem.type = 'filled';
-
-                    const presetName = presetItem.innerHTML;
-                    const selectedMods = await ipcRenderer.invoke('load-preset', presetName);
-                    document.querySelectorAll('.mod-item').forEach(item => {
-                        //debug
-                        console.log(`item.id:${item.id} selectedMods:${selectedMods.includes(item.id)}`);
-                        if (item.checked != selectedMods.includes(item.id)) {
-                            clickModItem(item);
-                        }
-                    });
-                }
-            });
-        }
-        );
     };
 
+    //使用事件委托处理点击事件，减少事件绑定次数
+    presetContainer.addEventListener('click', async (event) => {
+        const presetItem = event.target.closest('#preset-item');
+        if (presetItem) {
+            //如果是编辑模式，则删除预设
+            if (editMode) {
+                //innerHtml 现在包含了删除按钮，所以不再是presetName，而是presetName+删除按钮，所以需要提取presetName
+                const presetName = presetItem.innerHTML.split('<')[0].trim();
+                ipcRenderer.invoke('delete-preset', presetName);
+                //将自己的父元素隐藏
+                presetItem.style.display = 'none';
+                //debug
+                console.log("delete presetItem" + presetItem.innerHTML);
+            }
+            else {
+                console.log("🟢load presetItem " + presetItem.innerHTML);
+
+                //如果当前的presetItem和currentPreset相同，则不进行操作
+                if (currentPreset == presetItem.innerHTML) {
+                    return;
+                }
+
+                currentPreset = presetItem.innerHTML;
+
+                //将其他的type设置为elevated，自己的type设置为filled
+                const allpresetItems = document.querySelectorAll('#preset-item');
+                allpresetItems.forEach(item => {
+                    item.type = 'elevated';
+                }
+                );
+                presetItem.type = 'filled';
+
+                const presetName = presetItem.innerHTML;
+                const selectedMods = await ipcRenderer.invoke('load-preset', presetName);
+                document.querySelectorAll('.mod-item').forEach(item => {
+                    //debug
+                    //console.log(`item.id:${item.id} selectedMods:${selectedMods.includes(item.id)}`);
+                    if (item.checked != selectedMods.includes(item.id)) {
+                        clickModItem(item);
+                    }
+                });
+            }
+        }
+    });
 
     function filterMods() {
         document.querySelectorAll('.mod-item').forEach(item => {
@@ -385,10 +458,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         modCharacters.forEach(character => {
             const filterItem = document.createElement('s-chip');
             filterItem.type = 'default';
+            filterItem.id = character;
             filterItem.selectable = true;
-            filterItem.innerHTML = `<p style='width:fit-content; font-weight: bold;'>${character}</p>`;
-            filterItem.style = 'margin-right: 5px;';
-            filterItem.addEventListener('click', () => {
+            filterItem.innerHTML = `<p>${character}</p>`;
+            modFilter.appendChild(filterItem);
+        }
+        );
+
+        //使用事件委托处理点击事件，减少事件绑定次数
+        modFilter.addEventListener('click', (event) => {
+            const filterItem = event.target.closest('s-chip');
+            if (filterItem) {
+                const character = filterItem.id;
                 //debug
                 console.log("clicked filterItem " + character);
                 modFilterCharacter = character;
@@ -396,23 +477,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //将自己的type设置为filled，其他的设置为default
                 const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
                 allfilterItems.forEach(item => {
-                    //获取当前的innerHTML内的p元素内的文本
-                    let itemCharacter = item.innerHTML.split('<')[1].split('>')[1].split('<')[0];
-                    if (itemCharacter != character) {
-                        item.type = 'default';
-                        //debug
-                        console.log(`set ${item.innerHTML} to default`);
-                    }
-                    else {
-                        item.type = 'filled-tonal';
-                        //debug
-                        console.log(`set ${item.innerHTML} to filled`);
-                    }
+                    item.type = 'default';
                 });
-
+                filterItem.type = 'filled-tonal';
                 filterMods();
-            });
-            modFilter.appendChild(filterItem);
+            }
         }
         );
     }
@@ -459,60 +528,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         modInfoImage.src = modImagePath;
     }
 
-    const createTapeButton = document.getElementById('create-tape');
-    createTapeButton.addEventListener('click', () => {
-        const tape = createTape('test', 'test', './src/tape-cover.png');
-        document.querySelector('.swiper-container').appendChild(tape);
-    });
-    function createTape(title, subtitle, imgPath) {
-        const tape = document.createElement('div');
-        tape.className = 'tape-container';
-        tape.innerHTML = `
-      <!-- -磁带开始 -->
-      <div class="tape-container">
-        <!-- 点击区域 -->
-        <div class="tape-click-area">
-        </div>
-        <!-- -磁带脊柱 -->
-        <div class='tape-spine'>
-          <img src="./src/tape-spine.png" alt="tape-spine">
-          <div class="tape-spine-cover  fit-parent-width" style="background-image: url(${imgPath});">
-            <!-- 白色衬底 -->
-            <div class="tape-spine-cover-mask"></div>
-          </div>
-          <p class="tape-spine-text font-num">${title}</p>
-        </div>
-        <!-- -磁带封面 -->
-        <!-- 结构为：tape-box > tape-cover-container -->
-        <!-- tape-box > tape-body -->
-        <div class="tape-box">
-          <div class="tape-cover-container">
-            <img src="./src/tape-mask.png" alt="tape-mask">
-            <div class="tape-cover fit-parent-width" style="background-image: url(${imgPath});">
-            </div>
-            <!-- 文本 -->
-            <p class="tape-cover-title font-num">${title}</p>
-            <p class="tape-cover-subtitle font-hongmeng">${subtitle}</p>
-          </div>
-          <!-- -磁带本体 -->
-          <div class="tape-body fit-parent-width"></div>
-        </div>
-      </div>
-      <!-- -磁带结束 -->
-        `;
 
-        //事件绑定
-        initTapeEvent(tape);
-        return tape;
-    }
 
     //-----------------------------事件监听--------------------------------
     let editMode = false;
 
     //-控制按钮
     settingsShowButton.addEventListener('click', async () => {
-        // 显示或隐藏settingsDrawer
-        settingsDialog.show();
+        // 显示或隐藏settingsDialog
+        showDialog(settingsDialog);
 
         //显示主题为当前主题
         const theme = localStorage.getItem('theme') || 'dark';
@@ -557,7 +581,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
 
 
-    //-dialog相关
+    //-setting-dialog相关
     rootdirConfirmButton.addEventListener('click', async () => {
         //debug
         console.log("rootdir: " + rootdirInput.value);
@@ -602,8 +626,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
         const unknownDirs = fs.readdirSync(modLoaderDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
         if (unknownDirs.length > 0) {
-            const dialog = document.getElementById('unknown-mod-dialog');
-            dialog.show();
+            //显示未知文件夹对话框
+            showDialog(unknownModDialog);
             //显示未知文件夹
             const unknownModList = document.getElementById('unknown-mod-list');
             unknownModList.innerHTML = '';
@@ -616,8 +640,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         else await ipcRenderer.invoke('apply-mods', selectedMods);
     })
 
-    const unknownModConfirmButton = document.getElementById('unknown-mod-confirm'); 
-    const unknownModIgnoreButton = document.getElementById('unknown-mod-ignore'); 
+    const unknownModConfirmButton = document.getElementById('unknown-mod-confirm');
+    const unknownModIgnoreButton = document.getElementById('unknown-mod-ignore');
     unknownModConfirmButton.addEventListener('click', async () => {
         //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹，跳过已经存在的文件夹
         const modLoaderDir = path.join(rootdir, 'Mods');
@@ -692,8 +716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     presetAddButton.addEventListener('click', async () => {
         //显示添加预设对话框
         presetNameInput.value = '';
-        const dialog = document.getElementById('add-preset-dialog');
-        dialog.show();
+        showDialog(addPresetDialog);
     }
     );
 
@@ -730,149 +753,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.clear();
     });
 
-    //-轮换预设卡片相关
-    const translateToDegree = (tape, rotationAngle) => {
-        const spine = tape.querySelector('.tape-spine');
-        const box = tape.querySelector('.tape-box');
-        //debug
-        console.log(`tape:${tape}spine:${spine} box:${box}`);
-        //打印tape的所有子元素
-        //debug
-        console.log(tape.children);
-
-        spine.animate([
-            { transform: `${spine.style.transform}` },
-            { transform: `perspective( 500px ) rotateY(${rotationAngle}deg)` },
-        ], {
-            duration: 700,
-            easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-            iterations: 1
-        });
-
-        spine.style.transform = `perspective( 500px ) rotateY(${rotationAngle}deg)`;
-
-        box.animate([
-            { transform: `${box.style.transform}` },
-            { transform: `perspective( 500px ) rotateY(${90 + rotationAngle}deg)` },
-        ], {
-            duration: 700,
-            easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-            iterations: 1
-        });
-
-        box.style.transform = `perspective( 500px ) rotateY(${90 + rotationAngle}deg)`;
-
-        //调整可点击区域
-        const tapeClickArea = tape.querySelector('.tape-click-area');
-        //整个形状围绕 20%  处旋转，所以说点击区域从 0% 到 20% 为tape-cover，从 20% 到 100% 为tape-spine
-        //其中，因为旋转，左边缘会向右移动，实际宽度为 20% * cos(rotationAngle) + 80%*sin(rotationAngle)
-        const spineOriginalWidth = 70;
-        const boxOriginalWidth = 240;
-        tapeClickArea.style.width = `${spineOriginalWidth * Math.abs(Math.cos(rotationAngle * Math.PI / 180)) + boxOriginalWidth * Math.abs(Math.sin(rotationAngle * Math.PI / 180))}px`;
-        tapeClickArea.style.left = `${spineOriginalWidth - spineOriginalWidth * Math.abs(Math.cos(rotationAngle * Math.PI / 180))}px`;
-
-        // tape.style.marginLeft = `${-spineWidth*(1-Math.abs(Math.cos(rotationAngle*Math.PI/180))) + 10}px`;
-        // tape.style.marginRight = `${-boxWidth*(1-Math.abs(Math.sin(rotationAngle*Math.PI/180))) + 10}px`;
-        //debug
-        //console.log(`marginLeft:${spineWidth-spineWidth*Math.abs(Math.cos(rotationAngle*Math.PI/180))} marginRight:${boxWidth - boxWidth*Math.abs(Math.sin(rotationAngle*Math.PI/180))}`);
-
-        setTimeout(() => {
-            let spineWidth = spine.getBoundingClientRect().width;
-            let boxWidth = box.getBoundingClientRect().width;
-            tapeClickArea.style.width = `${spineWidth + boxWidth}px`;
-            tapeClickArea.style.left = `${spineOriginalWidth - spineWidth}px`;
-        }, 700);
-    }
-
-    function initTapeEvent(container) {
-        const mouseoverEvent = () => {
-            //将其子元素tape-cover左移，tape-body右移，以展示tape-body的内容
-            container.querySelector('.tape-cover-container').style.transform = 'translateX(-40%)';
-            //增加过渡动画
-            container.querySelector('.tape-cover-container').style.transition = 'transform 0.5s';
-
-            //spine也左移
-            //container.querySelector('.tape-spine').style.transform = 'translateX(-40%)';
-            //增加过渡动画
-            container.querySelector('.tape-spine').style.transition = 'transform 0.5s';
-
-            container.querySelector('.tape-body').style.transform = 'translateX(40%)';
-            //增加过渡动画
-            container.querySelector('.tape-body').style.transition = 'transform 0.5s';
-        }
-
-        const mouseoutEvent = () => {
-            container.querySelector('.tape-cover-container').style.transform = 'translateX(0)';
-            container.querySelector('.tape-spine').style.transform += 'translateX(0)';
-            container.querySelector('.tape-body').style.transform = 'translateX(0)';
-        }
-
-        container.clicked = false;
-        const offAngle = 0;
-        const onAngle = -90;
-        translateToDegree(container, offAngle);
-
-        const tapeClickArea = container.querySelector('.tape-click-area');
-        //点击时，切换展示 侧面tape-spine 或者 tape-cover。
-        tapeClickArea.addEventListener('click', () => {
-            //debug
-            console.log("clicked tapeContainer");
-
-            if (!container.clicked) {
-                //spine向后折叠，cover向前展开，container向左移动
-                translateToDegree(container, onAngle);
-
-                container.style.transform = 'translateX(-50%)';
-                container.style.transition = 'transform 0.7s';
-
-
-                //延时0.7s，增加鼠标移入移出事件
-                mouseoutEvent();
-
-                setTimeout(() => {
-                    container.addEventListener('mouseover', mouseoverEvent);
-                    container.addEventListener('mouseout', mouseoutEvent);
-                    container.clicked = true;
-                }, 700);
-
-            }
-            else {
-                //移除鼠标移入移出事件
-                container.removeEventListener('mouseover', mouseoverEvent);
-                container.removeEventListener('mouseout', mouseoutEvent);
-                mouseoutEvent();
-
-
-                //spine向前展开，cover向后折叠
-                translateToDegree(container, offAngle);
-
-                container.style.transform = 'translateX(0)';
-                container.style.transition = 'transform 0.7s';
-
-                container.clicked = false;
-            }
-        }
-        );
-    }
-
-    const tapeContainer = document.querySelectorAll('.tape-container');
-    tapeContainer.forEach(container => initTapeEvent(container));
-
-    const tapeClickArea = document.querySelectorAll('.tape-click-area');
-    tapeClickArea.forEach(area => {
-    }
-    );
-
-    //当鼠标移出swipe-container时，恢复tape-container的缩放比例
-    const swiperContainer = document.querySelector('.swiper-container');
-    swiperContainer.onmouseleave = () => {
-        const tapeContainer = document.querySelectorAll('.tape-container');
-        for (let i = 0; i < tapeContainer.length; i++) {
-            tapeContainer[i].style.transform = 'scale(1)';
-            tapeContainer[i].style.transition = 'transform 0.5s';
-        }
-    }
-
     //-mod info 相关
     infoShowButton.addEventListener('click', async () => {
         //显示或隐藏modInfoDrawer
@@ -900,14 +780,174 @@ document.addEventListener('DOMContentLoaded', async () => {
         await ipcRenderer.invoke('open-mod-folder', currentMod);
     });
 
+    //用来比较modInfo的内容是否有改变，如果有改变则显示保存按钮
+    let currentModInfo;
+    let currentImagePath;
+    let tempModInfo;
+    let tempImagePath;
     //编辑mod.json文件
     editModInfoButton.addEventListener('click', async () => {
         //debug
         console.log("clicked editModInfoButton");
+        // if (currentMod == '') {
+        //     snack('Please select a mod');
+        //     return;
+        // }
+        // await ipcRenderer.invoke('edit-mod-info', currentMod);
+
+        //改为程序内编辑，而不是打开外部编辑器
         if (currentMod == '') {
             snack('Please select a mod');
             return;
         }
-        await ipcRenderer.invoke('edit-mod-info', currentMod);
+        //打开编辑对话框
+        //获取mod的信息，填充到对话框中
+        const modInfo = await ipcRenderer.invoke('get-mod-info', currentMod);
+        //进行深拷贝，以便比较是否有改变
+        currentModInfo = JSON.parse(JSON.stringify(modInfo));
+        tempModInfo = JSON.parse(JSON.stringify(modInfo));
+        currentImagePath = getModImagePath(currentMod);
+        tempImagePath = getModImagePath(currentMod);
+
+        //debug
+        console.log(`modInfo:${modInfo}`);
+        //填充modInfoDialog
+        editModInfoDialog.querySelector('#editDialog-mod-info-name').textContent = currentMod;
+        editModInfoDialog.querySelector('#editDialog-mod-info-character').textContent = modInfo.character ? modInfo.character : 'Unknown';
+
+        editModInfoDialog.querySelector('#editDialog-mod-info-image').src = getModImagePath(currentMod);
+
+        editModInfoDialog.querySelector('#edit-mod-name').textContent = currentMod;
+        editModInfoDialog.querySelector('#edit-mod-character').value = modInfo.character ? modInfo.character : '';
+        editModInfoDialog.querySelector('#edit-mod-description').value = modInfo.description ? modInfo.description : '';
+
+
+        //显示对话框
+        showDialog(editModInfoDialog);
+    });
+
+    //打开mod文件夹
+    const editModInfoOpenFolderButton = document.getElementById('edit-mod-name');
+    editModInfoOpenFolderButton.addEventListener('click', async () => {
+        //打开mod文件夹
+        await ipcRenderer.invoke('open-mod-folder', currentMod);
+        //要求用户手动刷新
+        snack('Please refresh the mod list after editing the mod');
+        showDialog(refreshDialog);
+    }
+    );
+
+
+    //获取选择的图片
+    const editModInfoImagePreview = document.getElementById('edit-mod-image-select');
+    editModInfoImagePreview.addEventListener('click', async () => {
+        //debug
+        console.log("clicked editModInfoImagePreview");
+        //打开文件选择对话框，选择图片
+        const imagePath = await ipcRenderer.invoke('select-image');
+
+        //这里只显示，保存在点击保存按钮时才会保存
+        if (imagePath) {
+            //debug
+            console.log(`imagePath:${imagePath}`);
+
+            //显示图片
+            editModInfoDialog.querySelector('#editDialog-mod-info-image').src = imagePath;
+            tempImagePath = imagePath;
+        }
+        else {
+            //debug
+            console.log("no image selected");
+            alert("no image selected");
+        }
+    });
+
+    //保存当前编辑的mod的信息
+    function saveCurrentModInfo() {
+        //debug
+        console.log("clicked saveCurrentModInfo");
+        //保存当前编辑的mod的信息
+        tempModInfo.character = editModInfoDialog.querySelector('#edit-mod-character').value;
+        tempModInfo.description = editModInfoDialog.querySelector('#edit-mod-description').value;
+
+        //将图片保存到mod文件夹下，命名为preview + 后缀名
+        //如果已经存在则覆盖，并且将文件名保存到mod.json文件中
+        const imagePath = tempImagePath;
+        const imageExt = path.extname(imagePath);
+        const modImageName = 'preview' + imageExt;
+        const modImageDest = path.join(rootdir, 'modResourceBackpack', currentMod, modImageName);
+
+        //复制图片
+        console.log(`imagePath:${imagePath} modImageDest:${modImageDest}`);
+        fs.copyFileSync(imagePath, modImageDest);
+
+        //保存到tempModInfo中
+        tempModInfo.imagePath = modImageName;
+
+        //debug
+        console.log(`tempModInfo:${tempModInfo}`);
+        //保存到mod.json文件中
+        let modInfoPath = path.join(rootdir, 'modResourceBackpack', currentMod, 'mod.json');
+        fs.writeFileSync(modInfoPath, JSON.stringify(tempModInfo, null, 4));
+        //更新当前的modInfo
+        currentModInfo = tempModInfo;
+        currentImagePath = tempImagePath;
+
+        //提示保存成功
+        snack('Mod info saved successfully');
+        //关闭对话框
+        editModInfoDialog.dismiss();
+        //刷新mod列表
+        loadModList().then(() => { refreshModFilter(); });
+    }
+
+    const editModInfoSaveButton = document.getElementById('edit-mod-info-save');
+    editModInfoSaveButton.addEventListener('click', async () => {
+        //如果当前的modInfo和tempModInfo不一样，则保存
+        //保存当前编辑的mod的信息
+        tempModInfo.character = editModInfoDialog.querySelector('#edit-mod-character').value;
+        tempModInfo.description = editModInfoDialog.querySelector('#edit-mod-description').value;
+
+        if (JSON.stringify(currentModInfo) != JSON.stringify(tempModInfo) || tempImagePath != currentImagePath) {
+            saveCurrentModInfo();
+        }
+        else {
+            //debug
+            editModInfoDialog.dismiss();
+            console.log("modInfo not changed");
+            //打印当前的modInfo和tempModInfo的各个属性
+            //console.log(`currentModInfo: character:${currentModInfo.character} description:${currentModInfo.description} imagePath:${currentModInfo.imagePath}`);
+            //console.log(`tempModInfo: character:${tempModInfo.character} description:${tempModInfo.description} imagePath:${tempModInfo.imagePath}`);
+        }
+    });
+
+    //如果取消了编辑，但是有修改，提示是否保存
+    const editModInfoCancleButton = document.getElementById('edit-mod-info-cancle');
+    editModInfoCancleButton.addEventListener('click', async () => {
+        //窗口消失
+        editModInfoDialog.dismiss();
+    });
+    editModInfoDialog.addEventListener('dismiss', async () => {
+        //debug
+        console.log("editModInfoDialog dismissed");
+        tempModInfo.character = editModInfoDialog.querySelector('#edit-mod-character').value;
+        tempModInfo.description = editModInfoDialog.querySelector('#edit-mod-description').value;
+
+        //打印当前的modInfo和tempModInfo的各个属性
+        console.log(`currentModInfo: character:${currentModInfo.character} description:${currentModInfo.description} imagePath:${currentModInfo.imagePath}`);
+        console.log(`tempModInfo: character:${tempModInfo.character} description:${tempModInfo.description} imagePath:${tempModInfo.imagePath}`);
+        if (JSON.stringify(currentModInfo) != JSON.stringify(tempModInfo) || tempImagePath != currentImagePath) {
+            //提示是否保存
+            showDialog(ifSaveChangeDialog);
+        }
+    }
+    );
+
+    const saveChangeConfirmButton = document.getElementById('save-change-confirm');
+    saveChangeConfirmButton.addEventListener('click', async () => {
+        //保存当前的modInfo
+        saveCurrentModInfo();
+        //关闭对话框
+        editModInfoDialog.dismiss();
     });
 });

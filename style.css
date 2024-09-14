@@ -1,0 +1,187 @@
+/* -这里是特定于组件的样式，全局样式请在style-component.css中定义- */
+@import url(sober-theme.css);
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    -webkit-overflow-scrolling: touch;
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+
+
+:not(:defined) {
+    display: none;
+}
+
+#app {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0px;
+    height: 100%;
+    background-image: url(./src/background.png);
+    background-size: cover;
+}
+
+
+#preset-list-drawer {
+    width: 200px;
+    height: 100%;
+}
+
+#preset-container {
+    width: 100%;
+}
+
+#preset-item {
+    margin-top: 10px;
+    width: 83%;
+}
+
+#preset-item-add,
+#preset-item-edit {
+    margin-top: 10px;
+    width: 83%;
+}
+
+#main-page {
+    width: 80%;
+}
+
+#mod-filter {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 0px;
+}
+
+#mod-filter>* {
+    margin-right: 5px;
+}
+
+#mod-filter>s-chip>p {
+    width: fit-content;
+    font-weight: bold;
+}
+
+#mod-container {
+    display: grid;
+    grid-column: span 4;
+    grid-column-start: span 4;
+    grid-column-end: auto;
+    grid-template-columns: repeat(auto-fill, 250px);
+    grid-gap: 20px;
+    align-items: center;
+    justify-content: start;
+    justify-items: center;
+}
+
+.mod-item {
+    width: 250px;
+    height: 350px;
+    margin-bottom: -5px;
+    will-change: transform;
+}
+
+.mod-item[checked="true"] {
+    perspective: 500px;
+    background-color: var(--s-color-surface-container-low);
+    border: 5px solid transparent;
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+    background-image: linear-gradient(to right, var(--s-color-surface-container-low), var(--s-color-surface-container-low)), linear-gradient(90deg, var(--s-color-primary), #e4d403);
+    box-sizing: border-box;
+    transform:rotate3d(1,1,0,0deg) scale(0.95) ;
+}
+
+.mod-item[checked="false"] {
+    perspective: 500px;
+    background-color: var(--s-color-surface-container-low);
+    border: 5px solid transparent;
+    border: "";
+    transform: rotate3d(1,1,0,0deg);
+}
+
+.mod-item img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+.mod-item #mod-item-headline {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 12px;
+}
+
+.mod-item #mod-item-subhead {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: -2px;
+}
+
+.mod-item #mod-item-text {
+    height: 100px;
+    margin-top: -10px;
+    border: 0;
+}
+
+.mod-item s-scroll-view {
+    height: 100%;
+    width: 110%;
+}
+
+.mod-item .placeholder {
+    height: 30px;
+    border: 0;
+}
+
+#apply-btn {
+    position: relative;
+    bottom: 70px;
+    right: 50px;
+    font-size: 25px;
+    height: 50px;
+    width: fit-content;
+    align-items: center;
+}
+
+.preset-list {
+    margin: 10px 10px;
+}
+
+.mod-item,
+.preset-item {
+    margin: 5px 0;
+}
+
+.fit-parent-width {
+    height: 100%;
+    width: 0;
+    padding-left: 100%;
+    overflow: hidden;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.fit-image-width {
+    height: 100%;
+    width: fit-content;
+    object-fit: cover;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+}

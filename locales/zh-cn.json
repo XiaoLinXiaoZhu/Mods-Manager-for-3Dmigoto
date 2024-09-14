@@ -41,6 +41,11 @@
   "apply": "应用配置",
   "open-mod-dir": "打开MOD文件夹",
   "edit-mod-info": "编辑MOD信息",
+  "edit-mod-info-tip":"Mod名称就是文件夹名称，点击下方按钮前往文件夹处修改",
+  "mod-info-name": "MOD名称",
+  "mod-info-character": "角色名称",
+  "edit-mod-image-preview": "选择MOD图片预览",
+  "save": "保存",
   "close-window": "关闭窗口",
   "all": "全部"
 }

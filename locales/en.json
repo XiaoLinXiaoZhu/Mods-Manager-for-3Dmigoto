@@ -41,6 +41,11 @@
     "apply": "Apply Configuration",
     "open-mod-dir": "Open MOD Folder",
     "edit-mod-info": "Edit MOD Info",
+    "mod-info-name": "MOD Name",
+    "edit-mod-info-tip": "The Mod name is the folder name, click the button below to go to the folder to modify",
+    "mod-info-character": "character Name",
+    "edit-mod-image-preview": "Select MOD Cover",
+    "save": "Save",
     "close-window": "Close Window",
     "all": "All"
   }

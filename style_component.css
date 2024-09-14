@@ -1,0 +1,95 @@
+
+/* -=========这里是比较通用的样式，能够在多个组件中使*/
+/* -通常叠加在组件的样式之上 */
+
+@font-face {
+    font-family: "Impact";
+    src: url(./fonts/zzz-eng.TTF) format("truetype");
+    font-weight: normal
+}
+
+@font-face {
+    font-family: "hongmengti";
+    src: url(./fonts/zzz-chs.ttf) format("truetype");
+    font-weight: bold
+}
+
+.font-num {
+    font-family: Impact, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif
+}
+
+.font-hongmeng {
+    font-family: hongmengti, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif
+}
+
+
+
+.OO-parallelogram {
+    transform: skew(-20deg);
+    border-radius: 10px;
+}
+
+.OO-parallelogram * {
+    display: block;
+    transform: skew(20deg);
+}
+
+.OO-colunm {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+}
+
+.OO-colunm-center {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+
+/* -=============组件样式，实现自定义组件的默认样式=============== */
+s-chip {
+    transform: skew(-20deg);
+    position: relative;
+    height: fit-content;
+}
+
+s-chip p {
+    display: block;
+    transform: skew(20deg);
+    width: fit-content;height: fit-content;line-height: 1;margin: 10px 0px;
+}
+
+s-tooltip p {
+    margin: 0;
+    line-height: 1;
+}
+
+s-divider {
+    width: 83%;
+    margin: 10px 0;
+}
+
+s-card {
+    height: 350px;
+    margin: 10px 0;
+}
+
+s-dialog {
+    display: none;
+}
+
+
+img {
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+}
+
+p {
+    height: fit-content;
+    width: fit-content;
+}
