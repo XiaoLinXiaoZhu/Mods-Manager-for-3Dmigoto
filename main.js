@@ -125,7 +125,7 @@ function createWindow() {
   const win = new BrowserWindow({
     setMenuBarVisibility: false,
     frame: false,
-    width: 1200,
+    width: 1050,
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'renderer-preload.js'),
