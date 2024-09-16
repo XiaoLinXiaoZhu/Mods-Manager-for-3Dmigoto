@@ -75,6 +75,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initConfigButton = document.getElementById('init-config-button');
     const refreshDialog = document.getElementById('refresh-dialog');
 
+    // Window size and position
+    const bounds = localStorage.getItem('bounds');
+    await ipcRenderer.invoke('set-bounds', bounds);
+
+    // Window fullscreen
+    let isFullScreen = localStorage.getItem('fullscreen') === 'true';
+    if(isFullScreen) {
+        toggleFullscreen();
+    }
+
     //- 初始化
     // 检测是否是第一次打开
     const firstOpen = localStorage.getItem('firstOpen');
@@ -569,8 +579,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     //-全屏按钮
-    fullScreenButton.addEventListener('click', async () => {
-        const isFullScreen = await ipcRenderer.invoke('toggle-fullscreen');
+    fullScreenButton.addEventListener('click', toggleFullscreen);
+
+    async function toggleFullscreen() {
+        isFullScreen = await ipcRenderer.invoke('toggle-fullscreen');
         if (!isFullScreen) {
             fullScreenSvgpath.setAttribute('d', 'M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z');
         }
@@ -578,8 +590,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             fullScreenSvgpath.setAttribute('d', 'M240-120v-120H120v-80h200v200h-80Zm400 0v-200h200v80H720v120h-80ZM120-640v-80h120v-120h80v200H120Zm520 0v-200h80v120h120v80H640Z');
         }
     }
-    );
-
 
     //-setting-dialog相关
     rootdirConfirmButton.addEventListener('click', async () => {
@@ -949,5 +959,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveCurrentModInfo();
         //关闭对话框
         editModInfoDialog.dismiss();
+    });
+
+    window.addEventListener('unload', function(event) {
+        localStorage.setItem('fullscreen', isFullScreen);
+
+        if(!isFullScreen) {
+            localStorage.setItem('bounds', JSON.stringify({
+                x: window.screenX,
+                y: window.screenY,
+                width: window.outerWidth,
+                height: window.innerHeight,
+            }));
+        }
     });
 });
