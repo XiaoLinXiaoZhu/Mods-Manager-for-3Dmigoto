@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         ////console.log("clicked modItem " + modItem.id);
         //显示mod的信息
-        
+
 
         //获取鼠标相对于卡片的位置（百分比）
         let x, y, rotateX, rotateY;
@@ -179,8 +179,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // x = 1;
                 // y = 0;
                 //随机生成x和y
-                x = Math.random()/5 +0.7;
-                y = Math.random()/5 ;
+                x = Math.random() / 5 + 0.7;
+                y = Math.random() / 5;
             }
         }
         //根据鼠标相对于卡片的位置设置反转程度
@@ -297,73 +297,122 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fragment = document.createDocumentFragment();
 
         mods.forEach(async (mod, index) => {
-            if (index < modContainerCount) {
-                //存在现有的card，直接替换内容
-                //判断是否被选中，如果被选中则切换为未选中状态
-                modContainer.children[index].checked = false;
-                modContainer.children[index].setAttribute('checked', 'false');
-
-                const modItem = modContainer.children[index];
-                const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
-                var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
-                var modImagePath = getModImagePath(mod);
-                var modDescription = modInfo.description ? modInfo.description : 'No description';
-                modItem.id = mod;
-                modItem.character = modCharacter;
-                modItem.querySelector('#mod-item-headline').textContent = mod;
-                modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
-                modItem.querySelector('img').src = modImagePath;
-                modItem.querySelector('img').alt = mod;
-                modItem.querySelector('#mod-item-description').textContent = modDescription;
-
-                //debug
-                console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
+            const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+            var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
+            if (!modCharacters.includes(modCharacter)) {
+                modCharacters.push(modCharacter);
             }
-            else {
-                //不存在现有的card，添加新的card
-                const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
-                var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
-                if (!modCharacters.includes(modCharacter)) {
-                    modCharacters.push(modCharacter);
-                }
-                var modImagePath = getModImagePath(mod);
-                var modDescription = modInfo.description ? modInfo.description : 'No description';
-                const modItem = document.createElement('s-card');
-                modItem.className = 'mod-item';
-                modItem.checked = false;
-                modItem.clickable = true;
-                modItem.id = mod;
-                modItem.character = modCharacter;
-                modItem.style = '';
+
+            var modImagePath = getModImagePath(mod);
+            var modDescription = modInfo.description ? modInfo.description : 'No description';
+
+            var modItem;
+            if(index<modContainerCount){
+                modItem = modContainer.children[index];
+            }
+            else{
+                modItem = document.createElement('s-card');
                 modItem.innerHTML = `
-                    <div slot="image" style="height: 200px;">
-                        <img src="${modImagePath}" alt="${mod}" loading="lazy"/>
+                <div slot="image" style="height: 200px;">
+                        <img src="" alt="" loading="lazy"/>
                     </div>
-                    <div slot="headline" id="mod-item-headline">${mod}</div>
+                    <div slot="headline" id="mod-item-headline"></div>
                     <div slot="subhead" id="mod-item-subhead">
-                        ${modCharacter}
                     </div>
                     <div slot="text" id="mod-item-text">
                         <s-scroll-view>
-                            <p id="mod-item-description">${modDescription}</p>
+                            <p id="mod-item-description"></p>
                             <div class="placeholder"></div>
                         </s-scroll-view>
                     </div>
-                `;
+                `
                 fragment.appendChild(modItem);
-                if (fragment.children.length == mods.length - modContainerCount) {
-                    modContainer.appendChild(fragment);
-                    //debug
-                    console.log(`🟢successfully loaded mods`);
-                }
+            }
+
+            modItem.className = 'mod-item';
+            modItem.checked = false;
+            modItem.clickable = true;
+            modItem.id = mod;
+            modItem.character = modCharacter;
+            modItem.style = '';
+            modItem.querySelector('img').src = modImagePath;
+            modItem.querySelector('img').alt = mod;
+            modItem.querySelector('#mod-item-headline').textContent = mod;
+            modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
+            modItem.querySelector('#mod-item-description').textContent = modDescription;
+
+            //debug
+            //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
+            if(fragment.children.length == mods.length - modContainerCount){
+                modContainer.appendChild(fragment);
             }
         });
+
         //删除多余的modItem
         if (mods.length < modContainerCount) {
             for (let i = mods.length; i < modContainerCount; i++) {
                 modContainer.removeChild(modContainer.children[mods.length]);
             }
         }
+
+
+
+        //     if (index < modContainerCount) {
+        //         //存在现有的card，直接替换内容
+        //         //判断是否被选中，如果被选中则切换为未选中状态
+        //         modContainer.children[index].checked = false;
+        //         modContainer.children[index].setAttribute('checked', 'false');
+
+        //         const modItem = modContainer.children[index];
+        //         modItem.id = mod;
+        //         modItem.character = modCharacter;
+        //         modItem.querySelector('#mod-item-headline').textContent = mod;
+        //         modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
+        //         modItem.querySelector('img').src = modImagePath;
+        //         modItem.querySelector('img').alt = mod;
+        //         modItem.querySelector('#mod-item-description').textContent = modDescription;
+
+        //         //debug
+        //         console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
+        //     }
+        //     else {
+        //         //不存在现有的card，添加新的card
+        //         const modItem = document.createElement('s-card');
+        //         modItem.className = 'mod-item';
+        //         modItem.checked = false;
+        //         modItem.clickable = true;
+        //         modItem.id = mod;
+        //         modItem.character = modCharacter;
+        //         modItem.style = '';
+        //         modItem.innerHTML = `
+        //             <div slot="image" style="height: 200px;">
+        //                 <img src="${modImagePath}" alt="${mod}" loading="lazy"/>
+        //             </div>
+        //             <div slot="headline" id="mod-item-headline">${mod}</div>
+        //             <div slot="subhead" id="mod-item-subhead">
+        //                 ${modCharacter}
+        //             </div>
+        //             <div slot="text" id="mod-item-text">
+        //                 <s-scroll-view>
+        //                     <p id="mod-item-description">${modDescription}</p>
+        //                     <div class="placeholder"></div>
+        //                 </s-scroll-view>
+        //             </div>
+        //         `;
+        //         fragment.appendChild(modItem);
+        //         if (fragment.children.length == mods.length - modContainerCount) {
+        //             modContainer.appendChild(fragment);
+        //             //debug
+        //             console.log(`🟢successfully loaded mods`);
+        //         }
+        //     }
+        // });
+        // //删除多余的modItem
+        // if (mods.length < modContainerCount) {
+        //     for (let i = mods.length; i < modContainerCount; i++) {
+        //         modContainer.removeChild(modContainer.children[mods.length]);
+        //     }
+        // }
     }
 
     //使用事件委托处理点击事件，减少事件绑定次数
@@ -458,6 +507,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         modCharacters.forEach(character => {
             const filterItem = document.createElement('s-chip');
             filterItem.type = 'default';
+            filterItem.class = 'font-hongmeng';
             filterItem.id = character;
             filterItem.selectable = true;
             filterItem.innerHTML = `<p>${character}</p>`;
@@ -638,6 +688,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
         else await ipcRenderer.invoke('apply-mods', selectedMods);
+
+        //使用s-snackbar显示提示
+        snack('Mods applied');
     })
 
     const unknownModConfirmButton = document.getElementById('unknown-mod-confirm');
@@ -785,6 +838,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentImagePath;
     let tempModInfo;
     let tempImagePath;
+
     //编辑mod.json文件
     editModInfoButton.addEventListener('click', async () => {
         //debug
@@ -879,7 +933,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //复制图片
         console.log(`imagePath:${imagePath} modImageDest:${modImageDest}`);
-        fs.copyFileSync(imagePath, modImageDest);
+        //如果是默认图片则不复制
+        if (imagePath != path.join(__dirname, 'default.png'))
+            fs.copyFileSync(imagePath, modImageDest);
 
         //保存到tempModInfo中
         tempModInfo.imagePath = modImageName;

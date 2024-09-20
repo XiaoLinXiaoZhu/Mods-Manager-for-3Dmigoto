@@ -1,4 +1,3 @@
-
 /* -=========这里是比较通用的样式，能够在多个组件中使*/
 /* -通常叠加在组件的样式之上 */
 
@@ -15,11 +14,13 @@
 }
 
 .font-num {
-    font-family: Impact, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif
+    font-family: Impact, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif;
+    font-weight: 100;
 }
 
 .font-hongmeng {
-    font-family: hongmengti, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif
+    font-family: hongmengti, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif;
+    font-weight: 100;
 }
 
 
@@ -49,6 +50,21 @@
     justify-content: flex-start;
 }
 
+div.OO-colorfull-border {
+    animation: huerotate 6s infinite linear;
+    filter: hue-rotate(360deg);
+}
+
+@keyframes huerotate {
+    0% {
+        filter: hue-rotate(0deg);
+    }
+
+    100% {
+        filter: hue-rotate(360deg);
+    }
+}
+
 
 /* -=============组件样式，实现自定义组件的默认样式=============== */
 s-chip {
@@ -60,7 +76,10 @@ s-chip {
 s-chip p {
     display: block;
     transform: skew(20deg);
-    width: fit-content;height: fit-content;line-height: 1;margin: 10px 0px;
+    width: fit-content;
+    height: fit-content;
+    line-height: 1;
+    margin: 10px 0px;
 }
 
 s-tooltip p {
@@ -75,12 +94,13 @@ s-divider {
 
 s-card {
     height: 350px;
-    margin: 10px 0;
+    margin: 6px 0;
+    border-radius: 0px 30px 0px 30px;
 }
 
-s-dialog {
+/* s-dialog {
     display: none;
-}
+} */
 
 
 img {

@@ -83,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     //- 内部函数
     const showDialog = (index) => {
+        //debug
+        console.log(`showDialog(${index})`);
         if (index < sDialogs.length) {
             sDialogs[index].show();
             sDialogs[index].addEventListener('dismissed', () => {
