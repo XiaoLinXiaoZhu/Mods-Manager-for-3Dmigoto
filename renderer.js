@@ -804,6 +804,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         console.log("clicked initConfigButton");
         localStorage.clear();
+
+        //要求用户手动刷新
+        snack('Please refresh the mod list after initializing the configuration');
+        showDialog(refreshDialog);
     });
 
     //-mod info 相关
@@ -978,8 +982,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     //如果取消了编辑，但是有修改，提示是否保存
-    const editModInfoCancleButton = document.getElementById('edit-mod-info-cancle');
-    editModInfoCancleButton.addEventListener('click', async () => {
+    const editModInfocancelButton = document.getElementById('edit-mod-info-cancel');
+    editModInfocancelButton.addEventListener('click', async () => {
         //窗口消失
         editModInfoDialog.dismiss();
     });

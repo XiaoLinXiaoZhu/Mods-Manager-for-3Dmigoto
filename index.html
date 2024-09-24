@@ -391,17 +391,20 @@
             </s-chip>
           </div>
         </div>
+        <s-divider></s-divider>
+
         <div id="settings-get-rootdir">
           <h3 data-translate-key="mod-source-path">模组资源位置 </h2>
             <p data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </p>
 
-            <s-text-field style="display: grid" label="请输入文件保存位置">
+            <s-text-field style="display: grid">
               <input type="text" id="set-rootdir-input">
             </s-text-field>
         </div>
+        <s-divider></s-divider>
+
         <div id="settings-init-config">
           <h3 data-translate-key="init-config"> 初始化配置 </h3>
-          <p data-translate-key="dialog-ask-for-initConfig"> 确定要初始化所有配置吗？ </p>
           <s-button type="outlined" id="init-config-button" style="margin-top: 10px;" data-translate-key="init">
             初始化所有配置
           </s-button>
@@ -410,7 +413,7 @@
 
 
 
-      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancel">取消</s-button>
       <s-button slot="action" type="text" id="set-rootdir-confirm" data-translate-key="confirm">确定</s-button>
     </s-dialog>
 
@@ -422,7 +425,7 @@
           <input type="text" id="add-preset-name">
         </s-text-field>
       </div>
-      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancle">取消</s-button>
+      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancel">取消</s-button>
       <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
     </s-dialog>
 
@@ -507,7 +510,7 @@
           </s-card>
           <s-card style="height: auto;margin-left: 1%;flex: 1;margin-top: 0;">
             <div slot="text" style="height:100%;display: flex;flex-direction: column;justify-content: center;">
-              <s-button type="text" id="edit-mod-info-cancle" data-translate-key="cancle">取消</s-button>
+              <s-button type="text" id="edit-mod-info-cancel" data-translate-key="cancel">取消</s-button>
               <s-button type="text" id="edit-mod-info-save" data-translate-key="save">保存</s-button>
             </div>
 

@@ -112,6 +112,11 @@ release页面里面有两个版本，一个是安装包版本，一个是松散�
 
 ## 后续计划
 
+- Add a compact setting to view installed mods.
+- 添加一个紧凑的设置，以查看已安装的mod。
+
+- 添加保存窗口位置和大小的功能。
+- 添加一个关于页面。
 
 ## 贡献指南
 

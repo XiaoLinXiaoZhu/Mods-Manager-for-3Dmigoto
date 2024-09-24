@@ -80,12 +80,7 @@ body {
     justify-items: center;
 }
 
-.mod-item {
-    width: 250px;
-    height: 350px;
-    margin-bottom: 0px;
-    will-change: transform;
-}
+
 
 .mod-item[checked="true"] {
     perspective: 500px;
@@ -106,6 +101,13 @@ body {
     border: "";
     transform: rotate3d(1,1,0,0deg);
     border-radius: 0px 30px 0px 30px;
+}
+
+.mod-item {
+    width: 250px;
+    height: 350px;
+    margin-bottom: 0px;
+    will-change: transform;
 }
 
 .mod-item img {
