@@ -23,6 +23,8 @@
     "refresh": "Refresh",
     "settings": "Settings",
     "fullscreen": "Fullscreen",
+    "minimize": "Minimize",
+    "compact": "Compact",
     "open-test-page": "Open Experimental Page",
     "creat-preset": "Create Preset",
     "edit-preset": "Edit Preset",

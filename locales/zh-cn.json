@@ -23,6 +23,8 @@
   "refresh": "刷新",
   "settings": "设置",
   "fullscreen": "全屏",
+  "minimize": "最小化",
+  "compact": "紧凑",
   "open-test-page": "打开实验性功能页面",
   "creat-preset": "创建预设",
   "edit-preset": "编辑预设",

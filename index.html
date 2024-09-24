@@ -40,7 +40,7 @@
 
         <div id="placeholder" style="flex: 1;"></div>
         <div id="bottom-buttons"
-          style="width: 83%;display: flex;padding: 15px 21px;flex-direction: row;flex-wrap: nowrap;align-items: center;">
+          style="width: 83%;display: flex;padding: 15px 21px;flex-direction: row;align-items: center;flex-wrap: wrap;">
           <!-- -设置按钮 -->
           <s-tooltip>
             <s-icon-button slot="trigger" id="settings-show-button">
@@ -93,6 +93,17 @@
               </s-icon>
             </s-icon-button>
             <p data-translate-key="refresh">刷新</p>
+          </s-tooltip>
+          <!-- -折叠模式开关 -->
+           <s-tooltip>
+            <s-icon-button slot="trigger" id="compact-mode-button">
+              <s-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="m356-160-56-56 180-180 180 180-56 56-124-124-124 124Zm124-404L300-744l56-56 124 124 124-124 56 56-180 180Z"></path>
+                </svg>
+              </s-icon>
+            </s-icon-button>
+            <p data-translate-key="compact">折叠</p>
 
         </div>
 
@@ -154,7 +165,7 @@
         </div>
         <!-- -模组列表 -->
         <s-scroll-view class="mod-list" style="margin-left: 10px;">
-          <div id="mod-container" style="width: 100%">
+          <div id="mod-container" style="width: 100%" compact="true">
             <!-- 预先展示n个空mod，用于占位 -->
             <s-card class="mod-item">
               <div slot="image" style="height: 200px;width: 250px;">

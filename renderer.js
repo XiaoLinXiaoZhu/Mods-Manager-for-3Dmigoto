@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let modCharacters = [];
     let modFilterCharacter = 'All';
 
+    let compactMode = false;
+    const compactModeButton = document.getElementById('compact-mode-button');
+
     //mod info 相关
     const modInfoName = document.getElementById('mod-info-name');
     const modInfoCharacter = document.getElementById('mod-info-character');
@@ -355,7 +358,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
             if(fragment.children.length == mods.length - modContainerCount){
                 modContainer.appendChild(fragment);
+
+                //如果是compactMode则需要将modContainer添加上compact = true
+                if(compactMode){
+                    modContainer.setAttribute('compact','true');
+                }
+                else{
+                    modContainer.setAttribute('compact','false');
+                }
             }
+
         });
 
         //删除多余的modItem
@@ -364,65 +376,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 modContainer.removeChild(modContainer.children[mods.length]);
             }
         }
-
-
-
-        //     if (index < modContainerCount) {
-        //         //存在现有的card，直接替换内容
-        //         //判断是否被选中，如果被选中则切换为未选中状态
-        //         modContainer.children[index].checked = false;
-        //         modContainer.children[index].setAttribute('checked', 'false');
-
-        //         const modItem = modContainer.children[index];
-        //         modItem.id = mod;
-        //         modItem.character = modCharacter;
-        //         modItem.querySelector('#mod-item-headline').textContent = mod;
-        //         modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
-        //         modItem.querySelector('img').src = modImagePath;
-        //         modItem.querySelector('img').alt = mod;
-        //         modItem.querySelector('#mod-item-description').textContent = modDescription;
-
-        //         //debug
-        //         console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
-        //     }
-        //     else {
-        //         //不存在现有的card，添加新的card
-        //         const modItem = document.createElement('s-card');
-        //         modItem.className = 'mod-item';
-        //         modItem.checked = false;
-        //         modItem.clickable = true;
-        //         modItem.id = mod;
-        //         modItem.character = modCharacter;
-        //         modItem.style = '';
-        //         modItem.innerHTML = `
-        //             <div slot="image" style="height: 200px;">
-        //                 <img src="${modImagePath}" alt="${mod}" loading="lazy"/>
-        //             </div>
-        //             <div slot="headline" id="mod-item-headline">${mod}</div>
-        //             <div slot="subhead" id="mod-item-subhead">
-        //                 ${modCharacter}
-        //             </div>
-        //             <div slot="text" id="mod-item-text">
-        //                 <s-scroll-view>
-        //                     <p id="mod-item-description">${modDescription}</p>
-        //                     <div class="placeholder"></div>
-        //                 </s-scroll-view>
-        //             </div>
-        //         `;
-        //         fragment.appendChild(modItem);
-        //         if (fragment.children.length == mods.length - modContainerCount) {
-        //             modContainer.appendChild(fragment);
-        //             //debug
-        //             console.log(`🟢successfully loaded mods`);
-        //         }
-        //     }
-        // });
-        // //删除多余的modItem
-        // if (mods.length < modContainerCount) {
-        //     for (let i = mods.length; i < modContainerCount; i++) {
-        //         modContainer.removeChild(modContainer.children[mods.length]);
-        //     }
-        // }
     }
 
     //使用事件委托处理点击事件，减少事件绑定次数
@@ -640,6 +593,116 @@ document.addEventListener('DOMContentLoaded', async () => {
             fullScreenSvgpath.setAttribute('d', 'M240-120v-120H120v-80h200v200h-80Zm400 0v-200h200v80H720v120h-80ZM120-640v-80h120v-120h80v200H120Zm520 0v-200h80v120h120v80H640Z');
         }
     }
+
+    //-compactMode按钮
+    compactModeButton.addEventListener('click', () => {
+        //切换compactMode
+        compactMode = !compactMode;
+        const icon = compactModeButton.querySelector('path');
+        if (compactMode) {
+            //设置按钮图标样式
+            icon.setAttribute('d', 'M480-80 240-320l57-57 183 183 183-183 57 57L480-80ZM298-584l-58-56 240-240 240 240-58 56-182-182-182 182Z');
+            
+            modContainer.setAttribute('compact', 'true');
+            //添加折叠动画，modContainer的子物体modItem的高度从350px变为150px
+            //动画只对窗口内的modItem进行动画
+            const rect = modContainer.getBoundingClientRect();
+            const modItems = document.querySelectorAll('.mod-item');
+            modItems.forEach(item => {
+                const itemRect = item.getBoundingClientRect();
+                if (itemRect.top > -1000 && itemRect.bottom < window.innerHeight + 1000) {
+                    item.animate([
+                        { height: '350px' },
+                        { height: '150px' }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-in-out',
+                        iterations: 1
+                    });
+
+                    //item下的slot=headline，slot=text，slot=subhead的div元素会缓缓上移
+                    //获取这些元素
+                    //遍历子元素，匹配slot属性
+                    item.childNodes.forEach(child => {
+                        if (child.slot == 'headline' || child.slot == 'subhead' || child.slot == 'text') {
+                            child.animate([
+                                { transform: 'translateY(200px)' },
+                                { transform: 'translateY(0px)' }
+                            ], {
+                                duration: 300,
+                                easing: 'ease-in-out',
+                                iterations: 1
+                            });
+                        }
+                        if (child.slot == 'image') {
+                            //获取slot下的img元素
+                            const img = child.querySelector('img');
+                            img.animate([
+                                { opacity : 1, filter: 'blur(0px)' },
+                                { opacity : 0.2 , filter: 'blur(5px)' }
+                            ], {
+                                duration: 300,
+                                easing: 'ease-in-out',
+                                iterations: 1
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        else {
+            //设置按钮图标样式
+            icon.setAttribute('d', 'm356-160-56-56 180-180 180 180-56 56-124-124-124 124Zm124-404L300-744l56-56 124 124 124-124 56 56-180 180Z');
+
+            modContainer.setAttribute('compact', 'false');
+            //添加展开动画，modContainer的子物体modItem的高度从150px变为350px
+            //动画只对窗口内的modItem进行动画
+            const rect = modContainer.getBoundingClientRect();
+            const modItems = document.querySelectorAll('.mod-item');
+            modItems.forEach(item => {
+                const itemRect = item.getBoundingClientRect();
+                if (itemRect.top > -1000 && itemRect.bottom < window.innerHeight + 1000) {
+                    item.animate([
+                        { height: '150px' },
+                        { height: '350px' }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-in-out',
+                        iterations: 1
+                    });
+
+                    //item下的slot=headline，slot=text，slot=subhead的div元素会缓缓下移
+                    //获取这些元素
+                    //遍历子元素，匹配slot属性
+                    item.childNodes.forEach(child => {
+                        if (child.slot == 'headline' || child.slot == 'subhead' || child.slot == 'text') {
+                            child.animate([
+                                { transform: 'translateY(-200px)' },
+                                { transform: 'translateY(0px)' }
+                            ], {
+                                duration: 300,
+                                easing: 'ease-in-out',
+                                iterations: 1
+                            });
+                        }
+                        if (child.slot == 'image') {
+                            //获取slot下的img元素
+                            const img = child.querySelector('img');
+                            img.animate([
+                                { opacity : 0.2 , filter: 'blur(5px)' },
+                                { opacity : 1, filter: 'blur(0px)' }
+                            ], {
+                                duration: 300,
+                                easing: 'ease-in-out',
+                                iterations: 1
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+
 
     //-setting-dialog相关
     rootdirConfirmButton.addEventListener('click', async () => {
