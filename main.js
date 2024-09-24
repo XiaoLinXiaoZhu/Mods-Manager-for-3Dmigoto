@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const shell = require('electron').shell;
@@ -113,6 +113,37 @@ ipcMain.handle('get-rootdir', async (event) => {
   return '';
 }
 );
+
+// BrowserWindow bounds
+ipcMain.handle('set-bounds', async (event, boundsStr) => {
+  try {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const bounds = JSON.parse(boundsStr);
+    
+    if(win && bounds) {
+      const screenArea = screen.getDisplayMatching(bounds).workArea;
+      
+      if (
+        (bounds.x + bounds.width) > (screenArea.x + screenArea.width) ||
+        bounds.x > (screenArea.x + screenArea.width) || 
+        bounds.x < screenArea.x ||
+        (bounds.y + bounds.height) > (screenArea.y + screenArea.height) ||
+        bounds.y > (screenArea.y + screenArea.height) || 
+        bounds.y < screenArea.y
+      ) {
+          // Fit and center window into the existing screenarea
+          const width = Math.min(bounds.width, screenArea.width);
+          const height = Math.min(bounds.height, screenArea.height);
+          const x = Math.floor((screenArea.width - width) / 2);
+          const y = Math.floor((screenArea.height - height) / 2);
+          win.setBounds({ x: x, y: y, width: width, height: height});
+      }
+      else {
+          win.setBounds(bounds);
+      }
+    }
+  } catch (e) { }
+});
 
 // 通过配置文件获取 modResourceBackpack 文件夹的路径
 
