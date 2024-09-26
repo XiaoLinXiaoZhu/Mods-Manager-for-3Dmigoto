@@ -9,6 +9,8 @@ const shell = require('electron').shell;
 // 国际化，但是我不会使用i18next，这里就直接自定义自己方法来实现国际化
 // 通过传递一个json文件来实现国际化
 // 需要的时候，通过读取json文件来显示对应的语言的内容
+
+
 ipcMain.handle('get-translate', async (event, lang) => {
   // 读取对应的json文件，文件位于locales文件夹下,文件名为lang.json
   const langDir = path.join(__dirname, 'locales');
@@ -114,73 +116,38 @@ ipcMain.handle('get-rootdir', async (event) => {
 }
 );
 
-// BrowserWindow bounds
-ipcMain.handle('set-bounds', async (event, boundsStr) => {
-  try {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    const bounds = JSON.parse(boundsStr);
-    
-    if(win && bounds) {
-      const screenArea = screen.getDisplayMatching(bounds).workArea;
-      
-      if (
-        (bounds.x + bounds.width) > (screenArea.x + screenArea.width) ||
-        bounds.x > (screenArea.x + screenArea.width) || 
-        bounds.x < screenArea.x ||
-        (bounds.y + bounds.height) > (screenArea.y + screenArea.height) ||
-        bounds.y > (screenArea.y + screenArea.height) || 
-        bounds.y < screenArea.y
-      ) {
-          // Fit and center window into the existing screenarea
-          const width = Math.min(bounds.width, screenArea.width);
-          const height = Math.min(bounds.height, screenArea.height);
-          const x = Math.floor((screenArea.width - width) / 2);
-          const y = Math.floor((screenArea.height - height) / 2);
-          win.setBounds({ x: x, y: y, width: width, height: height});
-      }
-      else {
-          win.setBounds(bounds);
-      }
-    }
-  } catch (e) { }
-});
+//-------------------exePath-------------------
+// 通过配置文件获取 exePath 文件的路径
+let exePath = '';
 
-// 通过配置文件获取 modResourceBackpack 文件夹的路径
+ipcMain.handle('check-exePath', async (event, path) => {
+  //检查 path 是否存在,如果存在则返回 true
+  return fs.existsSync(path);
+}
+);
 
-function createWindow() {
-  //隐藏菜单栏
-  // app.on('browser-window-created', (e, window) => {
-  //   window.setMenu(null);
-  // });
-  // 隐藏
-  const win = new BrowserWindow({
-    setMenuBarVisibility: false,
-    frame: false,
-    width: 1050,
-    height: 800,
-    webPreferences: {
-      preload: path.join(__dirname, 'renderer-preload.js'),
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
+ipcMain.handle('set-exePath', async (event, path) => {
+  //console.log("set exePath: " + path);
+  exePath = path;
+}
+);
+
+ipcMain.handle('get-exePath', async (event) => {
+  //提示选择 refresh-in-zzz.bat 文件
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [
+      { name: 'refresh-in-zzz', extensions: ['bat'] }
+    ]
   });
 
-  win.loadFile('index.html');
-}
-
-app.whenReady().then(createWindow);
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+  if (!result.canceled) {
+    const exePath = result.filePaths[0];
+    return exePath;
   }
+  return '';
 });
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
 
 
 //-------------------mods list 加载-------------------
@@ -222,6 +189,7 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
   }
 });
 
+//-------------------应用mods-------------------
 ipcMain.handle('apply-mods', async (event, mods) => {
   const modsDir = path.join(rootdir, 'Mods');
   const modResourceDir = path.join(rootdir, 'modResourceBackpack');
@@ -253,12 +221,46 @@ ipcMain.handle('apply-mods', async (event, mods) => {
       // }
       // );
       // //fs.cpSync(src, dest, { recursive: true });
-          //这里不再复制文件夹，而是创建一个快捷方式，使用cmd的mklink命令
-    const cmd = `mklink /J "${dest}" "${src}"`;
-    //console.log(`cmd: ${cmd}`);
-    require('child_process').execSync(cmd);
+      //这里不再复制文件夹，而是创建一个快捷方式，使用cmd的mklink命令
+      const cmd = `mklink /J "${dest}" "${src}"`;
+      //console.log(`cmd: ${cmd}`);
+      require('child_process').execSync(cmd);
     }
   });
+});
+
+ipcMain.handle("refresh-in-zzz", async (event) => {
+  //通过激活外部的程序 refresh-in-zzz.exe 来刷新zzz文件夹
+
+  //因为我无法解决asar包内的exe程序无法执行的问题，所以这里在开发的时候使用exePath，而打包之后，使用exePath2的路径
+  if (exePath === '') {
+    console.log("exePath is empty");
+    return '';
+  }
+
+  const cmd = `start "" "${exePath}"`;
+  let stdout;
+  console.log(`cmd: ${cmd}`);
+
+  try {
+    // 执行exe程序
+    stdout = require('child_process').execSync(cmd, { encoding: 'utf-8' });
+    console.log('stdout:', stdout);
+    // 如果没有抛出异常，说明程序正常退出，退出状态码为0
+    console.log('程序正常退出，退出状态码: 0');
+  } catch (error) {
+    // 如果程序非正常退出，这里可以捕获到错误
+    if (error.status) {
+      console.error(`程序非正常退出，退出状态码: ${error.status}`);
+    } else {
+      // 处理其他类型的错误
+      console.error('发生了一个错误：', error.message);
+    }
+  }
+
+  console.log(`succeed to execute ${cmd}，refresh-in-zzz.exe return: ${stdout}`);
+
+  return exePath;
 });
 
 
@@ -341,7 +343,7 @@ ipcMain.handle('select-image', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openFile'],
     filters: [
-      { name: 'Images', extensions: ['jpg', 'png','jpeg'] }
+      { name: 'Images', extensions: ['jpg', 'png', 'jpeg'] }
     ]
   });
   if (!result.canceled) {
@@ -380,6 +382,79 @@ ipcMain.handle('toggle-fullscreen', async () => {
   else {
     win.setFullScreen(true);
     return true;
+  }
+});
+
+// 设置窗口大小
+ipcMain.handle('set-bounds', async (event, boundsStr) => {
+  try {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const bounds = JSON.parse(boundsStr);
+
+    if (win && bounds) {
+      const screenArea = screen.getDisplayMatching(bounds).workArea;
+
+      if (
+        (bounds.x + bounds.width) > (screenArea.x + screenArea.width) ||
+        bounds.x > (screenArea.x + screenArea.width) ||
+        bounds.x < screenArea.x ||
+        (bounds.y + bounds.height) > (screenArea.y + screenArea.height) ||
+        bounds.y > (screenArea.y + screenArea.height) ||
+        bounds.y < screenArea.y
+      ) {
+        // Fit and center window into the existing screenarea
+        const width = Math.min(bounds.width, screenArea.width);
+        const height = Math.min(bounds.height, screenArea.height);
+        const x = Math.floor((screenArea.width - width) / 2);
+        const y = Math.floor((screenArea.height - height) / 2);
+        win.setBounds({ x: x, y: y, width: width, height: height });
+      }
+      else {
+        win.setBounds(bounds);
+      }
+    }
+  } catch (e) { }
+});
+//---------------------主窗口---------------------
+//创建主窗口
+function createWindow() {
+  //隐藏菜单栏
+  // app.on('browser-window-created', (e, window) => {
+  //   window.setMenu(null);
+  // });
+  const mainWindow = new BrowserWindow({
+    setMenuBarVisibility: false,
+    frame: false,
+    show: false,
+    width: 1050,
+    height: 800,
+    backgroundColor: '#1d1f1e',
+    webPreferences: {
+      preload: path.join(__dirname, 'renderer-preload.js'),
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+
+  mainWindow.loadFile('index.html');
+
+  //因为需要调整窗口大小，所以需要等待窗口加载完成
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+}
+
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
   }
 });
 

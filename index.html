@@ -22,8 +22,8 @@
     <s-drawer style="width: 100%;" id="drawer-page">
       <!-- -预设控制 -->
       <div slot="start" id="preset-list-drawer" class="OO-colunm-center">
-        <h2>Presets</h2>
-        <s-divider></s-divider>
+        <h2 style="margin: 24px 0 17px 0;">Presets</h2>
+        <s-divider style="margin-bottom: 0;"></s-divider>
         <div id="preset-container" class="OO-colunm-center"></div>
         <!-- -新建预设 -->
         <s-button type="outlined" id="preset-item-add">
@@ -40,21 +40,7 @@
 
         <div id="placeholder" style="flex: 1;"></div>
         <div id="bottom-buttons"
-          style="width: 83%;display: flex;padding: 15px 21px;flex-direction: row;align-items: center;flex-wrap: wrap;">
-          <!-- -设置按钮 -->
-          <s-tooltip>
-            <s-icon-button slot="trigger" id="settings-show-button">
-              <s-icon>
-                <svg viewBox="0 -960 960 960">
-                  <path
-                    d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
-                  </path>
-                </svg>
-              </s-icon>
-            </s-icon-button>
-
-            <p data-translate-key="settings">设置</p>
-          </s-tooltip>
+          style="width: 83%;display: flex;padding: 0px 10px 0px 0px;;flex-direction: row;align-items: center;flex-wrap: wrap;">
           <!-- -全屏按钮-->
           <s-tooltip>
             <s-icon-button slot="trigger" id="fullscreen-button">
@@ -68,18 +54,18 @@
             </s-icon-button>
             <p data-translate-key="fullscreen">全屏</p>
           </s-tooltip>
-          <!-- -关闭按钮 -->
+          <!-- -折叠模式开关 -->
           <s-tooltip>
-            <s-icon-button slot="trigger" id="close-button" onclick="window.close()">
+            <s-icon-button slot="trigger" id="compact-mode-button">
               <s-icon>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
-                    d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z">
+                    d="m356-160-56-56 180-180 180 180-56 56-124-124-124 124Zm124-404L300-744l56-56 124 124 124-124 56 56-180 180Z">
                   </path>
                 </svg>
               </s-icon>
             </s-icon-button>
-            <p data-translate-key="close">关闭</p>
+            <p data-translate-key="compact">折叠</p>
           </s-tooltip>
           <!-- -刷新按钮 -->
           <s-tooltip>
@@ -94,17 +80,44 @@
             </s-icon-button>
             <p data-translate-key="refresh">刷新</p>
           </s-tooltip>
-          <!-- -折叠模式开关 -->
-           <s-tooltip>
-            <s-icon-button slot="trigger" id="compact-mode-button">
+
+        </div>
+
+        <div id="bottom-buttons"
+          style="width: 83%;display: flex;padding: 0px 10px 10px 0px;flex-direction: row;align-items: center;flex-wrap: wrap;">
+
+
+
+
+
+          <!-- -设置按钮 -->
+          <s-tooltip>
+            <s-icon-button slot="trigger" id="settings-show-button">
               <s-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path d="m356-160-56-56 180-180 180 180-56 56-124-124-124 124Zm124-404L300-744l56-56 124 124 124-124 56 56-180 180Z"></path>
+                <svg viewBox="0 -960 960 960">
+                  <path
+                    d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
+                  </path>
                 </svg>
               </s-icon>
             </s-icon-button>
-            <p data-translate-key="compact">折叠</p>
 
+            <p data-translate-key="settings">设置</p>
+          </s-tooltip>
+
+          <!-- -关闭按钮 -->
+          <s-tooltip>
+            <s-icon-button slot="trigger" id="close-button" onclick="window.close()">
+              <s-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z">
+                  </path>
+                </svg>
+              </s-icon>
+            </s-icon-button>
+            <p data-translate-key="close">关闭</p>
+          </s-tooltip>
         </div>
 
       </div>
@@ -117,7 +130,7 @@
         <s-appbar
           style="width: 100%;height: 60px;padding: 10px 0px;display: flex;backdrop-filter: blur(7px);border-bottom:1px solid var(--s-color-on-surface);">
           <!--左侧菜单按钮-->
-          <s-icon-button slot="navigation" id="preset-list-button">
+          <s-icon-button slot="navigation" id="preset-list-button" style="margin-left: 18px;">
             <s-icon type="menu"></s-icon>
           </s-icon-button>
           <!--标题-->
@@ -133,7 +146,7 @@
           </div>
           <!--右侧信息开关-->
           <div slot="action">
-            <s-icon-button style="margin-right: 20px;" id="info-show-button" type="filled">
+            <s-icon-button style="margin-right: 13px;" id="info-show-button" type="filled">
               <s-icon>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path
@@ -165,7 +178,7 @@
         </div>
         <!-- -模组列表 -->
         <s-scroll-view class="mod-list" style="margin-left: 10px;">
-          <div id="mod-container" style="width: 100%" compact="true">
+          <div id="mod-container" style="width: 100%" compact="false">
             <!-- 预先展示n个空mod，用于占位 -->
             <s-card class="mod-item">
               <div slot="image" style="height: 200px;width: 250px;">
@@ -389,7 +402,6 @@
       <div slot="text">
         <div id="setting-get-theme">
           <h3 data-translate-key="theme"> 主题 </h3>
-          <p data-translate-key="dialog-ask-for-theme"> 请选择主题 </p>
           <div id="theme-picker">
             <s-chip selectable="true" type="default" selectable="true" id="auto">
               <p data-translate-key="auto">自动</p>
@@ -406,13 +418,25 @@
 
         <div id="settings-get-rootdir">
           <h3 data-translate-key="mod-source-path">模组资源位置 </h2>
-            <p data-translate-key="dialog-ask-for-modResourceBackup"> 请输入文件保存位置 </p>
-
             <s-text-field style="display: grid">
               <input type="text" id="set-rootdir-input">
             </s-text-field>
         </div>
         <s-divider></s-divider>
+
+        <div id="test-funciton">
+          <h3 data-translate-key="test-title"> 测试功能 (*需要使用管理员权限打开)</h3>
+          <div style="display: flex;flex-direction: row;align-items: center;justify-content: space-around;">
+            <p data-translate-key="test-funciton-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
+            <s-switch id="auto-refresh-in-zzz"></s-switch>
+          </div>
+          <p data-translate-key="dialog-ask-for-exePath">因为文件结构限制，这里需要您手动指定refresh-in-zzz.exe，它一般位于和ZZZModManager同一目录下</p>
+          <s-text-field style="display: grid" id="get-exePath-input">
+            <s-ripple attached="true">
+              <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></p>
+            </s-ripple>
+          </s-text-field>
+        </div>
 
         <div id="settings-init-config">
           <h3 data-translate-key="init-config"> 初始化配置 </h3>
@@ -466,45 +490,50 @@
         <div id="edit-mod-info-dialog-top" style="display: flex;width: 100%;">
           <!-- 展示mod当前名称、图片 -->
           <s-card
-            style="height: fit-content;width: 100%;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
-            <div style="width: 83%;height: fit-content;padding: 10px 0px;">
+          style="width: 280px;min-width: 0;height: 400px;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
+            <div style="width: 83%;height: fit-content;padding: 0;margin: 0px 0px 0px 0;">
               <h2 id="editDialog-mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;">Mod
                 name</h2>
-              <s-divider style="margin-top: -11px;width: 100%;"></s-divider>
+              <s-divider style="margin-top: 0;width: 100%;"></s-divider>
 
             </div>
             <p id="editDialog-mod-info-character"
-              style="margin-top: -12px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 10px;padding-bottom: 10px;">
+              style="margin-top: -10px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 0;padding-bottom: 10px;">
               Character</p>
 
-            <div id="img-container" style="width: 280px;height: 224px; border-radius: 10px; overflow: hidden;">
+            <div id="img-container" style="width: 280px;height: 224px;border-radius: 0 30px;overflow: hidden;">
               <img id="editDialog-mod-info-image"
                 style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" src="default.png"
                 alt="Mod Image"> </img>
             </div>
+            <div class="placeholder" style="flex: 1;"></div>
+            <s-button type="outlined" id="edit-mod-image-select" style="margin-bottom: 20px;width: 83%;"
+                  data-translate-key="edit-mod-image-preview">选择图片</s-button>
           </s-card>
 
           <s-card style="height: auto;margin-left: 1%;flex: 1;">
             <div slot="text"
-              style="height: auto;width: 100%;display:flex;flex-direction: column;justify-content: center;">
+              style="height: 83%;width: 83%;display:flex;margin: 0;padding: 8.5%;flex-direction: column;justify-content: space-around;align-content: center;align-items: center;">
 
-              <div style="width: 83%;height: auto;">
+              <div style="width: 100%;height:auto">
                 <h3 data-translate-key="mod-info-name"
                   style="line-height: 1;margin: 5px -1px;color:var(--s-color-on-surface);"> mod名称 </h3>
-                <p data-translate-key="edit-mod-info-tip"> Mod名称就是文件夹名称，点击下方按钮前往文件夹处修改 </p>
-                <s-text-field style="min-width: 100px">
+                <p style="line-height: 1.2;" data-translate-key="edit-mod-info-name-tip"> Mod名称就是文件夹名称，点击下方按钮前往文件夹处修改 </p>
+                <s-text-field style="min-width: 100px;width: 100%;">
                   <s-ripple attached="true"></s-ripple>
                   <p id="edit-mod-name" style="margin-left: 7px;"> </p>
                 </s-text-field>
+              </div>
+              <div style="flex:1;"></div>
+              <div style="width: 100%;">
                 <h3 data-translate-key="mod-info-character"
-                  style="line-height: 1;margin: 5px -1px;color:var(--s-color-on-surface);"> 角色 </h3>
+                style="line-height: 1;margin: 15px -1px 8px 0;color:var(--s-color-on-surface);"> 角色 </h3>
+                <p style="line-height: 1.2;" data-translate-key="edit-mod-info-character-tip"> 角色是mod所属的角色当然你也可以将其归为unknow、tools或者mise，它会作为分类的依据 </p>
                 <s-text-field style="min-width: 100px">
                   <input type="text" id="edit-mod-character">
                 </s-text-field>
-
-                <s-button type="outlined" id="edit-mod-image-select" style="margin: 10px 0 ;"
-                  data-translate-key="edit-mod-image-preview">选择图片</s-button>
               </div>
+
 
             </div>
           </s-card>
@@ -513,14 +542,14 @@
         <div id="edit-mod-info-dialog-bottom" style="display: flex;width: 100%;">
           <!-- 提供修改mod信息的描述的大的输入框 -->
           <s-card style="height: auto;width: 100%;margin-top:0;">
-            <div slot="text">
-              <s-text-field style="min-height: 150px;min-width: 100%;padding: 0 2px;">
+            <div slot="text" style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-around;align-content: center;align-items: center;">
+              <s-text-field style="min-height: 120px;min-width: 100%;padding: 0 2px;border-radius: 30px;">
                 <textarea type="text" id="edit-mod-description"></textarea>
               </s-text-field>
             </div>
           </s-card>
           <s-card style="height: auto;margin-left: 1%;flex: 1;margin-top: 0;">
-            <div slot="text" style="height:100%;display: flex;flex-direction: column;justify-content: center;">
+            <div slot="text" style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-evenly;">
               <s-button type="text" id="edit-mod-info-cancel" data-translate-key="cancel">取消</s-button>
               <s-button type="text" id="edit-mod-info-save" data-translate-key="save">保存</s-button>
             </div>

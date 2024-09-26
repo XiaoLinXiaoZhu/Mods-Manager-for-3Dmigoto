@@ -20,6 +20,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rootdirInput = document.getElementById('set-rootdir-input');
     const rootdirConfirmButton = document.getElementById('set-rootdir-confirm');
 
+    //设置页面
+    const autoRefreshInZZZSwitch = document.getElementById('auto-refresh-in-zzz');
+    let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
+    const getExePathInput = document.getElementById('get-exePath-input');
+    let exePath = localStorage.getItem('exePath') || '';
+    const themePicker = document.getElementById('theme-picker');
+    const themes = themePicker.querySelectorAll('s-chip');
+
     //预设列表相关
     const presetContainer = document.getElementById('preset-container');
     const presetListDisplayButton = document.getElementById('preset-list-button');
@@ -84,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Window fullscreen
     let isFullScreen = localStorage.getItem('fullscreen') === 'true';
-    if(isFullScreen) {
+    if (isFullScreen) {
         toggleFullscreen();
     }
 
@@ -102,9 +110,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     else {
         await ipcRenderer.invoke('set-rootdir', rootdir);
+        await ipcRenderer.invoke('set-exePath', exePath);
         await loadModList();
         await loadPresets();
         refreshModFilter();
+
+        //debug
+        console.log("rootdir: " + rootdir);
+        console.log("exePath: " + exePath);
+        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
     }
 
 
@@ -120,12 +134,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function setTheme(theme) {
         const sPages = document.querySelectorAll('s-page');
+
+        //保存当前主题
         localStorage.setItem('theme', theme);
+
         sPages.forEach(page => {
             page.theme = theme;
         }
         );
 
+        //在设置页面同步修改显示情况
+        themes.forEach(item => {
+            //将所有的type设置为default
+            if (item.id == theme) {
+                item.type = 'filled-tonal';
+            }
+            else {
+                item.type = 'default';
+            }
+        });
+
+        //特殊样式手动更改
         if (theme != 'dark') {
             //将背景图片取消显示
             sPages.forEach(page => {
@@ -320,10 +349,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             var modDescription = modInfo.description ? modInfo.description : 'No description';
 
             var modItem;
-            if(index<modContainerCount){
+            if (index < modContainerCount) {
                 modItem = modContainer.children[index];
             }
-            else{
+            else {
                 modItem = document.createElement('s-card');
                 modItem.innerHTML = `
                 <div slot="image" style="height: 200px;">
@@ -356,15 +385,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             //debug
             //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
-            if(fragment.children.length == mods.length - modContainerCount){
+            if (fragment.children.length == mods.length - modContainerCount) {
                 modContainer.appendChild(fragment);
 
                 //如果是compactMode则需要将modContainer添加上compact = true
-                if(compactMode){
-                    modContainer.setAttribute('compact','true');
+                if (compactMode) {
+                    modContainer.setAttribute('compact', 'true');
                 }
-                else{
-                    modContainer.setAttribute('compact','false');
+                else {
+                    modContainer.setAttribute('compact', 'false');
                 }
             }
 
@@ -546,41 +575,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     //-----------------------------事件监听--------------------------------
     let editMode = false;
 
-    //-控制按钮
-    settingsShowButton.addEventListener('click', async () => {
-        // 显示或隐藏settingsDialog
-        showDialog(settingsDialog);
-
-        //显示主题为当前主题
-        const theme = localStorage.getItem('theme') || 'dark';
-        const themePicker = document.getElementById('theme-picker');
-        //获取 themePicker 下的所有 s-chip 元素
-        const themes = themePicker.querySelectorAll('s-chip');
-        themes.forEach(item => {
-            //将所有的type设置为default
-            if (item.id == theme) {
-                item.type = 'filled-tonal';
-            }
-            else {
-                item.type = 'default';
-            }
-
-            item.addEventListener('click', () => {
-                //将所有的type设置为default
-                themes.forEach(item => {
-                    item.type = 'default';
-                });
-                //将当前点击的type设置为filled-tonal
-                item.type = 'filled-tonal';
-                //保存当前的主题
-                setTheme(item.id);
-            }
-            );
-        });
-        //获取当前rootdir
-        rootdirInput.value = rootdir;
-    });
-
     //-全屏按钮
     fullScreenButton.addEventListener('click', toggleFullscreen);
 
@@ -602,7 +596,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (compactMode) {
             //设置按钮图标样式
             icon.setAttribute('d', 'M480-80 240-320l57-57 183 183 183-183 57 57L480-80ZM298-584l-58-56 240-240 240 240-58 56-182-182-182 182Z');
-            
+
             modContainer.setAttribute('compact', 'true');
             //添加折叠动画，modContainer的子物体modItem的高度从350px变为150px
             //动画只对窗口内的modItem进行动画
@@ -638,8 +632,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             //获取slot下的img元素
                             const img = child.querySelector('img');
                             img.animate([
-                                { opacity : 1, filter: 'blur(0px)' },
-                                { opacity : 0.2 , filter: 'blur(5px)' }
+                                { opacity: 1, filter: 'blur(0px)' },
+                                { opacity: 0.2, filter: 'blur(5px)' }
                             ], {
                                 duration: 300,
                                 easing: 'ease-in-out',
@@ -689,8 +683,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             //获取slot下的img元素
                             const img = child.querySelector('img');
                             img.animate([
-                                { opacity : 0.2 , filter: 'blur(5px)' },
-                                { opacity : 1, filter: 'blur(0px)' }
+                                { opacity: 0.2, filter: 'blur(5px)' },
+                                { opacity: 1, filter: 'blur(0px)' }
                             ], {
                                 duration: 300,
                                 easing: 'ease-in-out',
@@ -705,6 +699,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     //-setting-dialog相关
+
+    //-展示设置页面
+    settingsShowButton.addEventListener('click', async () => {
+        // 显示或隐藏settingsDialog
+        showDialog(settingsDialog);
+
+        //显示当前rootdir
+        rootdirInput.value = rootdir;
+
+        //显示当前 auto-refresh-in-zzz 的值
+        autoRefreshInZZZSwitch.checked = ifAutofreshInZZZ;
+
+        //显示当前exePath
+        getExePathInput.querySelector('p').innerHTML = exePath;
+    });
+
+
+    //设置主题
+    themes.forEach(item => {
+        item.addEventListener('click', () => {
+            setTheme(item.id);
+        }
+        );
+    }
+    );
+
+    //设置rootdir
     rootdirConfirmButton.addEventListener('click', async () => {
         //debug
         console.log("rootdir: " + rootdirInput.value);
@@ -738,6 +759,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     );
 
+    //是否开启自动刷新
+    autoRefreshInZZZSwitch.addEventListener('change', () => {
+        ifAutofreshInZZZ = autoRefreshInZZZSwitch.checked;
+        //保存ifAutofreshInZZZ
+        localStorage.setItem('auto-refresh-in-zzz', ifAutofreshInZZZ);
+        //debug
+        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
+
+        if (ifAutofreshInZZZ) {
+            //尝试获得管理员权限
+            //tryGetAdmin();
+        }
+    });
+
+    //获得自动刷新的exe 的路径
+
+    getExePathInput.addEventListener('click', async () => {
+        const path = await ipcRenderer.invoke('get-exePath');
+        //debug
+        console.log("exePath: " + path);
+
+        if (ipcRenderer.invoke('check-exePath', exePath) && path) {
+            exePath = path;
+            //显示exePath
+            getExePathInput.querySelector('p').innerHTML = path;
+            //保存exePath
+            localStorage.setItem('exePath', exePath);
+
+            await ipcRenderer.invoke('set-exePath', path);
+        }
+        else {
+            snack('Please select the correct exe path');
+        }
+    });
+
+
+    function tryGetAdmin() {
+        //尝试获取管理员权限
+
+        //使用powershell运行下面的命令
+        //Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs 获取管理员权限
+        //Start-Process $electronAppPath 使用管理员权限打开electron程序
+        const ps1Path = path.join(exePath, `..`, `runZZZMMasAdmin.ps1`);
+        const electronAppPath = path.join(exePath, `..`, `..`, `ZZZModManager.exe`);
+        //debug
+        console.log("ps1Path: " + ps1Path);
+
+        const options = { shell: true };
+
+        require('child_process').exec(`start powershell.exe "${ps1Path}" -electronAppPath "${__dirname}"
+            `, options, (err, stdout, stderr) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log(stdout);
+            snack('Successfully get admin permission' + stdout);
+        }
+        );
+        //debug
+
+        console.log("tryGetAdmin");
+    }
+
     //-mod启用
     applyBtn.addEventListener('click', async () => {
         //获取选中的mods,mod 元素为 mod-item，当其checked属性为true时，表示选中
@@ -760,11 +845,52 @@ document.addEventListener('DOMContentLoaded', async () => {
                 unknownModList.appendChild(listItem);
             });
         }
+
         else await ipcRenderer.invoke('apply-mods', selectedMods);
+
+        //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
+        if (ifAutofreshInZZZ) {
+            tryRefreshInZZZ();
+        }
+
 
         //使用s-snackbar显示提示
         snack('Mods applied');
     })
+
+    async function tryRefreshInZZZ() {
+        //尝试刷新,使用async，防止阻塞
+        //使用cmd激活刷新的exe程序
+        if (exePath === '') {
+            console.log("exePath is empty");
+            return '';
+          }
+        
+          const cmd = `start "" "${exePath}" /min`;
+          let stdout;
+          console.log(`cmd: ${cmd}`);
+        
+          try {
+            // 执行exe程序
+            stdout = require('child_process').execSync(cmd, { encoding: 'utf-8' });
+            console.log('stdout:', stdout);
+            // 如果没有抛出异常，说明程序正常退出，退出状态码为0
+            console.log('程序正常退出，退出状态码: 0');
+          } catch (error) {
+            // 如果程序非正常退出，这里可以捕获到错误
+            if (error.status) {
+              console.error(`程序非正常退出，退出状态码: ${error.status}`);
+            } else {
+              // 处理其他类型的错误
+              console.error('发生了一个错误：', error.message);
+            }
+          }
+        
+          console.log(`succeed to execute ${cmd}，refresh-in-zzz.exe return: ${stdout}`);
+          snack('Successfully refresh in ZZZ' + stdout);
+        
+          return exePath;
+    }
 
     const unknownModConfirmButton = document.getElementById('unknown-mod-confirm');
     const unknownModIgnoreButton = document.getElementById('unknown-mod-ignore');
@@ -1084,10 +1210,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         editModInfoDialog.dismiss();
     });
 
-    window.addEventListener('unload', function(event) {
+    window.addEventListener('unload', function (event) {
         localStorage.setItem('fullscreen', isFullScreen);
 
-        if(!isFullScreen) {
+        if (!isFullScreen) {
             localStorage.setItem('bounds', JSON.stringify({
                 x: window.screenX,
                 y: window.screenY,

@@ -29,7 +29,7 @@ body {
 
 
 #preset-list-drawer {
-    width: 200px;
+    width: 190px;
     height: 100%;
 }
 
@@ -223,4 +223,8 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     position: relative;
+}
+
+s-dialog h3 {
+    margin: 0;
 }

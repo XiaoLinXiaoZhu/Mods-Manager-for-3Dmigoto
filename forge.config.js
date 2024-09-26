@@ -6,7 +6,7 @@ module.exports = {
   packagerConfig: {
     asar: true,
     icon: './icon.ico',
-    name: 'ZZZmod管理器',
+    name: 'ZZZModManager',
   },
   rebuildConfig: {},
   makers: [
