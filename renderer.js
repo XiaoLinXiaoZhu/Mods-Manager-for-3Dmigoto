@@ -1137,8 +1137,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         //复制图片
         console.log(`imagePath:${imagePath} modImageDest:${modImageDest}`);
         //如果是默认图片则不复制
-        if (imagePath != path.join(__dirname, 'default.png'))
-            fs.copyFileSync(imagePath, modImageDest);
+        if (imagePath != path.join(__dirname, 'default.png') && imagePath != modImageDest) {
+            //强制覆盖
+            fs.copyFileSync(imagePath, modImageDest, fs.constants.COPYFILE_FICLONE);
+        }
+        
 
         //保存到tempModInfo中
         tempModInfo.imagePath = modImageName;
