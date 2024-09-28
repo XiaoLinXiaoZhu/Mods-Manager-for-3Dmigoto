@@ -222,9 +222,9 @@ ipcMain.handle('apply-mods', async (event, mods) => {
       // );
       // //fs.cpSync(src, dest, { recursive: true });
       //这里不再复制文件夹，而是创建一个快捷方式，使用cmd的mklink命令
-      const cmd = `mklink /J "${dest}" "${src}"`;
-      //console.log(`cmd: ${cmd}`);
-      require('child_process').execSync(cmd);
+      fs.symlinkSync(src, dest, 'junction', (err) => {
+        if (err) console.log(err);
+      });
     }
   });
 });
