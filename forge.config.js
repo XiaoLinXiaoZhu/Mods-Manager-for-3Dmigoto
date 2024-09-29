@@ -1,5 +1,4 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
-const { default: PublisherGithub } = require('@electron-forge/publisher-github');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
@@ -16,15 +15,19 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
+      platforms: ['darwin', 'linux', 'win32'],
     },
     {
       name: '@electron-forge/maker-deb',
-      config: {},
+      config: {
+        bin: 'ZZZModManager',
+      }
     },
     {
       name: '@electron-forge/maker-rpm',
-      config: {},
+      config: {
+        bin: 'ZZZModManager',
+      }
     },
   ],
   plugins: [
@@ -52,7 +55,6 @@ module.exports = {
           owner: 'xiaolinxiaozhu',
           name: 'mods-manager-for-3dmigoto'
         },
-        prerelease: false,
         draft: true
       }
     }
