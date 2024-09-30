@@ -472,6 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 applyMods();
             }
 
+            let cardHeight = compactMode ? '150px' : '350px';
             //如果modFilterCharacter为Selected，则将modItem切换为 clicked = false 的时候，将其隐藏
             if (modFilterCharacter == 'Selected' && !modItem.checked) {
                 //添加消失动画
@@ -523,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         //console.log(`move ${item.id} to up`);
                         item.animate([
                             { transform: `translateY(0px) translateX(0px)` },
-                            { transform: `translateY(-350px) translateX(${(modItemPerRow - 1) * 260}px)` }
+                            { transform: `translateY(-${cardHeight}) translateX(${(modItemPerRow - 1) * 260}px)` }
                         ], {
                             duration: 300,
                             easing: 'ease-in-out',
