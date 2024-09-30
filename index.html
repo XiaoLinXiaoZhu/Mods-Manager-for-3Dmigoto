@@ -105,6 +105,18 @@
             <p data-translate-key="settings">设置</p>
           </s-tooltip>
 
+          <!-- -关于按钮 -->
+          <s-tooltip>
+            <s-icon-button slot="trigger" id="about-show-button" onclick="document.getElementById('about-dialog').show()">
+              <s-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path d="m256-240-56-56 384-384H240v-80h480v480h-80v-344L256-240Z"></path>
+                </svg>
+              </s-icon>
+            </s-icon-button>
+            <p data-translate-key="about">关于</p>
+          </s-tooltip>
+
           <!-- -关闭按钮 -->
           <s-tooltip>
             <s-icon-button slot="trigger" id="close-button" onclick="window.close()">
@@ -164,9 +176,15 @@
         <!-- -模组筛选选项（根据角色筛选mod） -->
         <div id="mod-filter-container"
           style="display: flex;flex-wrap: nowrap;align-items: center;margin: 0 8px;height:fit-content;padding: 5px 0;">
-          <s-chip selectable="ture" type="default;" id="mod-filter-all" style="height: fit-content;">
-            <p class="font-hongmeng" data-translate-key="all">全部</p>
-          </s-chip>
+          <div style="display: flex;flex-wrap: nowrap;align-items: center;">
+            <s-chip selectable="ture" type="default;" id="mod-filter-all">
+              <p data-translate-key="all">全部</p>
+            </s-chip>
+            <div style="width: 6px;"></div>
+            <s-chip selectable="ture" type="default;" id="mod-filter-selected">
+              <p data-translate-key="selected">已选择</p>
+            </s-chip>
+          </div>
           <s-scroll-view
             style="height: 100%;width: 100%;overflow-x: hidden;overflow-y: hidden;white-space: nowrap;padding-left: 5px;"
             id="mod-filter-scroll">
@@ -322,7 +340,7 @@
           </div>
           <div style="height: 250px"></div>
         </s-scroll-view>
-
+        <div class="placeholder" style="flex: 1;"></div>
         <!-- -应用按钮 -->
         <div style="display: flex;flex-direction: row-reverse;flex-wrap: nowrap;height: 0;">
           <s-button id="apply-btn">
@@ -331,7 +349,7 @@
                 <path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"></path>
               </svg>
             </s-icon>
-            <p style="position: relative;top: -3px;margin-left: 10px;width: fit-content;height: fit-content;"
+            <p style="position: relative;top: -1px;margin-left: 10px;width: fit-content;height: fit-content;"
               data-translate-key="apply">
               应用配置</p>
           </s-button>
@@ -423,11 +441,17 @@
             </s-text-field>
         </div>
         <s-divider></s-divider>
-
+        <div id="auto-apply">
+          <h3 data-translate-key="auto-apply"> 自动应用 </h3>
+          <div style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
+            <p data-translate-key="auto-apply-info">当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)</p>
+            <s-switch id="auto-apply-switch"></s-switch>
+          </div>
+        </div>
         <div id="test-funciton">
-          <h3 data-translate-key="test-title"> 测试功能 (*需要使用管理员权限打开)</h3>
-          <div style="display: flex;flex-direction: row;align-items: center;justify-content: space-around;">
-            <p data-translate-key="test-funciton-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
+          <h3 data-translate-key="test-title"> 测试功能 </h3>
+          <div style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
+            <p data-translate-key="test-funciton-info">启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)</p>
             <s-switch id="auto-refresh-in-zzz"></s-switch>
           </div>
           <p data-translate-key="dialog-ask-for-exePath">因为文件结构限制，这里需要您手动指定refresh-in-zzz.exe，它一般位于和ZZZModManager同一目录下</p>
@@ -581,6 +605,21 @@
           onclick="location.reload()">刷新</s-button>
       </div>
     </s-dialog>
+
+    <!-- -关于 -->
+    <s-dialog id="about-dialog">
+      <div slot="headline" data-translate-key="about"> 关于 </div>
+      <div slot="text">
+        <p data-translate-key="about-content"> 本程序由 XLXZ 开发,开源免费,遵循GNU General Public License v3.0。用于管理基于3dmigoto的mod ,理论上来说也可以管理其他游戏的mod(只要是基于3dmigoto的) </p>
+        <p data-translate-key="about-version"> 最新版本在gamebanana上发布，如果你有任何问题或者建议，欢迎在github上提出 </p>
+        <p data-translate-key="about-author"> 作者：XLXZ </p>
+        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Github" link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/">Github</s-button>
+        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Gamebanana" link='https://gamebanana.com/tools/17889'>Gamebanana</s-button>
+        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Caimogu" link='https://www.caimogu.cc/post/1408504.html'>Caimogu</s-button>
+      </div>
+      <s-button slot="action" type="text" id="about-dialog-close" data-translate-key="close">关闭</s-button>
+    </s-dialog>
+
 
   </s-page>
   <script type="module" src="renderer.js"></script>

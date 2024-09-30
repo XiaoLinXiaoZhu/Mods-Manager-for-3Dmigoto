@@ -71,6 +71,7 @@ s-chip {
     transform: skew(-20deg);
     position: relative;
     height: fit-content;
+    align-items: center;
 }
 
 s-chip p {
@@ -78,8 +79,10 @@ s-chip p {
     transform: skew(20deg);
     width: fit-content;
     height: fit-content;
+    white-space: nowrap;
     line-height: 1;
     margin: 10px 0px;
+    font-weight: bold;
 }
 
 s-tooltip p {

@@ -50,6 +50,7 @@ body {
 
 #main-page {
     width: 80%;
+    position: relative;
 }
 
 #mod-filter {
@@ -61,11 +62,6 @@ body {
 
 #mod-filter>* {
     margin-right: 5px;
-}
-
-#mod-filter>s-chip>p {
-    width: fit-content;
-    font-weight: bold;
 }
 
 #mod-container {
@@ -88,7 +84,7 @@ body {
     background-origin: padding-box, border-box;
     background-image: linear-gradient(to right, var(--s-color-surface-container-low), var(--s-color-surface-container-low)), linear-gradient(90deg, var(--s-color-primary), #e4d403);
     box-sizing: border-box;
-    transform:rotate3d(1,1,0,0deg) scale(0.95) ;
+    transform: rotate3d(1, 1, 0, 0deg) scale(0.95);
     border-radius: 0px 32px 0px 32px;
 }
 
@@ -97,7 +93,7 @@ body {
     background-color: var(--s-color-surface-container-low);
     border: 1px solid transparent;
     border: "";
-    transform: rotate3d(1,1,0,0deg);
+    transform: rotate3d(1, 1, 0, 0deg);
     border-radius: 0px 30px 0px 30px;
 }
 
@@ -106,8 +102,9 @@ body {
     height: 350px;
     margin-bottom: 0px;
     will-change: transform;
+    transition: all 0.3s cubic-bezier(.36, -0.64, .34, 1.76);
 
-    > div[slot="image"] {
+    >div[slot="image"] {
         width: 250px;
         height: 200px;
     }
@@ -178,7 +175,7 @@ body {
         opacity: 0.2;
     }
 
-    div[slot="image"]{
+    div[slot="image"] {
         position: absolute;
         z-index: -1;
     }
@@ -186,10 +183,10 @@ body {
 
 #apply-btn {
     position: relative;
-    bottom: 70px;
-    right: 50px;
-    font-size: 25px;
-    height: 50px;
+    bottom: 89px;
+    right: 39px;
+    font-size: 29px;
+    height: 55px;
     width: fit-content;
     align-items: center;
 }

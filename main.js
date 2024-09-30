@@ -415,6 +415,13 @@ ipcMain.handle('set-bounds', async (event, boundsStr) => {
     }
   } catch (e) { }
 });
+
+
+// 打开外部链接
+ipcMain.handle('open-external-link', async (event, link) => {
+  shell.openExternal(link);
+});
+
 //---------------------主窗口---------------------
 //创建主窗口
 function createWindow() {

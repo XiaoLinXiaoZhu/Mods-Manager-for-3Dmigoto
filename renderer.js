@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rootdirConfirmButton = document.getElementById('set-rootdir-confirm');
 
     //设置页面
+    const autoApplySwitch = document.getElementById('auto-apply-switch');
+    let ifAutoApply = localStorage.getItem('auto-apply') || false;
     const autoRefreshInZZZSwitch = document.getElementById('auto-refresh-in-zzz');
     let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
     const getExePathInput = document.getElementById('get-exePath-input');
@@ -48,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //mod筛选相关
     const modFilterScroll = document.getElementById('mod-filter-scroll');
+    const modFilterSelected = document.getElementById('mod-filter-selected');
     const modFilter = document.getElementById('mod-filter');
     const modFilterAll = document.getElementById('mod-filter-all');
 
@@ -96,6 +99,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggleFullscreen();
     }
 
+    // 创建 Intersection Observer
+    // 用于检测modItem是否在视窗内,如果在视窗内则使其inWindow属性为true,否则为false
+    // 用来代替 getBoundingClientRect() 来判断元素是否在视窗内,getBoundingClientRect()会导致页面重绘
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const modItem = entry.target;
+            // 如果元素在视口内，则使其inWindow属性为true
+            if (entry.isIntersecting) {
+                modItem.inWindow = true;
+            }
+            else {
+                modItem.inWindow = false;
+            }
+            //debug
+            //console.log(`modItem ${modItem.id} inWindow:${modItem.inWindow}`);
+        });
+    }, {
+        root: null, // 使用视口作为根
+        rootMargin: '250px 100px', // 扩展视口边界
+        threshold: 0 // 只要元素进入视口就触发回调
+    });
+
     //- 初始化
     // 检测是否是第一次打开
     const firstOpen = localStorage.getItem('firstOpen');
@@ -119,11 +144,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("rootdir: " + rootdir);
         console.log("exePath: " + exePath);
         console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
+        console.log("ifAutoApply: " + ifAutoApply);
     }
 
 
 
     //- 内部函数
+
+    async function applyMods() {
+        //获取选中的mods,mod 元素为 mod-item，当其checked属性为true时，表示选中
+        const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
+        //debug
+        console.log("selectedMods: " + selectedMods);
+        //检查mods文件夹下是否有modResourceBackpack文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modResourceBackpack文件夹
+        const modLoaderDir = path.join(rootdir, 'Mods');
+        const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
+        const unknownDirs = fs.readdirSync(modLoaderDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
+        if (unknownDirs.length > 0) {
+            //显示未知文件夹对话框
+            showDialog(unknownModDialog);
+            //显示未知文件夹
+            const unknownModList = document.getElementById('unknown-mod-list');
+            unknownModList.innerHTML = '';
+            unknownDirs.forEach(dir => {
+                const listItem = document.createElement('li');
+                listItem.textContent = dir;
+                unknownModList.appendChild(listItem);
+            });
+        }
+
+        else await ipcRenderer.invoke('apply-mods', selectedMods);
+
+        //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
+        if (ifAutofreshInZZZ) {
+            tryRefreshInZZZ();
+        }
+    }
+
     function showDialog(dialog) {
         // 将 Dialog 的 display 设置为 block
         if (dialog.style.display != 'block') {
@@ -197,19 +254,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         customElements.get('s-snackbar').show(message);
     }
 
-    function clickModItem(modItem, event = null) {
+    function clickModItem(modItem, event = null, rect = null) {
         //debug
         ////console.log("clicked modItem " + modItem.id);
         //显示mod的信息
-
 
         //获取鼠标相对于卡片的位置（百分比）
         let x, y, rotateX, rotateY;
         let rotateLevel = -20;
         if (event != null) {
             //如果传入了event，则使用event的位置
-            x = (event.clientX - modItem.getBoundingClientRect().left) / modItem.offsetWidth;
-            y = (event.clientY - modItem.getBoundingClientRect().top) / modItem.offsetHeight;
+            //获取鼠标相对于卡片的位置（百分比）
+            x = (event.clientX - rect.left) / rect.width;
+            y = (event.clientY - rect.top) / rect.height;
         }
         else {
             //如果没有传入event，则使用卡片的右上角位置
@@ -232,28 +289,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //!debug
         //console.log(`x:${x} y:${y} rotateX:${rotateX} rotateY:${rotateY}`);
-
         modItem.checked = !modItem.checked;
         modItem.setAttribute('checked', modItem.checked ? 'true' : 'false');
-        //改变modItem的背景颜色
-        let item = modItem;
 
+        // if (rect == null) {
+        //     rect = modItem.getBoundingClientRect();
+        // }
         //检查是否在屏幕外一定距离，如果在屏幕外一定距离则不进行动画
-        const rect = item.getBoundingClientRect();
-        if (rect.top < -250 || rect.bottom > window.innerHeight + 250 || rect.left < -100 || rect.right > window.innerWidth + 100) {
+        // if (rect.top < -250 || rect.bottom > window.innerHeight + 250 || rect.left < -100 || rect.right > window.innerWidth + 100) {
+        //     return;
+        // }
+        // 不再使用这个方法，而是使用Intersection Observer来判断是否在视窗内，当在视窗内时，modItem.inWindow = true
+        if (!modItem.inWindow) {
             return;
         }
 
-        if (item.checked == true) {
-            //item.type = 'filled';
-            // //让其背景变为荧光黄
-            //改为使用css控制
-            //// item.style.backgroundColor = 'var(--s-color-surface-container-low)';
-            //// item.style.border = '5px solid transparent';
-            //// item.style.backgroundClip = 'padding-box, border-box';
-            //// item.style.backgroundOrigin = 'padding-box, border-box';
-            //// item.style.backgroundImage = 'linear-gradient(to right, var(--s-color-surface-container-low), var(--s-color-surface-container-low)), linear-gradient(90deg, var(--s-color-primary), #e4d403)';
-            //// item.style.boxSizing = 'border-box';
+        if (modItem.checked == true) {
 
             modItem.animate([
                 { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` },
@@ -266,17 +317,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
                 iterations: 1
             });
-
-            //modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)`;
         }
         else {
-            //item.type = '';
-            ////让其背景变回原来的颜色
-            //改为使用css控制
-            //// item.style.backgroundColor = 'var(--s-color-surface-container-low)';
-            //// item.style.border = '';
-
-
             modItem.animate([
                 { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` },
 
@@ -289,8 +331,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
                 iterations: 1
             });
-
-            //modItem.style.transform = `perspective( 500px ) rotate3d(1,1,0,0deg)`;
         }
     }
 
@@ -374,6 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             modItem.className = 'mod-item';
             modItem.checked = false;
             modItem.clickable = true;
+            modItem.inWindow = false;
             modItem.id = mod;
             modItem.character = modCharacter;
             modItem.style = '';
@@ -386,6 +427,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             //debug
             //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
             if (fragment.children.length == mods.length - modContainerCount) {
+                //如果是最后一个modItem,意味着所有的modItem都已经添加到fragment中，将fragment添加到modContainer中
+
                 modContainer.appendChild(fragment);
 
                 //如果是compactMode则需要将modContainer添加上compact = true
@@ -395,6 +438,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 else {
                     modContainer.setAttribute('compact', 'false');
                 }
+
+                //将所有的的modItem添加到observer中
+                document.querySelectorAll('.mod-item').forEach(item => {
+                    observer.observe(item);
+                });
             }
 
         });
@@ -411,13 +459,93 @@ document.addEventListener('DOMContentLoaded', async () => {
     modContainer.addEventListener('click', (event) => {
         const modItem = event.target.closest('.mod-item');
         if (modItem) {
-            clickModItem(modItem, event);
+            clickModItem(modItem, event,modItem.getBoundingClientRect());
             currentMod = modItem.id;
             showModInfo(currentMod);
             //一旦点击了modItem，将其保存在currentPreset中
             if (currentPreset != '') {
                 savePreset(currentPreset);
             }
+
+            //如果开启了自动应用，则自动应用
+            if (ifAutoApply) {
+                applyMods();
+            }
+
+            //如果modFilterCharacter为Selected，则将modItem切换为 clicked = false 的时候，将其隐藏
+            if (modFilterCharacter == 'Selected' && !modItem.checked) {
+                //添加消失动画
+                modItem.animate([
+                    { opacity: 1 },
+                    { opacity: 0 }
+                ], {
+                    duration: 300,
+                    easing: 'ease-in-out',
+                    iterations: 1
+                });
+                //当动画结束后，将其display设置为none（也就是0.3秒后）
+                setTimeout(() => {
+                    modItem.style.display = 'none';
+                }, 300);
+                //让其他的元素进行浮动，填补空缺
+                //mod-container是grid布局，所以可以获取当前点击的modItem的行和列，然后将其左边的modItem左移，将下一行的第一个modItem移到当前行的最后
+                const modItems = document.querySelectorAll('.mod-item[style="display: block;"]');
+                //通过modContainer的width和modItem的width计算出每行的modItem数量
+                const modItemPerRow = Math.floor(modContainer.offsetWidth / 250);
+                //获取当前点击的modItem的行和列
+                const modItemIndex = Array.from(modItems).indexOf(modItem);
+                const modItemRow = Math.floor(modItemIndex / modItemPerRow);
+                const modItemColumn = modItemIndex % modItemPerRow;
+
+
+                //debug
+                console.log(`modItemPerRow:${modItemPerRow} modItemIndex:${modItemIndex} modItemRow:${modItemRow} modItemColumn:${modItemColumn}`);
+
+                //遍历所有的modItem，将当前行的mod左移以填补空缺，将下一行的第一个mod移到当前行的最后，以此类推
+                modItems.forEach(item => {
+                    const itemIndex = Array.from(modItems).indexOf(item);
+                    const itemRow = Math.floor(itemIndex / modItemPerRow);
+                    const itemColumn = itemIndex % modItemPerRow;
+                    if (itemRow == modItemRow && itemColumn > modItemColumn) {
+                        //debug
+                        //console.log(`move ${item.id} to left`);
+                        item.animate([
+                            { transform: `translateX(0px)` },
+                            { transform: `translateX(-250px)` }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-in-out',
+                            iterations: 1
+                        });
+                    }
+                    if (itemRow > modItemRow && itemColumn == 0) {
+                        //debug
+                        //console.log(`move ${item.id} to up`);
+                        item.animate([
+                            { transform: `translateY(0px) translateX(0px)` },
+                            { transform: `translateY(-350px) translateX(${(modItemPerRow - 1) * 260}px)` }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-in-out',
+                            iterations: 1
+                        });
+                    }
+                    if (itemRow > modItemRow && itemColumn > 0) {
+                        //debug
+                        //console.log(`move ${item.id} to left`);
+                        item.animate([
+                            { transform: `translateX(0px)` },
+                            { transform: `translateX(-250px)` }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-in-out',
+                            iterations: 1
+                        });
+                    }
+                }
+                );
+            }
+
         }
     }
     );
@@ -471,17 +599,74 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.querySelectorAll('.mod-item').forEach(item => {
                     //debug
                     //console.log(`item.id:${item.id} selectedMods:${selectedMods.includes(item.id)}`);
-                    if (item.checked != selectedMods.includes(item.id)) {
+                    if (item.checked && !selectedMods.includes(item.id)) {
+                        clickModItem(item);
+                    }
+                    if (!item.checked && selectedMods.includes(item.id)) {
                         clickModItem(item);
                     }
                 });
+
+                //刷新筛选
+                if (modFilterCharacter == 'Selected') {
+                    filterMods();
+                }
+
+                //如果开启了自动应用，则自动应用
+                if (ifAutoApply) {
+                    applyMods();
+                }
             }
         }
     });
 
     function filterMods() {
+        //如果modFilterCharacter为All，则将所有的modItem显示
+        if (modFilterCharacter == 'All') {
+            //将所有的modItem显示
+            document.querySelectorAll('.mod-item').forEach(item => {
+                item.style.display = 'block';
+            });
+            return;
+        }
+        //如果modFilterCharacter为Selected，则将所有checked="true"的modItem显示
+        if (modFilterCharacter == 'Selected') {
+            //将所有的modItem显示
+            document.querySelectorAll('.mod-item').forEach(item => {
+                if (item.checked == true && item.style.display == 'none') {
+                    //添加出现动画
+                    item.style.display = 'block';
+                    item.animate([
+                        { opacity: 0 },
+                        { opacity: 1 }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-in-out',
+                        iterations: 1
+                    });
+
+                }
+                if (item.checked == false && item.style.display == 'block') {
+                    //添加消失动画
+                    item.animate([
+                        { opacity: 1 },
+                        { opacity: 0 }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-in-out',
+                        iterations: 1
+                    });
+                    //当动画结束后，将其display设置为none（也就是0.3秒后）
+                    setTimeout(() => {
+                        item.style.display = 'none';
+                    }, 300);
+                }
+            });
+            return;
+        }
+        //如果modFilterCharacter为其他，则将所有character=modFilterCharacter的modItem显示
         document.querySelectorAll('.mod-item').forEach(item => {
-            if (modFilterCharacter == 'All' || modFilterCharacter == item.character) {
+            if (modFilterCharacter == item.character) {
                 item.style.display = 'block';
             }
             else {
@@ -516,6 +701,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log("clicked filterItem " + character);
                 modFilterCharacter = character;
                 modFilterAll.type = 'default';
+                modFilterSelected.type = 'default';
                 //将自己的type设置为filled，其他的设置为default
                 const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
                 allfilterItems.forEach(item => {
@@ -600,48 +786,47 @@ document.addEventListener('DOMContentLoaded', async () => {
             modContainer.setAttribute('compact', 'true');
             //添加折叠动画，modContainer的子物体modItem的高度从350px变为150px
             //动画只对窗口内的modItem进行动画
-            const rect = modContainer.getBoundingClientRect();
             const modItems = document.querySelectorAll('.mod-item');
             modItems.forEach(item => {
-                const itemRect = item.getBoundingClientRect();
-                if (itemRect.top > -1000 && itemRect.bottom < window.innerHeight + 1000) {
-                    item.animate([
-                        { height: '350px' },
-                        { height: '150px' }
-                    ], {
-                        duration: 300,
-                        easing: 'ease-in-out',
-                        iterations: 1
-                    });
-
-                    //item下的slot=headline，slot=text，slot=subhead的div元素会缓缓上移
-                    //获取这些元素
-                    //遍历子元素，匹配slot属性
-                    item.childNodes.forEach(child => {
-                        if (child.slot == 'headline' || child.slot == 'subhead' || child.slot == 'text') {
-                            child.animate([
-                                { transform: 'translateY(200px)' },
-                                { transform: 'translateY(0px)' }
-                            ], {
-                                duration: 300,
-                                easing: 'ease-in-out',
-                                iterations: 1
-                            });
-                        }
-                        if (child.slot == 'image') {
-                            //获取slot下的img元素
-                            const img = child.querySelector('img');
-                            img.animate([
-                                { opacity: 1, filter: 'blur(0px)' },
-                                { opacity: 0.2, filter: 'blur(5px)' }
-                            ], {
-                                duration: 300,
-                                easing: 'ease-in-out',
-                                iterations: 1
-                            });
-                        }
-                    });
+                if (!item.inWindow) {
+                    return;
                 }
+                item.animate([
+                    { height: '350px' },
+                    { height: '150px' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-in-out',
+                    iterations: 1
+                });
+
+                //item下的slot=headline，slot=text，slot=subhead的div元素会缓缓上移
+                //获取这些元素
+                //遍历子元素，匹配slot属性
+                item.childNodes.forEach(child => {
+                    if (child.slot == 'headline' || child.slot == 'subhead' || child.slot == 'text') {
+                        child.animate([
+                            { transform: 'translateY(200px)' },
+                            { transform: 'translateY(0px)' }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-in-out',
+                            iterations: 1
+                        });
+                    }
+                    if (child.slot == 'image') {
+                        //获取slot下的img元素
+                        const img = child.querySelector('img');
+                        img.animate([
+                            { opacity: 1, filter: 'blur(0px)' },
+                            { opacity: 0.2, filter: 'blur(5px)' }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-in-out',
+                            iterations: 1
+                        });
+                    }
+                });
             });
         }
         else {
@@ -651,48 +836,48 @@ document.addEventListener('DOMContentLoaded', async () => {
             modContainer.setAttribute('compact', 'false');
             //添加展开动画，modContainer的子物体modItem的高度从150px变为350px
             //动画只对窗口内的modItem进行动画
-            const rect = modContainer.getBoundingClientRect();
             const modItems = document.querySelectorAll('.mod-item');
             modItems.forEach(item => {
-                const itemRect = item.getBoundingClientRect();
-                if (itemRect.top > -1000 && itemRect.bottom < window.innerHeight + 1000) {
-                    item.animate([
-                        { height: '150px' },
-                        { height: '350px' }
-                    ], {
-                        duration: 300,
-                        easing: 'ease-in-out',
-                        iterations: 1
-                    });
-
-                    //item下的slot=headline，slot=text，slot=subhead的div元素会缓缓下移
-                    //获取这些元素
-                    //遍历子元素，匹配slot属性
-                    item.childNodes.forEach(child => {
-                        if (child.slot == 'headline' || child.slot == 'subhead' || child.slot == 'text') {
-                            child.animate([
-                                { transform: 'translateY(-200px)' },
-                                { transform: 'translateY(0px)' }
-                            ], {
-                                duration: 300,
-                                easing: 'ease-in-out',
-                                iterations: 1
-                            });
-                        }
-                        if (child.slot == 'image') {
-                            //获取slot下的img元素
-                            const img = child.querySelector('img');
-                            img.animate([
-                                { opacity: 0.2, filter: 'blur(5px)' },
-                                { opacity: 1, filter: 'blur(0px)' }
-                            ], {
-                                duration: 300,
-                                easing: 'ease-in-out',
-                                iterations: 1
-                            });
-                        }
-                    });
+                if (!item.inWindow) {
+                    return;
                 }
+                item.animate([
+                    { height: '150px' },
+                    { height: '350px' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-in-out',
+                    iterations: 1
+                });
+
+                //item下的slot=headline，slot=text，slot=subhead的div元素会缓缓下移
+                //获取这些元素
+                //遍历子元素，匹配slot属性
+                item.childNodes.forEach(child => {
+                    if (child.slot == 'headline' || child.slot == 'subhead' || child.slot == 'text') {
+                        child.animate([
+                            { transform: 'translateY(-200px)' },
+                            { transform: 'translateY(0px)' }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-in-out',
+                            iterations: 1
+                        });
+                    }
+                    if (child.slot == 'image') {
+                        //获取slot下的img元素
+                        const img = child.querySelector('img');
+                        img.animate([
+                            { opacity: 0.2, filter: 'blur(5px)' },
+                            { opacity: 1, filter: 'blur(0px)' }
+                        ], {
+                            duration: 300,
+                            easing: 'ease-in-out',
+                            iterations: 1
+                        });
+                    }
+                });
+
             });
         }
     });
@@ -707,6 +892,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //显示当前rootdir
         rootdirInput.value = rootdir;
+
+        //显示当前 auto-apply 的值
+        autoApplySwitch.checked = ifAutoApply;
 
         //显示当前 auto-refresh-in-zzz 的值
         autoRefreshInZZZSwitch.checked = ifAutofreshInZZZ;
@@ -758,6 +946,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     );
+
+    //是否开启自动应用
+    autoApplySwitch.addEventListener('change', () => {
+        ifAutoApply = autoApplySwitch.checked;
+        //保存ifAutoApply
+        localStorage.setItem('auto-apply', ifAutoApply);
+        //debug
+        console.log("ifAutoApply: " + ifAutoApply);
+    });
 
     //是否开启自动刷新
     autoRefreshInZZZSwitch.addEventListener('change', () => {
@@ -825,35 +1022,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //-mod启用
     applyBtn.addEventListener('click', async () => {
-        //获取选中的mods,mod 元素为 mod-item，当其checked属性为true时，表示选中
-        const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
-        //debug
-        console.log("selectedMods: " + selectedMods);
-        //检查mods文件夹下是否有modResourceBackpack文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modResourceBackpack文件夹
-        const modLoaderDir = path.join(rootdir, 'Mods');
-        const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
-        const unknownDirs = fs.readdirSync(modLoaderDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
-        if (unknownDirs.length > 0) {
-            //显示未知文件夹对话框
-            showDialog(unknownModDialog);
-            //显示未知文件夹
-            const unknownModList = document.getElementById('unknown-mod-list');
-            unknownModList.innerHTML = '';
-            unknownDirs.forEach(dir => {
-                const listItem = document.createElement('li');
-                listItem.textContent = dir;
-                unknownModList.appendChild(listItem);
-            });
-        }
-
-        else await ipcRenderer.invoke('apply-mods', selectedMods);
-
-        //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
-        if (ifAutofreshInZZZ) {
-            tryRefreshInZZZ();
-        }
-
-
+        applyMods();
         //使用s-snackbar显示提示
         snack('Mods applied');
     })
@@ -864,32 +1033,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (exePath === '') {
             console.log("exePath is empty");
             return '';
-          }
-        
-          const cmd = `start "" "${exePath}" /min`;
-          let stdout;
-          console.log(`cmd: ${cmd}`);
-        
-          try {
+        }
+
+        const cmd = `start "" "${exePath}" /min`;
+        let stdout;
+        console.log(`cmd: ${cmd}`);
+
+        try {
             // 执行exe程序
             stdout = require('child_process').execSync(cmd, { encoding: 'utf-8' });
             console.log('stdout:', stdout);
             // 如果没有抛出异常，说明程序正常退出，退出状态码为0
             console.log('程序正常退出，退出状态码: 0');
-          } catch (error) {
+        } catch (error) {
             // 如果程序非正常退出，这里可以捕获到错误
             if (error.status) {
-              console.error(`程序非正常退出，退出状态码: ${error.status}`);
+                console.error(`程序非正常退出，退出状态码: ${error.status}`);
             } else {
-              // 处理其他类型的错误
-              console.error('发生了一个错误：', error.message);
+                // 处理其他类型的错误
+                console.error('发生了一个错误：', error.message);
             }
-          }
-        
-          console.log(`succeed to execute ${cmd}，refresh-in-zzz.exe return: ${stdout}`);
-          snack('Successfully refresh in ZZZ' + stdout);
-        
-          return exePath;
+        }
+
+        console.log(`succeed to execute ${cmd}，refresh-in-zzz.exe return: ${stdout}`);
+        snack('Successfully refresh in ZZZ' + stdout);
+
+        return exePath;
     }
 
     const unknownModConfirmButton = document.getElementById('unknown-mod-confirm');
@@ -926,9 +1095,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     );
 
+    //点击All按钮时，将modFilterCharacter设置为All，并且将其他的type设置为default
     modFilterAll.addEventListener('click', () => {
         modFilterCharacter = 'All';
         modFilterAll.type = 'filled-tonal';
+        modFilterSelected.type = 'default';
+        //将其他的type设置为default
+        const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
+        allfilterItems.forEach(item => {
+            item.type = 'default';
+        });
+        filterMods();
+    }
+    );
+
+    //点击selected按钮时，将modFilterCharacter设置为selected，并且将其他的type设置为default
+    modFilterSelected.addEventListener('click', () => {
+        modFilterCharacter = 'Selected';
+        modFilterSelected.type = 'filled-tonal';
+        modFilterAll.type = 'default';
         //将其他的type设置为default
         const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
         allfilterItems.forEach(item => {
@@ -1141,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             //强制覆盖
             fs.copyFileSync(imagePath, modImageDest, fs.constants.COPYFILE_FICLONE);
         }
-        
+
 
         //保存到tempModInfo中
         tempModInfo.imagePath = modImageName;
@@ -1224,5 +1409,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 height: window.innerHeight,
             }));
         }
+    });
+
+
+    // about-dialog
+    const linkButton = document.querySelectorAll('.link-button');
+    linkButton.forEach(button => {
+        button.addEventListener('click', async () => {
+            const url = button.getAttribute('link');
+            //debug
+            console.log(`clicked link-button ${url}`);
+            await ipcRenderer.invoke('open-external-link', url);
+        });
     });
 });

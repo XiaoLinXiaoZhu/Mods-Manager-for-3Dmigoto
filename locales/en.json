@@ -26,8 +26,10 @@
     "minimize": "Minimize",
     "compact": "Compact",
     "open-test-page": "Open Experimental Page",
-    "test-title": "Test Function (*Need to open with administrator privileges)",
-    "test-funciton-info": "When applying mods, the refresh in the zero area will be activated automatically",
+    "auto-apply": "Auto Apply",
+    "auto-apply-info": "Automatically apply configuration when selecting/deselecting mods (may cause slight lag)",
+    "test-title": "Test Function",
+    "test-funciton-info": "When applying mods, the refresh in the zero area will be activated automatically(*Need to open with administrator privileges), there still have bugs and is not recommended for use",
     "dialog-ask-for-exePath": "Due to file structure restrictions, you need to manually specify refresh-in-zzz.bat here, which is generally located in the same directory as ZZZModManager",
     "creat-preset": "Create Preset",
     "edit-preset": "Edit Preset",
@@ -43,7 +45,7 @@
     "init-config": "Initialize Configuration",
     "init": "Initialize all configurations",
     "dialog-ask-for-initConfig": "Are you sure to initialize all configurations?",
-    "apply": "Apply Configuration",
+    "apply": "Apply",
     "open-mod-dir": "Open MOD Folder",
     "edit-mod-info": "Edit MOD Info",
     "mod-info-name": "MOD Name",
@@ -53,5 +55,10 @@
     "edit-mod-image-preview": "Select MOD Cover",
     "save": "Save",
     "close-window": "Close Window",
-    "all": "All"
+    "all": "All",
+    "selected": "Selected",
+    "about": "About",
+    "about-content": "This program is developed by XLXZ, open-source and free, following the GNU General Public License v3.0. It is used to manage mods based on 3dmigoto, and theoretically, it can also manage mods for other games (as long as they are based on 3dmigoto).",
+    "about-version": "The latest version is released on GameBanana. If you have any questions or suggestions, feel free to raise them on GitHub.",
+    "about-author": "Author: XLXZ"
   }

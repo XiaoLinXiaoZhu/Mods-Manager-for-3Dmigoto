@@ -18,7 +18,7 @@
   "manual-move-mod": "手动移动",
   "description": "这是一个Electron应用程序。",
   "close": "关闭",
-  "cancle": "取消",
+  "cancel": "取消",
   "confirm": "确认",
   "refresh": "刷新",
   "settings": "设置",
@@ -26,8 +26,10 @@
   "minimize": "最小化",
   "compact": "紧凑",
   "open-test-page": "打开实验性功能页面",
-  "test-title": "测试功能 (*需要使用管理员权限打开)",
-  "test-funciton-info":"启用 应用mod时 将会自动在绝区零中激活刷新",
+  "auto-apply": "自动应用",
+  "auto-apply-info": "当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)",
+  "test-title": "测试功能",
+  "test-funciton-info":"启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)(存在bug,不建议使用)",
   "dialog-ask-for-exePath": "因为文件结构限制，这里需要您手动指定refresh-in-zzz.bat，它一般位于和ZZZModManager同一目录下",
   "creat-preset": "创建预设",
   "edit-preset": "编辑预设",
@@ -53,5 +55,10 @@
   "edit-mod-image-preview": "选择MOD预览图片",
   "save": "保存",
   "close-window": "关闭窗口",
-  "all": "全部"
+  "all": "全部",
+  "selected": "已选择",
+  "about": "关于",
+  "about-content": "本程序由 XLXZ 开发,开源免费,遵循GNU General Public License v3.0。用于管理基于3dmigoto的mod ,理论上来说也可以管理其他游戏的mod(只要是基于3dmigoto的)",
+  "about-version": "最新版本在gamebanana上发布，如果你有任何问题或者建议，欢迎在github上提出",
+  "about-author": "作者: XLXZ"
 }
