@@ -2,52 +2,37 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
   workflow_dispatch:
   
 jobs:
   release:
     name: build and release electron app
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.image }}
 
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os:
+          [
+            { name: 'linux', image: 'ubuntu-latest' },
+            { name: 'windows', image: 'windows-latest' },
+          ]
 
     steps:
       - name: Check out git repository
-        uses: actions/checkout@v3.0.0
+        uses: actions/checkout@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v3.0.0
+        uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build Electron App
-        run: npm run dist
+      - name: Publish Electron App
+        run: npm run publish
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Cleanup Artifacts for Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          npx rimraf "dist/!(*.exe)"
-      
-      - name: upload artifacts
-        uses: actions/upload-artifact@v3.0.0
-        with:
-          name: ${{ matrix.os }}
-          path: dist
-
-      - name: release
-        uses: softprops/action-gh-release@v0.1.14
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: "dist/**"
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
