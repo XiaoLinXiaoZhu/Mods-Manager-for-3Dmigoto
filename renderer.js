@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addPresetDialog = document.getElementById('add-preset-dialog');
 
     let currentPreset = '';
+    let editMode = false;
 
     //控制按钮
     const settingsShowButton = document.getElementById('settings-show-button');
@@ -106,12 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         entries.forEach(entry => {
             const modItem = entry.target;
             // 如果元素在视口内，则使其inWindow属性为true
-            if (entry.isIntersecting) {
-                modItem.inWindow = true;
-            }
-            else {
-                modItem.inWindow = false;
-            }
+            modItem.inWindow = entry.isIntersecting ? true : false;
             //debug
             //console.log(`modItem ${modItem.id} inWindow:${modItem.inWindow}`);
         });
@@ -146,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
         console.log("ifAutoApply: " + ifAutoApply);
     }
-
+    setTheme(localStorage.getItem('theme') || 'dark');
 
 
     //- 内部函数
@@ -227,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
         }
     }
-    setTheme(localStorage.getItem('theme') || 'dark');
+
 
     function translatePage(lang) {
         //获取所有需要翻译的元素
@@ -255,10 +251,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function clickModItem(modItem, event = null, rect = null) {
-        //debug
-        ////console.log("clicked modItem " + modItem.id);
-        //显示mod的信息
-
         //获取鼠标相对于卡片的位置（百分比）
         let x, y, rotateX, rotateY;
         let rotateLevel = -20;
@@ -269,41 +261,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             y = (event.clientY - rect.top) / rect.height;
         }
         else {
-            //如果没有传入event，则使用卡片的右上角位置
-            if (modItem.checked) {
-                x = 0;
-                y = 0.7;
-            }
-            else {
-                // x = 1;
-                // y = 0;
-                //随机生成x和y
-                x = Math.random() / 5 + 0.7;
-                y = Math.random() / 5;
-            }
+            //如果没有传入event，且modItem.checked为true，则设置为0，0.7，否则设置为0.7，0 偏移0.2*random
+            x = modItem.checked ? 0 : Math.random() / 5 + 0.7;
+            y = modItem.checked ? 0.7 : Math.random() / 5;
         }
         //根据鼠标相对于卡片的位置设置反转程度
         rotateX = 2 * (y - 0.5);
         rotateY = -2 * (x - 0.5);
 
-
-        //!debug
-        //console.log(`x:${x} y:${y} rotateX:${rotateX} rotateY:${rotateY}`);
+        //反转卡片状态
         modItem.checked = !modItem.checked;
         modItem.setAttribute('checked', modItem.checked ? 'true' : 'false');
 
-        // if (rect == null) {
-        //     rect = modItem.getBoundingClientRect();
-        // }
-        //检查是否在屏幕外一定距离，如果在屏幕外一定距离则不进行动画
-        // if (rect.top < -250 || rect.bottom > window.innerHeight + 250 || rect.left < -100 || rect.right > window.innerWidth + 100) {
-        //     return;
-        // }
-        // 不再使用这个方法，而是使用Intersection Observer来判断是否在视窗内，当在视窗内时，modItem.inWindow = true
         if (!modItem.inWindow) {
+            //如果modItem不在视窗内，则不进行动画
             return;
         }
 
+
+        //添加动画
         if (modItem.checked == true) {
 
             modItem.animate([
@@ -342,7 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
         const modInfoImagePath = modInfo.imagePath;
 
-        if(modInfoImagePath && fs.existsSync(path.join(modPath, modInfoImagePath))) {
+        if (modInfoImagePath && fs.existsSync(path.join(modPath, modInfoImagePath))) {
             modImageName = modInfoImagePath;
             return path.join(modPath, modImageName);
         }
@@ -363,7 +339,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             snack(`Original image is ${modInfoImagePath},but not found, find ${modImageName} instead, auto saved to mod.json`);
             return path.join(modPath, modImageName);
         }
-        
+
         // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
         const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
         const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
@@ -371,7 +347,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (imageFiles.length <= 0) {
             return path.join(__dirname, 'default.png');
         }
-        
+
         modImageName = imageFiles[0];
         //debug
         //console.log(`modImageName:${modImageName}`);
@@ -469,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     modContainer.addEventListener('click', (event) => {
         const modItem = event.target.closest('.mod-item');
         if (modItem) {
-            clickModItem(modItem, event,modItem.getBoundingClientRect());
+            clickModItem(modItem, event, modItem.getBoundingClientRect());
             currentMod = modItem.id;
             showModInfo(currentMod);
             //一旦点击了modItem，将其保存在currentPreset中
@@ -562,7 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
 
     //使用事件委托处理拖放事件：
-    // 1. 当拖动图片到modItem上时，将modItem的图片替换为拖动的图片
+    // 当拖动文件且悬停在modItem上时，显示拖动的mod的信息
     modContainer.addEventListener('dragover', (event) => {
         event.preventDefault();
 
@@ -578,35 +554,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     modContainer.addEventListener('drop', (event) => {
         event.preventDefault();
-      
+
         const modItem = event.target.closest('.mod-item');
         if (!modItem) {
             snack('Invalid drop target');
             return;
         }
-      
+
         const mod = modItem.id;
         currentMod = mod;
 
         var modInfo = ipcRenderer.invoke('get-mod-info', mod);
         // 获取拖动的文件
         const files = event.dataTransfer.files;
-      
+
         // debug
         console.log(`drop on ${mod} , files:`, files);
-      
+
         // 如果拖拽的是文件
         if (files.length > 0) {
             const file = files[0];
 
             // 校验文件是否是图片
-            if (!file.type.startsWith('image/')) {
-              snack('Please drop an image file');
-              return;
+            if (file.type.startsWith('image/')) {
+                // 交给 handleImageDrop 处理
+                handleImageDrop(file, modItem, mod);
+                return;
             }
 
-            // 交给 handleImageDrop 处理
-            handleImageDrop(file, modItem, mod);
+            //todo: 如果拖入的是zip文件，则交给handleZipDrop处理，但是解压zip文件似乎需要使用别的库，暂时不实现
+            // // 如果拖入的是zip文件，则交给handleZipDrop处理
+            // if (file.name.endsWith('.zip')) {
+            //     handleZipDrop(file, modItem, mod);
+            //     return;
+            // }
+
+            snack('Invalid file type');        // 如果不是图片文件，则提示用户
+            return;
         }
     });
 
@@ -635,7 +619,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log(`modInfo:`, modInfo);
         modInfo.imagePath = modImageName;
         ipcRenderer.invoke('set-mod-info', mod, modInfo);
-        
+
         // 更新modItem的图片
         modItem.querySelector('img').src = modImageDest;
 
@@ -645,74 +629,119 @@ document.addEventListener('DOMContentLoaded', async () => {
         // snack提示
         snack(`Updated cover for ${mod}`);
     }
+
     async function loadPresets() {
-        presetContainer.innerHTML = '';
+        // presetContainer.innerHTML = '';
+        // const presets = await ipcRenderer.invoke('get-presets');
+        // presets.forEach(preset => {
+        //     const presetItem = document.createElement('s-button');
+        //     presetItem.id = 'preset-item';
+        //     presetItem.type = "elevated";
+        //     presetItem.name = preset;
+        //     presetItem.innerHTML = preset;
+        //     presetContainer.appendChild(presetItem);
+        // });
+        // 上面的方法会导致preset元素闪烁，使用重复利用元素的方法来减少重绘次数
+        editMode = false;
         const presets = await ipcRenderer.invoke('get-presets');
-        presets.forEach(preset => {
-            const presetItem = document.createElement('s-button');
-            presetItem.id = 'preset-item';
-            presetItem.type = "elevated";
+        const presetContainerCount = presetContainer.childElementCount;
+        const fragment = document.createDocumentFragment();
+        presets.forEach((preset, index) => {
+            var presetItem;
+            if (index < presetContainerCount) {
+                presetItem = presetContainer.children[index];
+            }
+            else {
+                presetItem = document.createElement('s-button');
+                presetItem.id = 'preset-item';
+                presetItem.type = "elevated";
+                presetItem.name = preset;
+                presetItem.innerHTML = preset;
+                fragment.appendChild(presetItem);
+            }
+            presetItem.name = preset;
             presetItem.innerHTML = preset;
-            presetContainer.appendChild(presetItem);
+            if (fragment.children.length == presets.length - presetContainerCount) {
+                presetContainer.appendChild(fragment);
+            }
         });
-    };
+
+        //删除多余的presetItem
+        if (presets.length < presetContainerCount) {
+            for (let i = presets.length; i < presetContainerCount; i++) {
+                presetContainer.removeChild(presetContainer.children[presets.length]);
+            }
+        }
+    }
+
+    function deletePreset(presetName) {
+        //debug
+        console.log("🔴delete presetItem" + presetName);
+
+        //禁止删除和currentPreset相同的preset
+        if (currentPreset == presetName) {
+            snack('Cannot delete current preset');
+            return;
+        }
+
+        ipcRenderer.invoke('delete-preset', presetName);
+        //将自己的父元素删除
+        const allpresetItems = document.querySelectorAll('#preset-item');
+        allpresetItems.forEach(item => {
+            if (item.name == presetName) {
+                //删除自己的父元素
+                item.parentNode.removeChild(item);
+            }
+        });
+    }
+
+    async function applyPreset(presetName) {
+        console.log("🟢load presetItem " + presetName);
+        
+        if (currentPreset == presetName) {
+            //如果点击的是当前的preset，则不进行任何操作
+            return;
+        }
+
+        currentPreset = presetName;
+
+        const selectedMods = await ipcRenderer.invoke('load-preset', presetName);
+        document.querySelectorAll('.mod-item').forEach(item => {
+            //debug
+            //console.log(`item.id:${item.id} selectedMods:${selectedMods.includes(item.id)}`);
+            if (item.checked && !selectedMods.includes(item.id)) {
+                clickModItem(item);
+            }
+            if (!item.checked && selectedMods.includes(item.id)) {
+                clickModItem(item);
+            }
+        });
+
+        //更改样式
+        const allpresetItems = document.querySelectorAll('#preset-item');
+        allpresetItems.forEach(item => {
+            item.type = 'elevated';
+            if (item.name == presetName) {
+                item.type = 'filled';
+            }
+        }
+        );
+
+
+        //刷新筛选
+        if (modFilterCharacter == 'Selected') {
+            filterMods();
+        }
+        //如果开启了自动应用，则自动应用
+        if (ifAutoApply) {
+            applyMods();
+        }
+    }
 
     //使用事件委托处理点击事件，减少事件绑定次数
     presetContainer.addEventListener('click', async (event) => {
         const presetItem = event.target.closest('#preset-item');
-        if (presetItem) {
-            //如果是编辑模式，则删除预设
-            if (editMode) {
-                //innerHtml 现在包含了删除按钮，所以不再是presetName，而是presetName+删除按钮，所以需要提取presetName
-                const presetName = presetItem.innerHTML.split('<')[0].trim();
-                ipcRenderer.invoke('delete-preset', presetName);
-                //将自己的父元素隐藏
-                presetItem.style.display = 'none';
-                //debug
-                console.log("delete presetItem" + presetItem.innerHTML);
-            }
-            else {
-                console.log("🟢load presetItem " + presetItem.innerHTML);
-
-                //如果当前的presetItem和currentPreset相同，则不进行操作
-                if (currentPreset == presetItem.innerHTML) {
-                    return;
-                }
-
-                currentPreset = presetItem.innerHTML;
-
-                //将其他的type设置为elevated，自己的type设置为filled
-                const allpresetItems = document.querySelectorAll('#preset-item');
-                allpresetItems.forEach(item => {
-                    item.type = 'elevated';
-                }
-                );
-                presetItem.type = 'filled';
-
-                const presetName = presetItem.innerHTML;
-                const selectedMods = await ipcRenderer.invoke('load-preset', presetName);
-                document.querySelectorAll('.mod-item').forEach(item => {
-                    //debug
-                    //console.log(`item.id:${item.id} selectedMods:${selectedMods.includes(item.id)}`);
-                    if (item.checked && !selectedMods.includes(item.id)) {
-                        clickModItem(item);
-                    }
-                    if (!item.checked && selectedMods.includes(item.id)) {
-                        clickModItem(item);
-                    }
-                });
-
-                //刷新筛选
-                if (modFilterCharacter == 'Selected') {
-                    filterMods();
-                }
-
-                //如果开启了自动应用，则自动应用
-                if (ifAutoApply) {
-                    applyMods();
-                }
-            }
-        }
+        presetItem? editMode? deletePreset(presetItem.name): applyPreset(presetItem.name): null;
     });
 
     function filterMods() {
@@ -729,6 +758,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             //将所有的modItem显示
             document.querySelectorAll('.mod-item').forEach(item => {
                 if (item.checked == true && item.style.display == 'none') {
+                    //如果不在视窗内，则直接显示
+                    if (!item.inWindow) {
+                        item.style.display = 'block';
+                        return;
+                    }
                     //添加出现动画
                     item.style.display = 'block';
                     item.animate([
@@ -741,7 +775,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
 
                 }
-                if (item.checked == false && item.style.display == 'block') {
+                if (item.checked == false && item.style.display != 'none') {
+                    //如果不在视窗内，则直接隐藏
+                    if (!item.inWindow) {
+                        item.style.display = 'none';
+                        return;
+                    }
                     //添加消失动画
                     item.animate([
                         { opacity: 1 },
@@ -829,7 +868,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     //-----------------------------事件监听--------------------------------
-    let editMode = false;
+    
 
     //-全屏按钮
     fullScreenButton.addEventListener('click', toggleFullscreen);
@@ -1400,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log(`tempModInfo:${tempModInfo}`);
         //保存到mod.json文件中
         ipcRenderer.invoke('set-mod-info', currentMod, tempModInfo);
-        
+
         //更新当前的modInfo
         currentModInfo = tempModInfo;
         currentImagePath = tempImagePath;
