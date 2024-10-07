@@ -1,171 +1,292 @@
-# Mods Manager for 3dmigoto<br>——3dmigoto的插件管理工具
+![](https://img520.com/4uig49.gif)
+![](https://img520.com/er4NFf.gif)
 
-english version: [readme-en.md](./readme-en.md)
+# Mods Manager for 3dmigoto<br>--Plugin management tools for 3dmigoto
 
-## 项目简介
+中文：[简体中文](readme-ch.md) | English: [English](readme.md)
 
-这是一个便捷的插件管理工具，旨在通过一个美观的GUI界面来管理3dmigoto的mods。
+## Target in next version:
 
-该工具利用sober库实现了Material You风格的界面。
-![alt text](readmeSrc/image-3.png)
+1. Optimize Page Layout
+2. [test function] Changing the toggle shortcut for the module (this is intrusive for mod and will potentially prevent mod from working properly? This is useful when multiple mods have conflicting shortcut configurations
 
-## 功能列表
+## What's new in version 1.8.3:
 
-1. 从 `modResourceBackpack` 文件夹内读取可选mod列表（每个文件夹即为一个mod）。
-2. 通过一个美观的可视化页面，选择开启哪些mod。
-3. 点击 `Apply` 按钮后，根据选择的mod，将其复制到 `3dmigoto/Mods` 文件夹中。
-4. 点击 `创建预设` 可以创建预设，点击可以在预设之间切换，并且再次点击 `Apply` 以应用预设。
+### New functions:
 
-## 安装步骤
-### 从 release 下载
-release页面里面有两个版本，一个是安装包版本，一个是松散文件版本。安装包版本是一个exe文件，松散文件版本是一个文件夹，里面包含了所有的文件。
-
-建议使用松散文件版本，因为这样加载速度会更快。
-
-1. 下载最新版本的安装包或者松散文件。
-2. 解压文件。
-3. 运行 `ZZZmod管理器-1.0.0 Setup.exe` 或者 `ZZZmod管理器.exe`。
-
-### 从 源码 编译
-1. 克隆此仓库到本地：
-    ```bash
-    git clone https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto.git
-    ```
-2. 进入项目目录：
-    ```bash
-    cd Mods-Manager-for-3Dmigoto
-    ```
-3. 安装依赖：
-    ```bash
-    npm install electron@latest
-    npm install @soberjs/core
-    ```
-4. 启动项目：
-    ```bash
-    npm run start
-    ```
-5. 打包项目：安装electron forge 来打包项目
-    ```bash
-    npm install -g electron-forge
-    electron-forge make
-    ```
-    打包后的文件在out文件夹中
-    
-## 开始使用
-
-1. 启动应用后，界面会显示 `modResourceBackpack` 文件夹中的所有mod，首次使用时，需要指定 `modResourceBackpack` 文件夹根目录的路径。![alt text](readmeSrc/image-2.png)比如：文件夹结构如下：
-    ```
-    rootdir
-    ├── modResourceBackpack
-    │   ├── mod1
-    │   ├── mod2
-    │   ├── mod3
-    │   └── ...
-    ├── 3dmigoto
-    │   ├── Mods
-    │   ├── 3dmigoto.exe
-    │   └── ...
-    └── presets
-        ├── preset1
-        ├── preset2
-        ├── preset3
-        └── ...
-    ```
-    那么指定的文件夹的路径应为 `modResourceBackpack` 文件夹的根目录 `rootdir`。
-![alt text](readmeSrc/image-1.png)
-1. 将mod安装至 `modResourceBackpack` 文件夹中即可，你可能需要为每个mod增加一个 mod.json 文件，以便在管理器中显示mod的名称和描述。mod.json文件的格式如下：
-    ```json
-    {
-    "character": "Anby",
-    "description": "This is a description of my mod.",
-    "imagePath": "preview.png"
-    }
-    ```
-
-> 工具里面也提供了 autog.bat 来帮助生成 mod.json，当然你也不必每个mod都设置，只需要保证文件夹名称的可读性，并在mod文件夹下防止一张图片即可达到比较好的视觉效果:![](readmeSrc/image.png)
-> 
-> 当加载mod列表的时候，会按照以下优先级获取显示的图片：
-> 1. mod.json 中的 imagePath 字段
-> 2. mod文件夹下的第一张 名称为 preview 的图片
-> 3. mod文件夹下的第一张图片
-> 4. 默认图片
+- You can now replace the cover of a mod card by dragging and dropping an image onto the card!
 
 
-## 使用说明
 
-1. 单击mod的卡片即可选择或取消选择mod。
-2. 点击 `Apply` `应用配置` 按钮以应用更改。
-3. 点击 `创建预设` 按钮以创建预设。
-4. 点击 `预设` 按钮以切换预设。
-5. 点击 `管理预设` 按钮以管理预设。
+### Better visuals :
 
-## 已知问题
-
-暂无。
+-  Add animation of filter of selected
 
 
-## 技术栈
 
-- Electron
-- [sober库](https://soberjs.com/)
-- Material You 风格
+## What's new in version 1.8.2:
 
-## 后续计划
+### New functions:
 
-- Add a compact setting to view installed mods.
-- 添加一个紧凑的设置，以查看已安装的mod。
-- Add a about page.
-- 添加一个关于页面。
+- Auto apply when you select mods, it is in the setting page
+- Add about page
+- Added Selected filtering option to make it easier to see what mods have been selected.
 
-## 贡献指南
 
-欢迎任何形式的贡献！请遵循以下步骤：
 
-1. Fork 此仓库。
-2. 创建一个新的分支：
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
-3. 提交你的更改：
-    ```bash
-    git commit -m 'Add some feature'
-    ```
-4. 推送到分支：
-    ```bash
-    git push origin feature/your-feature-name
-    ```
-5. 创建一个Pull Request。
+### Better visuals :
 
-## 版本历史
-### 1.6 目标
-下一个版本的目标：
+-  Optimize Page Layout
 
-1. 使用 mklink 而不是移动 mod 文件，以加快应用速度。
-```cmd
-mklink /J "E:\Games Resources\3dmigoto\Mods\testMod" "E:\Games Resources\3dmigoto\modResourceBackpack\testMod"
+
+
+### Optimize performance
+
+- Improved loading speed
+
+
+
+## What's new in version 1.8.1:
+
+### New functions:
+
+-  [test function] Add function that you can automatically switch ZZZ to the foreground and refresh 3dmigoto after applying mods ?This requires administrator privileges to invoke the application process and to simulate pressing F10)
+- This feature doesn't work as well as I thought it would, after hitting apply you still have to wait 2-3s for the app to get ZZZ's window and top it and activate F10 (which might as well be manually refreshing it yourself)
+- Also, turning on this feature requires you to manually turn it on using the administrator, which is a bit of a hassle. Therefore, it is turned off by default, you can view and enable this experimental feature in the settings.
+
+
+
+### Better visuals :
+
+-  Optimize Page Layout
+
+
+
+## What's new in version 1.8:
+
+### New functions:
+
+
+
+- Saves the window position, size and state (fullscreen or not) when you close the manager.
+- Restores those values when you open the manager again.
+
+Thanks the help from soliddanii,he/she added this function, I've tested it and it works fine!
+
+- Compressed and Expanded modes, in compressed mode, the image will be used as the background of the card, the whole card will be smaller and show more items. The toggle button is at the bottom left corner.
+
+
+
+### Translation fixed:
+
+
+
+- With the help from [Ascant](https://gamebanana.com/members/3569784), I fixed some translation problems. Thanks!
+
+
+
+# About the program
+
+
+
+## What it can ?
+
+It can help you to manage your mod in Mods file of ZZMI.
+By using Material You theme , it looks very pretty~
+Main function:
+
+1.Display your mods as cards in the main page
+2.Control able/disable by simply click
+3.Add the description to each mod (You can add a description of the hotkeys?
+4.Create presets and you can apply your presets easily!
+
+
+
+## How to use ?
+
+Just download and unzip the file behand and run the exe !
+Theoretically, the program will no longer erase files from your mods folder, but this problem is still possible. Therefore, it is recommended to back up your mods before using this program 
+
+### How do I manage my mods?  
+
+
+
+- Once you've put your mod in the modResourceBackpack folder, you'll be able to see your mod in the main window of the program, select the mod card to enable it  or disable it, and click on the app configuration to enable it in 3dmigoto.
+-  (You should press F10 to refresh 3dmigoto to enable the change, and sometimes you need to change the scene to load the mods)  
+
+
+
+### How do I edit my mod information? (Cover Image/Character/Description)  
+
+- On the main page, click on the mod you want to change
+- Click on the Edit mod info option in the right-hand column
+- Follow the GUI prompts to edit the mod information
+
+
+For ease of management, the name of the mod is the same as the folder name, so if you want a better display, it is recommended to set a separate cover for each mod.
+In the mod description, it is recommended to fill in the information related to the shortcut, and use the cover of the mod to distinguish its content
+Old method:
+This method can still be used, but unless you are completely sure, it is recommended to use the GUI interface
+
+- After you add the mod to the modResourceBackpack folder, you will be able to see your mod on the main page, and in most cases, it will show the default image, unknown character, and no description
+- ~Once you've clicked on the mod card display on the main page, you'll be able to view the mod's information in more detail in the menu on the right, and you'll see two buttons: open the mod folder and edit the mod info.
+- Click the Open mod folder button, and then put the cover image you want to display (supports PNG, JPG, JPEG format images), you can easily set the display cover of the mod, and the cover image will be cropped to 4:3 size and displayed on the top of the card. (You may need to reopen the program or press crtl+R to apply the changes)~  
+- Clicking on Edit mod info will open the mod.json file (what app to use to open the default app based on your computer's settings) and you'll see something like this:
+
 ```
-2. 增加一个编辑 mod.json 的功能，以便在程序内编辑 mod 的封面、标题、角色和描述。对于那些不想阅读教程且不知道如何编辑 mod.json 的人更友好。
-3. 刷新按钮，对于那些不知道 ctrl+R 可以轻松刷新程序的人，这可能会很有用。它将放置在设置页面，并在你编辑 mod 信息后显示在左下角。
-4. 关于 Tape-mode，我不知道你们是否需要这个功能。Tape-mod 可以将你的预设显示为一个磁带（就像游戏中的磁带一样）并隐藏 mod 选择部分。你可以将其视为 1.5 版本中的实验功能页面（这只是一个预览，仍然有很多问题）。
-### 版本 1.5 的新功能：
-#### 新增功能：
-- 添加了主题选择功能（推荐使用暗色主题，我根据zzz的设计风格进行了模仿）
-- 添加了一个关闭窗口的按钮，放置在左下角
-- 为图标按钮添加了文本描述
-- 现在你的 mods 文件夹中的 mod 文件将永远不会被删除，如果出现冲突，将弹出警告窗口和操作选择
+"character": "Unknow",
+"description": "No description",
+"imagePath": "preview.png"
+```
 
-#### 视觉优化：
-- 颜色方案模仿了 ZZZ 的设计
-- 优化了按角色筛选的显示效果
-- 添加了非常好的 mod 卡片显示效果，当选择或取消选择时，将有相应的动画和显示效果
-- 选择预设时添加了高亮效果
-
-#### 修复的问题：
-- 当程序在 Mods 文件夹中找到一个未被管理的文件夹时，将弹出警告窗口和操作选项，您可以选择对未被管理的 mod 进行什么操作（忽略：不删除或移动文件；移动到 ModResourceBackpack：将 mod 移动到 modResourceBackpack 文件夹进行程序管理）
-- 现在在更改 mod 卡片的选择时，预设会自动保存
-- 一些文本还没有被翻译为翻译文本
+- Just replace the double quotes to apply your own settings  (Text content cannot contain line breaks or charcater like " and \\)   (You may need to reopen the program or press crtl+R to apply the changes)~  
 
 
-## 许可证
+- For more complex environments (e.g. multiple images in a folder), you will need to name the cover image you want to display as “preview”  (supports PNG, JPG, JPEG format images)
 
-此项目基于MIT许可证开源。详细信息请参阅 [LICENSE](./LICENSE) 文件。
+
+If you want to know more about the features, you still need to check out the documentation below
+ And if you have any better ideas, please feel free to share them with me
+
+## HotKeys
+
+- Ctrl + W to close the window.
+- Ctrl + R to refresh the window.
+- Ctrl + Shift + =  to enlarge the window  
+- Ctrl + -  to shrink the window  
+- Ctrl + 0 to set the zoom to default.
+
+
+
+## Q&A
+
+
+
+### Where did my mod go and why don't I see it in the Mods folder?     
+
+
+
+- When you choose to move mods automatically, the program will move your mods from Mods to modResourceBackpack for automatic management  
+
+
+
+### Why can I only see the four mods named 1234 or display nothing and I can't do anything?  
+
+
+
+- This is caused by you not initializing correctly, make sure you download the latest version of ZZZ mod manager and try again.  
+- If that still doesn't work, you'll need to tap on the small gear in the bottom left, then tap on the Reset All Settings button, after which you'll need to reopen the app. If everything looks good, this will open the initial configuration page (which will first ask you to select the language), read the configuration **carefully**, and after that, the program will be able to run normally.  
+
+
+
+### Why did I find that he was deleting files in my Mods folder?  
+
+
+
+- Actually, this mod manager manages mods by creating a shortcut for the mod folder, so it doesn't delete your folder, but in some cases, this can still happen. Therefore, it is recommended to back up your mods before using this program.
+- The program will move your mods to the modResourceBackpack folder, so if you can't find your mods in the Mods folder, you can find them in the modResourceBackpack folder.
+
+
+
+# Update Log
+
+## What's new in version 1.7.1 ?little-update)
+
+### Function added:
+
+- Refresh button on the left corner
+- Snack tip after your apply
+
+### Better visuals:
+
+- Optimized the animation and display of mod cards
+- Fixed a series of font issues and now they look beautiful
+- Change the first-load-page into a designed dark theme
+
+### Bugs fixed:
+
+- In the card display list, the first 8 cards are displayed abnormally and cannot be added to the category column properly
+
+
+
+## What's new in version 1.7:
+
+### Performance optimization  
+
+- Improved the speed of opening the software
+- Mod cards that are outside the viewport will not be animated
+- Optimized code logic
+- remove the tape page
+
+### Better visuals:
+
+- Optimized the animation of mod cards
+- Fixed a series of misalignment issues and now they look aligned and beautiful
+
+### Bugs fixed:
+
+- When you switch between presets, the information window on the right will not change
+
+
+
+## What's new in version 1.6:
+
+### New functions:
+
+- The implementation principle of the application module is changed. Now there will be no file movement delay, and the current mod status will be saved.
+- The ability to edit mod information in the program has been added, and you can now simply edit mod information in the program.
+
+
+
+## What's new in version 1.5:
+
+### New functions:
+
+1. Added theme selection function (dark theme is recommended, I imitated it according to the design style of zzz)  
+2. Added a button to close the window, which is placed in the bottom left corner  
+3. Added text descriptions for icon buttons  
+4. The mod files in your mods folder will now never be delete now, and a warning window and action selection will pop up in case of conflicts  
+
+
+
+### Better visuals :
+
+1.The color scheme is modeled after the ZZZ design  
+2. Optimized the display effect of filtering by role
+3. Added a very, very good display effect of mod cards, which will have corresponding animations and display effects when they are selected or unselected.![](https://img520.com/4uig49.gif)
+4. Added a highlight when a preset is selected  
+
+### Bugs fixed:
+
+1. When program find a folder in the Mods folder that is not being managed, a warning window and action options will appear, and you can choose what to do with the mods that are not managed (ignore: ignore, the file will not be deleted or moved; Move to ModResourceBackpack: Move the mod to the modResourceBackpack folder for program management  
+2. Presets are automatically saved when you change the choice of mod cards  now.
+3.Some of the text has not been replaced with the translated text  
+
+
+
+I use ai to translate the text for me, there may be something that is not clear ......
+document?[XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto (github.com)](https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/)
+
+
+
+# Distribution
+
+## How to distribute this software?
+
+- You can distribute this software freely, but you must not modify the software and must not use it for commercial purposes.
+- If you want to modify the software, you must indicate the source of the software and the original author of the software.
+- If you want to use this software for commercial purposes, please contact me first.
+
+# Contact me
+If you have any questions or suggestions, please contact me via the following methods:
+
+- Email: [helloXLxz](mailto:helloXlxz233@gmail.com) 
+- Github: [XiaoLinXiaoZhu](https://github.com/XiaoLinXiaoZhu)
+
+# License
+
+This software is licensed under the GPL-3.0 license, and you can view the license file in the software folder.
+
+# Buy me a cup of coffee ?
+
+If you like this software and are willing to tip me, you can tip me on kofi: [buy me a coffee](https://ko-fi.com/helloxlxz)
