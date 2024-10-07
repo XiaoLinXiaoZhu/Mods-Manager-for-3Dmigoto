@@ -335,37 +335,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     //获得mod的显示图片
-    function getModImagePath(mod) {
+    async function getModImagePath(mod) {
         //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
-        var modImagePath;
-        const modInfo = ipcRenderer.invoke('get-mod-info', mod);
-        if (modInfo.imagePath) {
-            var modImagePath = path.join(rootdir, 'modResourceBackpack', mod, modInfo.imagePath);
-        }
-        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.png'))) {
-            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.png');
-        }
-        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg'))) {
-            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg');
-        }
-        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg'))) {
-            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg');
-        }
-        else {
-            // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
-            const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
-            const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
-            if (imageFiles.length > 0) {
-                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, imageFiles[0]);
-            }
-            else {
-                modImagePath = path.join(__dirname, 'default.png');
-            }
+        var modImageName = '';
+        const modPath = path.join(rootdir, 'modResourceBackpack', mod);
+        const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+        const modInfoImagePath = modInfo.imagePath;
+
+        if(modInfoImagePath && fs.existsSync(path.join(modPath, modInfoImagePath))) {
+            modImageName = modInfoImagePath;
+            return path.join(modPath, modImageName);
         }
 
+        const tryImageNames = ['preview.png', 'preview.jpg', 'preview.jpeg'];
+        tryImageNames.forEach(imageName => {
+            if (fs.existsSync(path.join(modPath, imageName))) {
+                modImageName = imageName;
+            }
+        });
+
+        if (modImageName != '') {
+            // 如果找到了图片文件，说明mod文件夹下有preview图片，但是没有在modInfo中设置imagePath，所以需要将其保存到modInfo中
+            modInfo.imagePath = modImageName;
+            ipcRenderer.invoke('set-mod-info', mod, modInfo);
+
+            // 使用snack提示用户自动保存了图片
+            snack(`Original image is ${modInfoImagePath},but not found, find ${modImageName} instead, auto saved to mod.json`);
+            return path.join(modPath, modImageName);
+        }
+        
+        // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
+        const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
+        const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
+        //如果没有图片文件，则使用默认图片,之后直接跳出程序
+        if (imageFiles.length <= 0) {
+            return path.join(__dirname, 'default.png');
+        }
+        
+        modImageName = imageFiles[0];
         //debug
-        console.log(`modImagePath:${modImagePath}`);
-        return modImagePath;
+        //console.log(`modImageName:${modImageName}`);
+        return path.join(modPath, modImageName);
     }
 
     //使用替换的方式而不是清空再添加的方式实现loadModList，减少页面重绘次数
@@ -385,7 +395,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 modCharacters.push(modCharacter);
             }
 
-            var modImagePath = getModImagePath(mod);
+            var modImagePath = await getModImagePath(mod);
             var modDescription = modInfo.description ? modInfo.description : 'No description';
 
             var modItem;
@@ -551,6 +561,90 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     );
 
+    //使用事件委托处理拖放事件：
+    // 1. 当拖动图片到modItem上时，将modItem的图片替换为拖动的图片
+    modContainer.addEventListener('dragover', (event) => {
+        event.preventDefault();
+
+        const modItem = event.target.closest('.mod-item'); //获取拖动的modItem
+        if (modItem) {
+            event.dataTransfer.dropEffect = 'copy';
+
+            currentMod = modItem.id;
+            showModInfo(currentMod);
+        }
+
+    });
+
+    modContainer.addEventListener('drop', (event) => {
+        event.preventDefault();
+      
+        const modItem = event.target.closest('.mod-item');
+        if (!modItem) {
+            snack('Invalid drop target');
+            return;
+        }
+      
+        const mod = modItem.id;
+        currentMod = mod;
+
+        var modInfo = ipcRenderer.invoke('get-mod-info', mod);
+        // 获取拖动的文件
+        const files = event.dataTransfer.files;
+      
+        // debug
+        console.log(`drop on ${mod} , files:`, files);
+      
+        // 如果拖拽的是文件
+        if (files.length > 0) {
+            const file = files[0];
+
+            // 校验文件是否是图片
+            if (!file.type.startsWith('image/')) {
+              snack('Please drop an image file');
+              return;
+            }
+
+            // 交给 handleImageDrop 处理
+            handleImageDrop(file, modItem, mod);
+        }
+    });
+
+    function handleImageDrop(file, modItem, mod) {
+        // 因为electron的file对象不是标准的file对象，所以需要使用reader来读取文件
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const imageUrl = event.target.result;
+            updateModCardCover(imageUrl, modItem, mod);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function updateModCardCover(imageUrl, modItem, mod) {
+        // 将图片保存到modResourceBackpack文件夹中，文件名为preview+后缀名，并且将其保存到mod.json中
+        //debug
+        console.log(`update mod card cover of ${mod} with ${imageUrl}`);
+        const imageExt = imageUrl.split(';')[0].split('/')[1];
+        const modImageName = `preview.${imageExt}`;
+        const modImageDest = path.join(rootdir, 'modResourceBackpack', mod, modImageName);
+        fs.writeFileSync(modImageDest, imageUrl.split(',')[1], 'base64');
+
+        // 更新mod.json
+        const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+        //debug
+        console.log(`modInfo:`, modInfo);
+        modInfo.imagePath = modImageName;
+        ipcRenderer.invoke('set-mod-info', mod, modInfo);
+        
+        // 更新modItem的图片
+        modItem.querySelector('img').src = modImageDest;
+
+        // 刷新侧边栏的mod信息
+        showModInfo(mod);
+
+        // snack提示
+        snack(`Updated cover for ${mod}`);
+    }
     async function loadPresets() {
         presetContainer.innerHTML = '';
         const presets = await ipcRenderer.invoke('get-presets');
@@ -729,32 +823,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         modInfoName.textContent = mod;
         modInfoCharacter.textContent = modInfo.character ? modInfo.character : 'Unknown';
         modInfoDescription.textContent = modInfo.description ? modInfo.description : 'No description';
-        //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
-        var modImagePath;
-        if (modInfo.imagePath) {
-            var modImagePath = path.join(rootdir, 'modResourceBackpack', mod, modInfo.imagePath);
-        }
-        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.png'))) {
-            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.png');
-        }
-        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg'))) {
-            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpg');
-        }
-        else if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg'))) {
-            modImagePath = path.join(rootdir, 'modResourceBackpack', mod, 'preview.jpeg');
-        }
-        else {
-            // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
-            const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
-            const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
-            if (imageFiles.length > 0) {
-                modImagePath = path.join(rootdir, 'modResourceBackpack', mod, imageFiles[0]);
-            }
-            else {
-                modImagePath = path.join(__dirname, 'default.png');
-            }
-        }
-        modInfoImage.src = modImagePath;
+        modInfoImage.src = await getModImagePath(mod);
     }
 
 
@@ -1232,11 +1301,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     editModInfoButton.addEventListener('click', async () => {
         //debug
         console.log("clicked editModInfoButton");
-        // if (currentMod == '') {
-        //     snack('Please select a mod');
-        //     return;
-        // }
-        // await ipcRenderer.invoke('edit-mod-info', currentMod);
 
         //改为程序内编辑，而不是打开外部编辑器
         if (currentMod == '') {
@@ -1249,8 +1313,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         //进行深拷贝，以便比较是否有改变
         currentModInfo = JSON.parse(JSON.stringify(modInfo));
         tempModInfo = JSON.parse(JSON.stringify(modInfo));
-        currentImagePath = getModImagePath(currentMod);
-        tempImagePath = getModImagePath(currentMod);
+        currentImagePath = await getModImagePath(currentMod);
+        tempImagePath = await getModImagePath(currentMod);
 
         //debug
         console.log(`modInfo:${modInfo}`);
@@ -1258,7 +1322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editModInfoDialog.querySelector('#editDialog-mod-info-name').textContent = currentMod;
         editModInfoDialog.querySelector('#editDialog-mod-info-character').textContent = modInfo.character ? modInfo.character : 'Unknown';
 
-        editModInfoDialog.querySelector('#editDialog-mod-info-image').src = getModImagePath(currentMod);
+        editModInfoDialog.querySelector('#editDialog-mod-info-image').src = await getModImagePath(currentMod);
 
         editModInfoDialog.querySelector('#edit-mod-name').textContent = currentMod;
         editModInfoDialog.querySelector('#edit-mod-character').value = modInfo.character ? modInfo.character : '';
@@ -1335,8 +1399,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         console.log(`tempModInfo:${tempModInfo}`);
         //保存到mod.json文件中
-        let modInfoPath = path.join(rootdir, 'modResourceBackpack', currentMod, 'mod.json');
-        fs.writeFileSync(modInfoPath, JSON.stringify(tempModInfo, null, 4));
+        ipcRenderer.invoke('set-mod-info', currentMod, tempModInfo);
+        
         //更新当前的modInfo
         currentModInfo = tempModInfo;
         currentImagePath = tempImagePath;
@@ -1375,6 +1439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //窗口消失
         editModInfoDialog.dismiss();
     });
+
     editModInfoDialog.addEventListener('dismiss', async () => {
         //debug
         console.log("editModInfoDialog dismissed");

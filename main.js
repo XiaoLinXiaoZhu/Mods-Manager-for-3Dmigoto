@@ -36,6 +36,7 @@ ipcMain.handle('open-first-load-window', async (event) => {
       preload: path.join(__dirname, 'firstLoad-preload.js'),
       contextIsolation: false, // 启用 contextIsolation
       nodeIntegration: true,
+      webSecurity: false,
     },
   });
   firstLoadWindow.setMenuBarVisibility(false);
@@ -171,6 +172,19 @@ ipcMain.handle('get-mods', async () => {
 });
 
 ipcMain.handle('get-mod-info', async (event, mod) => {
+  //增加纠错
+  if (rootdir === '') {
+    console.log("rootdir is empty");
+    return {};
+  }
+  if (mod === '') {
+    console.log("mod is empty");
+    return {};
+  }
+  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+    console.log(`mod ${mod} not found`);
+    return {};
+  }
   const modDir = path.join(rootdir, 'modResourceBackpack', mod);
   const modInfoPath = path.join(modDir, 'mod.json');
   if (fs.existsSync(modInfoPath)) {
@@ -188,6 +202,26 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
     return modInfo;
   }
 });
+
+ipcMain.handle('set-mod-info', async (event, mod, modInfo) => {
+  //增加纠错
+  if (rootdir === '') {
+    console.log("rootdir is empty");
+    return;
+  }
+  if (mod === '') {
+    console.log("mod is empty");
+    return;
+  }
+  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+    console.log(`mod ${mod} not found`);
+    return;
+  }
+  const modDir = path.join(rootdir, 'modResourceBackpack', mod);
+  const modInfoPath = path.join(modDir, 'mod.json');
+  fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
+});
+
 
 //-------------------应用mods-------------------
 ipcMain.handle('apply-mods', async (event, mods) => {
@@ -322,7 +356,7 @@ ipcMain.handle('edit-mod-info', async (event, mod) => {
     const modInfo = {
       character: 'unknown',
       description: 'no description',
-      cover: 'preview.png'
+      imagePath: 'preview.jpg'
     };
     fs.writeFileSync(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'), JSON.stringify(modInfo));
   }
@@ -422,6 +456,15 @@ ipcMain.handle('open-external-link', async (event, link) => {
   shell.openExternal(link);
 });
 
+// 获取外部文件的路径
+ipcMain.handle('get-file-path', (event, filePath) => {
+  //debug
+  console.log(`get-file-path: ${filePath}`);
+  return filePath; // 直接返回文件路径
+});
+
+
+
 //---------------------主窗口---------------------
 //创建主窗口
 function createWindow() {
@@ -440,6 +483,8 @@ function createWindow() {
       preload: path.join(__dirname, 'renderer-preload.js'),
       nodeIntegration: true,
       contextIsolation: false,
+      enableRemoteModule: false, // 不推荐使用
+      webSecurity: false, // 允许加载跨域资源，生产环境中应谨慎使用
     },
   });
 
