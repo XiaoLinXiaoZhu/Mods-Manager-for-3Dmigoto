@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const fs = require('fs');
+const { url } = require('inspector');
 const path = require('path');
 const shell = require('electron').shell;
 
@@ -188,7 +189,25 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
   const modDir = path.join(rootdir, 'modResourceBackpack', mod);
   const modInfoPath = path.join(modDir, 'mod.json');
   if (fs.existsSync(modInfoPath)) {
-    return JSON.parse(fs.readFileSync(modInfoPath));
+    // 这里为了兼容老的mod.json文件，如果没有url字段，则添加一个空的url字段
+    const modInfo = JSON.parse(fs.readFileSync(modInfoPath));
+    if (!modInfo.url) {
+      modInfo.url = '';
+    }
+    // 如果存在 cover 字段，则将其改为 imagePath
+    if (modInfo.cover) {
+      //如果也存在imagePath字段，则将cover字段删除
+      if (modInfo.imagePath === '') {
+        modInfo.imagePath = modInfo.cover;
+      }
+      delete modInfo.cover;
+    }
+    
+    //如果不存在imagePath字段，则设置为preview.jpg
+    if (modInfo.imagePath === '') {
+      modInfo.imagePath = 'preview.jpg';
+    }
+    return modInfo;
   }
   else {
     //console.log(`modInfoPath not found: ${modInfoPath}`);
@@ -196,7 +215,8 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
     const modInfo = {
       character: 'unknown',
       description: 'no description',
-      cover: 'cover.jpg'
+      imagePath: 'preview.jpg',
+      url: ''
     };
     fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
     return modInfo;

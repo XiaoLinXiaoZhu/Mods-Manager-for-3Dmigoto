@@ -107,7 +107,8 @@
 
           <!-- -关于按钮 -->
           <s-tooltip>
-            <s-icon-button slot="trigger" id="about-show-button" onclick="document.getElementById('about-dialog').show()">
+            <s-icon-button slot="trigger" id="about-show-button"
+              onclick="document.getElementById('about-dialog').show()">
               <s-icon>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                   <path d="m256-240-56-56 384-384H240v-80h480v480h-80v-344L256-240Z"></path>
@@ -394,9 +395,9 @@
               </div>
             </s-card>
             <s-divider></s-divider>
-
-
-            <s-button id="open-mod-dir" type="outlined" style="width: 83%;"
+            <s-button id="open-mod-url" type="outlined" style="width: 83%;"
+              data-translate-key="open-mod-url">打开mod链接</s-button>
+            <s-button id="open-mod-dir" type="outlined" style="width: 83%;margin-top: 7px;"
               data-translate-key="open-mod-dir">打开mod文件夹</s-button>
             <s-button id="edit-mod-info" type="outlined" style="width: 83%;margin-top: 7px;"
               data-translate-key="edit-mod-info">编辑信息</s-button>
@@ -443,18 +444,21 @@
         <s-divider></s-divider>
         <div id="auto-apply">
           <h3 data-translate-key="auto-apply"> 自动应用 </h3>
-          <div style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
+          <div
+            style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
             <p data-translate-key="auto-apply-info">当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)</p>
             <s-switch id="auto-apply-switch"></s-switch>
           </div>
         </div>
         <div id="test-funciton">
           <h3 data-translate-key="test-title"> 测试功能 </h3>
-          <div style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
+          <div
+            style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
             <p data-translate-key="test-funciton-info">启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)</p>
             <s-switch id="auto-refresh-in-zzz"></s-switch>
           </div>
-          <p data-translate-key="dialog-ask-for-exePath">因为文件结构限制，这里需要您手动指定refresh-in-zzz.exe，它一般位于和ZZZModManager同一目录下</p>
+          <p data-translate-key="dialog-ask-for-exePath">因为文件结构限制，这里需要您手动指定refresh-in-zzz.exe，它一般位于和ZZZModManager同一目录下
+          </p>
           <s-text-field style="display: grid" id="get-exePath-input">
             <s-ripple attached="true">
               <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></p>
@@ -514,7 +518,7 @@
         <div id="edit-mod-info-dialog-top" style="display: flex;width: 100%;">
           <!-- 展示mod当前名称、图片 -->
           <s-card
-          style="width: 280px;min-width: 0;height: 400px;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
+            style="width: 280px;min-width: 0;height: 400px;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
             <div style="width: 83%;height: fit-content;padding: 0;margin: 0px 0px 0px 0;">
               <h2 id="editDialog-mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;">Mod
                 name</h2>
@@ -532,17 +536,22 @@
             </div>
             <div class="placeholder" style="flex: 1;"></div>
             <s-button type="outlined" id="edit-mod-image-select" style="margin-bottom: 20px;width: 83%;"
-                  data-translate-key="edit-mod-image-preview">选择图片</s-button>
+              data-translate-key="edit-mod-image-preview">选择图片</s-button>
           </s-card>
 
           <s-card style="height: auto;margin-left: 1%;flex: 1;">
             <div slot="text"
               style="height: 83%;width: 83%;display:flex;margin: 0;padding: 8.5%;flex-direction: column;justify-content: space-around;align-content: center;align-items: center;">
 
-              <div style="width: 100%;height:auto">
-                <h3 data-translate-key="mod-info-name"
-                  style="line-height: 1;margin: 5px -1px;color:var(--s-color-on-surface);"> mod名称 </h3>
-                <p style="line-height: 1.2;" data-translate-key="mod-info-name-tip"> Mod名称就是文件夹名称，点击下方按钮前往文件夹处修改 </p>
+              <div style="width: 100%;height:auto;margin-top: 10px;">
+
+                <s-tooltip>
+                  <h3 slot="trigger" data-translate-key="mod-info-name"
+                    style="line-height: 1;margin: 5px -1px;color:var(--s-color-on-surface);"> mod名称 </h3>
+                  <p style="line-height: 1.2; word-wrap: break-word; max-width: 120px; overflow-wrap: break-word; white-space: normal;"
+                    data-translate-key="mod-info-name-tip"> Mod名称就是文件夹名称，点击下方按钮前往文件夹处修改 </p>
+                </s-tooltip>
+
                 <s-text-field style="min-width: 100px;width: 100%;">
                   <s-ripple attached="true"></s-ripple>
                   <p id="edit-mod-name" style="margin-left: 7px;"> </p>
@@ -550,11 +559,25 @@
               </div>
               <div style="flex:1;"></div>
               <div style="width: 100%;">
-                <h3 data-translate-key="mod-info-character"
-                style="line-height: 1;margin: 15px -1px 8px 0;color:var(--s-color-on-surface);"> 角色 </h3>
-                <p style="line-height: 1.2;" data-translate-key="mod-info-character-tip"> 角色是mod所属的角色当然你也可以将其归为unknow、tools或者mise，它会作为分类的依据 </p>
+                <s-tooltip>
+                  <h3 slot="trigger" data-translate-key="mod-info-character"
+                    style="line-height: 1;margin: 15px -1px 8px 0;color:var(--s-color-on-surface);"> 角色 </h3>
+                  <p style="line-height: 1.2;" data-translate-key="mod-info-character-tip">
+                    角色是mod所属的角色当然你也可以将其归为unknow、tools或者mise，它会作为分类的依据 </p>
+                </s-tooltip>
                 <s-text-field style="min-width: 100px">
                   <input type="text" id="edit-mod-character">
+                </s-text-field>
+              </div>
+              <div style="flex:1;"></div>
+              <div style="width: 100%;">
+                <s-tooltip>
+                  <h3 slot="trigger" data-translate-key="mod-info-url"
+                    style="line-height: 1;margin: 15px -1px 8px 0;color:var(--s-color-on-surface);"> mod链接 </h3>
+                  <p style="line-height: 1.2;" data-translate-key="mod-info-url-tip"> mod链接是mod的来源，可以是gamebanana、caimogu等 </p>
+                </s-tooltip>
+                <s-text-field style="min-width: 100px">
+                  <input type="text" id="edit-mod-url">
                 </s-text-field>
               </div>
 
@@ -566,14 +589,16 @@
         <div id="edit-mod-info-dialog-bottom" style="display: flex;width: 100%;">
           <!-- 提供修改mod信息的描述的大的输入框 -->
           <s-card style="height: auto;width: 100%;margin-top:0;">
-            <div slot="text" style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-around;align-content: center;align-items: center;">
+            <div slot="text"
+              style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-around;align-content: center;align-items: center;">
               <s-text-field style="min-height: 120px;min-width: 100%;padding: 0 2px;border-radius: 30px;">
                 <textarea type="text" id="edit-mod-description"></textarea>
               </s-text-field>
             </div>
           </s-card>
           <s-card style="height: auto;margin-left: 1%;flex: 1;margin-top: 0;">
-            <div slot="text" style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-evenly;">
+            <div slot="text"
+              style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-evenly;">
               <s-button type="text" id="edit-mod-info-cancel" data-translate-key="cancel">取消</s-button>
               <s-button type="text" id="edit-mod-info-save" data-translate-key="save">保存</s-button>
             </div>
@@ -610,12 +635,16 @@
     <s-dialog id="about-dialog">
       <div slot="headline" data-translate-key="about"> 关于 </div>
       <div slot="text">
-        <p data-translate-key="about-content"> 本程序由 XLXZ 开发,开源免费,遵循GNU General Public License v3.0。用于管理基于3dmigoto的mod ,理论上来说也可以管理其他游戏的mod(只要是基于3dmigoto的) </p>
+        <p data-translate-key="about-content"> 本程序由 XLXZ 开发,开源免费,遵循GNU General Public License v3.0。用于管理基于3dmigoto的mod
+          ,理论上来说也可以管理其他游戏的mod(只要是基于3dmigoto的) </p>
         <p data-translate-key="about-version"> 最新版本在gamebanana上发布，如果你有任何问题或者建议，欢迎在github上提出 </p>
         <p data-translate-key="about-author"> 作者：XLXZ </p>
-        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Github" link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/">Github</s-button>
-        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Gamebanana" link='https://gamebanana.com/tools/17889'>Gamebanana</s-button>
-        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Caimogu" link='https://www.caimogu.cc/post/1408504.html'>Caimogu</s-button>
+        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Github"
+          link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/">Github</s-button>
+        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Gamebanana"
+          link='https://gamebanana.com/tools/17889'>Gamebanana</s-button>
+        <s-button class="link-button" type="text" id="about-dialog-github" data-translate-key="Caimogu"
+          link='https://www.caimogu.cc/post/1408504.html'>Caimogu</s-button>
       </div>
       <s-button slot="action" type="text" id="about-dialog-close" data-translate-key="close">关闭</s-button>
     </s-dialog>

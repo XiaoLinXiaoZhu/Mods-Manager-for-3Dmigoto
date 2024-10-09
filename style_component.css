@@ -101,6 +101,15 @@ s-card {
     border-radius: 0px 30px 0px 30px;
 }
 
+s-tooltip>p {
+    line-height: 1.2;
+    word-wrap: break-word;
+    max-width: 120px;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-align: left;
+}
+
 img {
     -webkit-user-drag: none;
     -moz-user-drag: none;

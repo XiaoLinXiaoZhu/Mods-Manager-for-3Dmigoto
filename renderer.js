@@ -78,6 +78,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const infoShowButton = document.getElementById('info-show-button');
 
+    //mod info 页面的按钮：
+    //打开mod链接
+    const openModUrlButton = document.getElementById('open-mod-url');
     //打开mod文件夹
     const openModFolderButton = document.getElementById('open-mod-dir');
 
@@ -773,7 +776,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         easing: 'ease-in-out',
                         iterations: 1
                     });
-
                 }
                 if (item.checked == false && item.style.display != 'none') {
                     //如果不在视窗内，则直接隐藏
@@ -1319,6 +1321,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    //打开mod链接
+    openModUrlButton.addEventListener('click', async () => {
+        //debug
+        console.log("clicked openModUrlButton");
+        if (currentMod == '') {
+            snack('Please select a mod');
+            return;
+        }
+        const modInfo = await ipcRenderer.invoke('get-mod-info', currentMod);
+        if (modInfo.url) {
+            await ipcRenderer.invoke('open-external-link', modInfo.url);
+        }
+        else {
+            snack('No url found, please edit mod info');
+        }
+    });
+
     //打开mod文件夹
     openModFolderButton.addEventListener('click', async () => {
         //debug
@@ -1360,11 +1379,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         //填充modInfoDialog
         editModInfoDialog.querySelector('#editDialog-mod-info-name').textContent = currentMod;
         editModInfoDialog.querySelector('#editDialog-mod-info-character').textContent = modInfo.character ? modInfo.character : 'Unknown';
-
         editModInfoDialog.querySelector('#editDialog-mod-info-image').src = await getModImagePath(currentMod);
 
         editModInfoDialog.querySelector('#edit-mod-name').textContent = currentMod;
         editModInfoDialog.querySelector('#edit-mod-character').value = modInfo.character ? modInfo.character : '';
+        editModInfoDialog.querySelector('#edit-mod-url').value = modInfo.url ? modInfo.url : '';
         editModInfoDialog.querySelector('#edit-mod-description').value = modInfo.description ? modInfo.description : '';
 
 
@@ -1415,6 +1434,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //保存当前编辑的mod的信息
         tempModInfo.character = editModInfoDialog.querySelector('#edit-mod-character').value;
         tempModInfo.description = editModInfoDialog.querySelector('#edit-mod-description').value;
+        tempModInfo.url = editModInfoDialog.querySelector('#edit-mod-url').value;
 
         //将图片保存到mod文件夹下，命名为preview + 后缀名
         //如果已经存在则覆盖，并且将文件名保存到mod.json文件中
@@ -1458,6 +1478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //保存当前编辑的mod的信息
         tempModInfo.character = editModInfoDialog.querySelector('#edit-mod-character').value;
         tempModInfo.description = editModInfoDialog.querySelector('#edit-mod-description').value;
+        tempModInfo.url = editModInfoDialog.querySelector('#edit-mod-url').value;
 
         if (JSON.stringify(currentModInfo) != JSON.stringify(tempModInfo) || tempImagePath != currentImagePath) {
             saveCurrentModInfo();
@@ -1484,10 +1505,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("editModInfoDialog dismissed");
         tempModInfo.character = editModInfoDialog.querySelector('#edit-mod-character').value;
         tempModInfo.description = editModInfoDialog.querySelector('#edit-mod-description').value;
+        tempModInfo.url = editModInfoDialog.querySelector('#edit-mod-url').value
 
         //打印当前的modInfo和tempModInfo的各个属性
-        console.log(`currentModInfo: character:${currentModInfo.character} description:${currentModInfo.description} imagePath:${currentModInfo.imagePath}`);
-        console.log(`tempModInfo: character:${tempModInfo.character} description:${tempModInfo.description} imagePath:${tempModInfo.imagePath}`);
+        console.log(`currentModInfo: character:${currentModInfo.character} description:${currentModInfo.description} url:${currentModInfo.url} imagePath:${currentModInfo.imagePath}`);
+        console.log(`tempModInfo: character:${tempModInfo.character} description:${tempModInfo.description} url:${tempModInfo.url} imagePath:${tempModInfo.imagePath}`);
         if (JSON.stringify(currentModInfo) != JSON.stringify(tempModInfo) || tempImagePath != currentImagePath) {
             //提示是否保存
             showDialog(ifSaveChangeDialog);
