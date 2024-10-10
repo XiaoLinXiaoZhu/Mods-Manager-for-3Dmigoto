@@ -656,6 +656,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             else {
                 presetItem = document.createElement('s-button');
+                presetItem.className = 'left-adhesive-button font-hongmeng';
                 presetItem.id = 'preset-item';
                 presetItem.type = "elevated";
                 presetItem.name = preset;

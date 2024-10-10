@@ -38,14 +38,17 @@ body {
 }
 
 #preset-item {
-    margin-top: 10px;
-    width: 83%;
+    margin-top: 13px;
+    width: 100%;
+    margin-right: 40px;
 }
 
 #preset-item-add,
 #preset-item-edit {
     margin-top: 10px;
-    width: 83%;
+    width: 100%;
+    margin-right: 30px;
+    color: var(--s-color-on-primary);
 }
 
 #main-page {
@@ -102,7 +105,7 @@ body {
     height: 350px;
     margin-bottom: 0px;
     will-change: transform;
-    transition: all 0.3s cubic-bezier(.36, -0.64, .34, 1.76);
+    transition: x,y 0.5s cubic-bezier(.36, -0.64, .34, 1.76);
 
     >div[slot="image"] {
         width: 250px;

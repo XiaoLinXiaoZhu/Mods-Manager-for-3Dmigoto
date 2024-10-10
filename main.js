@@ -85,6 +85,10 @@ ipcMain.handle('auto-move-mod', async (event) => {
   return ret;
 });
 
+//--------------------turtoral--------------------
+//todo 通过打开教程窗口，打算是左边是wiki，右边是视频
+
+
 //-------------------rootdir-------------------
 // 先尝试从localStorage中获取rootdir，如果没有则设置为默认值__dirname
 let rootdir = '';

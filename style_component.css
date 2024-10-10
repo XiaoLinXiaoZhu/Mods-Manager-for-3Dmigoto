@@ -19,8 +19,9 @@
 }
 
 .font-hongmeng {
-    font-family: hongmengti, "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif;
-    font-weight: 100;
+    font-family: "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif;
+    font-weight: 1000;
+    font-size: 1em;
 }
 
 
@@ -119,4 +120,31 @@ img {
 p {
     height: fit-content;
     width: fit-content;
+}
+
+.left-adhesive-button {
+    /* background-color: black; */
+    height: 45px;
+    border-radius: 0px 25px 25px 0px;
+    position: relative;
+    padding: 13px;
+    transition: all 0.3s ease-in-out 0s;
+    transform: translateX(0px);
+}
+
+.left-adhesive-button::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: -100px;
+    right: 3px;
+    border: 3px solid gray;
+    border-radius: 0px 22px 22px 0px;
+}
+
+.left-adhesive-button[type='elevated']{
+    background-color: var(--s-color-background);
+    box-shadow: 0 0 0px 3px var(--s-color-primary);
+    transform: translateX(-20px);
 }
