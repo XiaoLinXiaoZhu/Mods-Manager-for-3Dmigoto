@@ -21,7 +21,7 @@
 .font-hongmeng {
     font-family: "Microsoft YaHei", 微软雅黑, "MicrosoftJhengHei", 华文细黑, STHeiti, MingLiu, sans-serif;
     font-weight: 1000;
-    font-size: 1em;
+    font-size: 0.93em;
 }
 
 
@@ -31,8 +31,8 @@
     border-radius: 10px;
 }
 
-.OO-parallelogram * {
-    display: block;
+.OO-parallelogram>* {
+    /* display: block; */
     transform: skew(20deg);
 }
 
@@ -49,6 +49,7 @@
     flex-wrap: nowrap;
     align-items: center;
     justify-content: flex-start;
+    width: 100%;
 }
 
 div.OO-colorfull-border {
@@ -73,6 +74,7 @@ s-chip {
     position: relative;
     height: fit-content;
     align-items: center;
+    z-index: 1;
 }
 
 s-chip p {
@@ -84,6 +86,12 @@ s-chip p {
     line-height: 1;
     margin: 10px 0px;
     font-weight: bold;
+    transition: all 0.3s ease-in-out 0s;
+}
+
+s-chip[type=filled-tonal]{
+    border: 1px solid var(--s-color-outline);
+    color: var(--s-color-on-primary);
 }
 
 s-tooltip p {
@@ -130,6 +138,12 @@ p {
     padding: 13px;
     transition: all 0.3s ease-in-out 0s;
     transform: translateX(0px);
+    width: 100%;
+    margin-right: 40px;
+}
+
+.left-adhesive-button p{
+    transform: translateX(20px);
 }
 
 .left-adhesive-button::before {
@@ -139,12 +153,126 @@ p {
     bottom: 3px;
     left: -100px;
     right: 3px;
-    border: 3px solid gray;
-    border-radius: 0px 22px 22px 0px;
+    border: 2px solid gray;
+    border-radius: 0px 19px 19px 0px;
 }
 
 .left-adhesive-button[type='elevated']{
     background-color: var(--s-color-background);
-    box-shadow: 0 0 0px 3px var(--s-color-primary);
+    box-shadow: 0px 0px 0px 2px var(--s-color-primary);
     transform: translateX(-20px);
 }
+
+.left-adhesive-button[type='elevated'] p{
+    transform: translateX(0px);
+}
+
+.right-adhesive-button {
+    /* background-color: black; */
+    height: 45px;
+    border-radius: 25px 0px 0px 25px;
+    position: relative;
+    padding: 13px;
+    transition: all 0.3s ease-in-out 0s;
+    transform: translateX(0px);
+    width: 100%;
+    margin-left: 20%;
+}
+
+.right-adhesive-button p{
+    transform: translateX(-20px);
+}
+
+.right-adhesive-button::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    right: -100px;
+    border: 2px solid gray;
+    border-radius: 19px 0px 0px 19px;
+}
+
+.right-adhesive-button[type='elevated']{
+    background-color: var(--s-color-background);
+    box-shadow: 0px 0px 0px 2.5px var(--s-color-primary);
+    transform: translateX(20px);
+}
+
+.right-adhesive-button[type='elevated'] p{
+    transform: translateX(0px);
+}
+
+.button-bar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    margin: 10px 0;
+    width: 83%;
+    position: relative;
+}
+
+.button-bar-item {
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    position: relative;
+    padding: 0px 20px 0px 20px;
+    /* 外边框 */
+    border: 1px solid var(--s-color-outline);
+}
+
+.button-bar .button-bar-item:first-child {
+    /* 这是一个左边是方形，右边有圆角的平行四边形 */
+    border-radius: 0px 10px 10px 0px;
+    transform: skew(-20deg);
+    /* 将最左边裁剪掉 */
+    clip-path: polygon(12px 0,100% 0,100% 100%,26px 100%);
+}
+
+
+.button-bar .button-bar-item:not(:first-child):not(:last-child) {
+    /* 这是一个圆角平行四边形 */
+    transform: skew(-20deg);
+    border-radius: 10px;
+    margin: 0 2px;
+    width: fit-content;
+    padding: 10px 20px;
+    transition: all 0.3s ease-in-out 0s;
+}
+
+.button-bar .button-bar-item:last-child {
+    /* 这是一个右边是方形，左边有圆角的平行四边形 */
+    border-radius: 10px 0px 0px 10px;
+    transform: skew(-20deg);
+    /* 将最右边裁剪掉 */
+    clip-path: polygon(0 0,calc(100% - 26px) 0,calc(100% - 13px) 100%,0 100%)
+}
+
+/* 使用 after 来绘制左侧的圆 */
+.button-bar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0px;
+    border-radius: 20px 20px 20px 20px;
+    border: 1px solid var(--s-color-outline);
+    /* 裁剪掉中间部分，只显示两端 */
+    clip-path: polygon(0 0,0 100%, 100% 100%,100% 0,calc(100% - 20px) 0,calc(100% - 20px) 100%,20px 100%,20px 0);
+    /* background-color: var(--s-color-surface-container-high); */
+}
+
+.button-bar-item>* {
+    transform: skew(20deg);
+}
+

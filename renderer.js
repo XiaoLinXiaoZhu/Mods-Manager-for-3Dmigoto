@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modFilterSelected = document.getElementById('mod-filter-selected');
     const modFilter = document.getElementById('mod-filter');
     const modFilterAll = document.getElementById('mod-filter-all');
+    const modFilterBg = document.getElementById('mod-filter-bg');
 
     //mod列表相关
     const modContainer = document.getElementById('mod-container');
@@ -842,9 +843,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //将自己的type设置为filled，其他的设置为default
                 const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
                 allfilterItems.forEach(item => {
-                    item.type = 'default';
+                    item.style.color = 'var(--s-color-on-surface)';
                 });
-                filterItem.type = 'filled-tonal';
+                // 不再需要 type = 'filled' 的效果，因为现在使用bg来代替
+                // filterItem.type = 'filled';
+
+                // 更改字体颜色
+                filterItem.style.color = 'var(--s-color-on-primary)';
+
+                // 将bg的宽度设置为当前filterItem的宽度，并且设置bg的left为当前filterItem的left
+
+                const filterItemRect = filterItem.getBoundingClientRect();
+                //这里获取的left是相对于视窗的，所以需要减去modFilter的left
+                const modFilterRect = modFilter.getBoundingClientRect();
+                //bg.style.visibility = 'visible';
+                //width 还需要减去padding的量
+                modFilterBg.style.height = `${filterItemRect.height}px`;
+                modFilterBg.style.width = `${filterItemRect.width-15}px`;
+                modFilterBg.style.top = `${filterItemRect.top - modFilterRect.top}px`;
+                modFilterBg.style.left = `${filterItemRect.left - modFilterRect.left +4}px`;
+                //0.5s后将bg隐藏
                 filterMods();
             }
         }
@@ -1215,8 +1233,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         //将其他的type设置为default
         const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
         allfilterItems.forEach(item => {
-            item.type = 'default';
+            //item.type = 'default';
+            item.style.color = 'var(--s-color-on-surface)';
         });
+        // 将bf移出视窗，并且隐藏
+        modFilterBg.style.left = '-100px';
+        modFilterBg.style.width = '0px';
+
         filterMods();
     }
     );
@@ -1229,8 +1252,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         //将其他的type设置为default
         const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
         allfilterItems.forEach(item => {
-            item.type = 'default';
+            //item.type = 'default';
+            item.style.color = 'var(--s-color-on-surface)';
         });
+        // 将bf移出视窗，并且隐藏
+        modFilterBg.style.left = '-100px';
+        modFilterBg.style.width = '0px';
+
         filterMods();
     }
     );

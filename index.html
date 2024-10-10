@@ -22,7 +22,9 @@
     <s-drawer style="width: 100%;" id="drawer-page">
       <!-- -预设控制 -->
       <div slot="start" id="preset-list-drawer" class="OO-colunm-center">
-        <h2 style="margin: 24px 0 17px 0;">Presets</h2>
+        <div class="right-adhesive-button" id="preset-list-drawer-headline">
+          <p class="font-hongmeng">Presets</p>
+        </div>
         <s-divider style="margin-bottom: 0;"></s-divider>
         <div id="preset-container" class="OO-colunm-center"></div>
         <div class="placeholder" style="flex: 1;max-height: 50px;"></div>
@@ -32,106 +34,108 @@
           <p data-translate-key="creat-preset" style="align-self: auto;width: fit-content;height: fit-content;">新建预设</p>
         </s-button>
         <!-- -编辑预设 -->
-        <s-button class="left-adhesive-button font-hongmeng" type="filled-tonal" id="preset-item-edit" style="align-items: center;">
+        <s-button class="left-adhesive-button font-hongmeng" type="filled-tonal" id="preset-item-edit"
+          style="align-items: center;">
           <s-icon type="more_horiz" slot="start" style="position: absolute;left:40px;transform: scale(1.5);"></s-icon>
           <p data-translate-key="edit-preset" style="align-self: auto;width: fit-content;height: fit-content;">编辑预设</p>
         </s-button>
-
-
         <div id="placeholder" style="flex: 1;"></div>
-        <div id="bottom-buttons"
-          style="width: 83%;display: flex;padding: 0px 10px 0px 0px;;flex-direction: row;align-items: center;flex-wrap: wrap;">
-          <!-- -全屏按钮-->
-          <s-tooltip>
-            <s-icon-button slot="trigger" id="fullscreen-button">
-              <s-icon>
-                <svg viewBox="0 -960 960 960">
-                  <path id="fullscreen-button-svgpath"
-                    d="M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z">
-                  </path>
-                </svg>
-              </s-icon>
-            </s-icon-button>
-            <p data-translate-key="fullscreen">全屏</p>
-          </s-tooltip>
-          <!-- -折叠模式开关 -->
-          <s-tooltip>
-            <s-icon-button slot="trigger" id="compact-mode-button">
-              <s-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path
-                    d="m356-160-56-56 180-180 180 180-56 56-124-124-124 124Zm124-404L300-744l56-56 124 124 124-124 56 56-180 180Z">
-                  </path>
-                </svg>
-              </s-icon>
-            </s-icon-button>
-            <p data-translate-key="compact">折叠</p>
-          </s-tooltip>
-          <!-- -刷新按钮 -->
-          <s-tooltip>
-            <s-icon-button slot="trigger" id="refresh-button" onclick="location.reload()">
-              <s-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path
-                    d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z">
-                  </path>
-                </svg>
-              </s-icon>
-            </s-icon-button>
-            <p data-translate-key="refresh">刷新</p>
-          </s-tooltip>
+        <div id="control-center" class="left-adhesive-button">
+          <div id="bottom-buttons">
+            <!-- -全屏按钮-->
+            <s-tooltip>
+              <s-icon-button slot="trigger" id="fullscreen-button">
+                <s-icon>
+                  <svg viewBox="0 -960 960 960">
+                    <path id="fullscreen-button-svgpath"
+                      d="M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z">
+                    </path>
+                  </svg>
+                </s-icon>
+              </s-icon-button>
+              <p data-translate-key="fullscreen">全屏</p>
+            </s-tooltip>
+            <!-- -折叠模式开关 -->
+            <s-tooltip>
+              <s-icon-button slot="trigger" id="compact-mode-button">
+                <s-icon>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="m356-160-56-56 180-180 180 180-56 56-124-124-124 124Zm124-404L300-744l56-56 124 124 124-124 56 56-180 180Z">
+                    </path>
+                  </svg>
+                </s-icon>
+              </s-icon-button>
+              <p data-translate-key="compact">折叠</p>
+            </s-tooltip>
+            <!-- -刷新按钮 -->
+            <s-tooltip>
+              <s-icon-button slot="trigger" id="refresh-button" onclick="location.reload()">
+                <s-icon>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z">
+                    </path>
+                  </svg>
+                </s-icon>
+              </s-icon-button>
+              <p data-translate-key="refresh">刷新</p>
+            </s-tooltip>
 
+          </div>
+
+          <div id="bottom-buttons">
+
+
+
+
+
+            <!-- -设置按钮 -->
+            <s-tooltip>
+              <s-icon-button slot="trigger" id="settings-show-button">
+                <s-icon>
+                  <svg viewBox="0 -960 960 960">
+                    <path
+                      d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
+                    </path>
+                  </svg>
+                </s-icon>
+              </s-icon-button>
+
+              <p data-translate-key="settings">设置</p>
+            </s-tooltip>
+
+            <!-- -关于按钮 -->
+            <s-tooltip>
+              <s-icon-button slot="trigger" id="about-show-button"
+                onclick="document.getElementById('about-dialog').show()">
+                <s-icon>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path d="m256-240-56-56 384-384H240v-80h480v480h-80v-344L256-240Z"></path>
+                  </svg>
+                </s-icon>
+              </s-icon-button>
+              <p data-translate-key="about">关于</p>
+            </s-tooltip>
+
+            <!-- -关闭按钮 -->
+            <s-tooltip>
+              <s-icon-button slot="trigger" id="close-button" onclick="window.close()">
+                <s-icon>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z">
+                    </path>
+                  </svg>
+                </s-icon>
+              </s-icon-button>
+              <p data-translate-key="close">关闭</p>
+            </s-tooltip>
+          </div>
         </div>
 
-        <div id="bottom-buttons"
-          style="width: 83%;display: flex;padding: 0px 10px 10px 0px;flex-direction: row;align-items: center;flex-wrap: wrap;">
 
 
-
-
-
-          <!-- -设置按钮 -->
-          <s-tooltip>
-            <s-icon-button slot="trigger" id="settings-show-button">
-              <s-icon>
-                <svg viewBox="0 -960 960 960">
-                  <path
-                    d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z">
-                  </path>
-                </svg>
-              </s-icon>
-            </s-icon-button>
-
-            <p data-translate-key="settings">设置</p>
-          </s-tooltip>
-
-          <!-- -关于按钮 -->
-          <s-tooltip>
-            <s-icon-button slot="trigger" id="about-show-button"
-              onclick="document.getElementById('about-dialog').show()">
-              <s-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path d="m256-240-56-56 384-384H240v-80h480v480h-80v-344L256-240Z"></path>
-                </svg>
-              </s-icon>
-            </s-icon-button>
-            <p data-translate-key="about">关于</p>
-          </s-tooltip>
-
-          <!-- -关闭按钮 -->
-          <s-tooltip>
-            <s-icon-button slot="trigger" id="close-button" onclick="window.close()">
-              <s-icon>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                  <path
-                    d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z">
-                  </path>
-                </svg>
-              </s-icon>
-            </s-icon-button>
-            <p data-translate-key="close">关闭</p>
-          </s-tooltip>
-        </div>
 
       </div>
 
@@ -168,16 +172,12 @@
                 </svg>
               </s-icon>
             </s-icon-button>
-
           </div>
-
-
         </s-appbar>
 
         <!-- -模组筛选选项（根据角色筛选mod） -->
-        <div id="mod-filter-container"
-          style="display: flex;flex-wrap: nowrap;align-items: center;margin: 0 8px;height:fit-content;padding: 5px 0;">
-          <div style="display: flex;flex-wrap: nowrap;align-items: center;">
+        <div id="mod-filter-container">
+          <div style="display: flex;flex-wrap: nowrap;align-items: center;margin-left: 5px;">
             <s-chip selectable="ture" type="default;" id="mod-filter-all">
               <p data-translate-key="all">全部</p>
             </s-chip>
@@ -187,8 +187,9 @@
             </s-chip>
           </div>
           <s-scroll-view
-            style="height: 100%;width: 100%;overflow-x: hidden;overflow-y: hidden;white-space: nowrap;padding-left: 5px;"
+            style="position:relative;height: 100%;width: 100%;overflow-x: hidden;overflow-y: hidden;white-space: nowrap;padding-left: 5px;"
             id="mod-filter-scroll">
+            <div id="mod-filter-bg"></div>
             <div id="mod-filter"
               style="display: flex;flex-wrap: nowrap;align-items: center;width: fit-content;height: 100%;">
             </div>
@@ -344,7 +345,7 @@
         <div class="placeholder" style="flex: 1;"></div>
         <!-- -应用按钮 -->
         <div style="display: flex;flex-direction: row-reverse;flex-wrap: nowrap;height: 0;">
-          <s-button id="apply-btn">
+          <s-button id="apply-btn" class="OO-parallelogram font-hongmeng">
             <s-icon slot="start" style="height:fit-content;width: fit-content;margin-right: -5px;">
               <svg width="40" height="40" viewBox="0 -960 960 960">
                 <path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"></path>
@@ -379,7 +380,7 @@
 
         <s-divider style="margin-top: 0px;"></s-divider>
         <s-scroll-view style="height: 100%;width: 100%;">
-          <div id="mod-info-container" style="display: flex;flex-direction: column;align-items: center;">
+          <div id="mod-info-container" class="OO-colunm-center" style="height: 100%;">
 
             <div id="img-container" style="width: 280px;height: 224px; border-radius: 10px; overflow: hidden;">
               <img id="mod-info-image"
@@ -395,12 +396,35 @@
               </div>
             </s-card>
             <s-divider></s-divider>
-            <s-button id="open-mod-url" type="outlined" style="width: 83%;"
-              data-translate-key="open-mod-url">打开mod链接</s-button>
-            <s-button id="open-mod-dir" type="outlined" style="width: 83%;margin-top: 7px;"
-              data-translate-key="open-mod-dir">打开mod文件夹</s-button>
-            <s-button id="edit-mod-info" type="outlined" style="width: 83%;margin-top: 7px;"
-              data-translate-key="edit-mod-info">编辑信息</s-button>
+            <div class="placeholder" style="flex: 1;"></div>
+            <div id="mod-info-controller" class="OO-colunm-center">
+              <s-button id="open-mod-url" type="filled-tonal" class="right-adhesive-button font-hongmeng">
+                <s-icon slot="start">
+                  <svg viewBox="0 0 960 960"><path d="M935.68 140.8a237.44 237.44 0 0 1 0 334.72l-204.16 204.16a237.44 237.44 0 0 1-334.72 0A64 64 0 0 1 486.4 588.8a108.8 108.8 0 0 0 153.6 0l204.8-203.52a108.8 108.8 0 0 0 0-153.6 107.52 107.52 0 0 0-153.6 0A64.256 64.256 0 0 1 600.32 140.8a238.08 238.08 0 0 1 335.36 0zM320 844.8a64 64 0 0 1 91.52 0 64 64 0 0 1 0 90.88 234.88 234.88 0 0 1-167.04 69.12A236.8 236.8 0 0 1 76.8 600.32L280.32 396.8a238.08 238.08 0 0 1 335.36 0A64.256 64.256 0 1 1 524.8 487.68a107.52 107.52 0 0 0-153.6 0L166.4 691.2a108.16 108.16 0 0 0 0 153.6 108.8 108.8 0 0 0 153.6 0z"></path></svg>
+                </s-icon>
+                <p data-translate-key="open-mod-url">打开mod链接</p>
+              </s-button>
+              <s-button id="open-mod-dir" type="filled-tonal" class="right-adhesive-button font-hongmeng">
+                <s-icon slot="start">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z">
+                    </path>
+                  </svg></s-icon>
+                <p data-translate-key="open-mod-dir">打开mod位置</p>
+              </s-button>
+              <s-button id="edit-mod-info" type="filled-tonal" class="right-adhesive-button font-hongmeng">
+                <s-icon slot="start">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                    <path
+                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z">
+                    </path>
+                  </svg>
+                </s-icon>
+                <p data-translate-key="edit-mod-info">编辑mod信息</p>
+              </s-button>
+
+            </div>
           </div>
         </s-scroll-view>
 
@@ -574,7 +598,8 @@
                 <s-tooltip>
                   <h3 slot="trigger" data-translate-key="mod-info-url"
                     style="line-height: 1;margin: 15px -1px 8px 0;color:var(--s-color-on-surface);"> mod链接 </h3>
-                  <p style="line-height: 1.2;" data-translate-key="mod-info-url-tip"> mod链接是mod的来源，可以是gamebanana、caimogu等 </p>
+                  <p style="line-height: 1.2;" data-translate-key="mod-info-url-tip">
+                    mod链接是mod的来源，可以是gamebanana、caimogu等 </p>
                 </s-tooltip>
                 <s-text-field style="min-width: 100px">
                   <input type="text" id="edit-mod-url">
@@ -641,10 +666,8 @@
         <p data-translate-key="about-author"> 作者：XLXZ </p>
         <s-button class="link-button" type="text"
           link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/">Github</s-button>
-        <s-button class="link-button" type="text"
-          link='https://gamebanana.com/tools/17889'>Gamebanana</s-button>
-        <s-button class="link-button" type="text"
-          link='https://www.caimogu.cc/post/1408504.html'>Caimogu</s-button>
+        <s-button class="link-button" type="text" link='https://gamebanana.com/tools/17889'>Gamebanana</s-button>
+        <s-button class="link-button" type="text" link='https://www.caimogu.cc/post/1408504.html'>Caimogu</s-button>
       </div>
       <s-button slot="action" type="text" id="about-dialog-close" data-translate-key="close">关闭</s-button>
     </s-dialog>
