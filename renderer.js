@@ -187,7 +187,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
         if (ifAutofreshInZZZ) {
             ipcRenderer.invoke('refresh-in-zzz').then(result => {
-                result && snack('Successfully refreshed in ZZZ');
+                // Refresh in ZZZ success flag
+                // 0: Failed
+                // 1: Success
+                // 2: Cannot find the process
+                // 3: Cannot find the zenless zone zero window
+                // 4: Cannot find the mod manager window
+
+                switch (result) {
+                    case 0:
+                        snack('Refresh in ZZZ failed');
+                        break;
+                    case 1:
+                        snack('Refresh in ZZZ success');
+                        break;
+                    case 2:
+                        snack('Cannot find the process', 'error');
+                        break;
+                    case 3:
+                        snack('Cannot find the zenless zone zero window');
+                        break;
+                    case 4:
+                        snack('Cannot find the mod manager window');
+                        break;
+                    default:
+                        snack('Unknown error');
+                        break;
+                }
             });
         }
     }
@@ -261,8 +287,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function snack(message) {
-        customElements.get('s-snackbar').show(message);
+    function snack(message,type = 'basic',duration = 4000) {
+        //使用自定义的snackbar组件来显示消息
+        customElements.get('s-snackbar').show({
+            text: message,
+            type: type,
+            duration: duration
+        });
     }
 
     function clickModItem(modItem, event = null, rect = null) {
@@ -1164,8 +1195,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     //-mod启用
     applyBtn.addEventListener('click', async () => {
         applyMods();
-        //使用s-snackbar显示提示
-        snack('Mods applied');
+        //使用s-snackbar显示提示,如果开启了自动在ZZZ中刷新，则显示提示
+        if (ifAutofreshInZZZ) {
+            snack('Mods applied, refreshing in ZZZ');
+        }
+        else {
+            snack('Mods applied');
+        }
     })
 
     const unknownModConfirmButton = document.getElementById('unknown-mod-confirm');

@@ -214,7 +214,7 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
       }
       delete modInfo.cover;
     }
-    
+
     //如果不存在imagePath字段，则设置为preview.jpg
     if (modInfo.imagePath === '') {
       modInfo.imagePath = 'preview.jpg';
@@ -296,61 +296,68 @@ ipcMain.handle('apply-mods', async (event, mods) => {
 });
 
 ipcMain.handle("refresh-in-zzz", async (event) => {
-  let refreshInZzzSuccess = false;
+  // Refresh in ZZZ success flag
+  // 0: Failed
+  // 1: Success
+  // 2: Cannot find the process
+  // 3: Cannot find the zenless zone zero window
+  // 4: Cannot find the mod manager window
 
   // Only availabe in windows
-  if(isWindows) {
-
+  if (isWindows) {
     // Virtual key code for F10. This key is the default but
     // can be changed in d3dx.ini. Future improvement.
-    const VK_F10 = 0x79; 
+
+    // We have the path to the 3dmigoto.exe, d3dx.ini is in the same folder
+    // We just need to read the d3dx.ini file and get the VK_F10 value 
+    const VK_F10 = 0x79;
 
     // Process name. Should be set as a config value for 
     // this to work while managing other games.
     const processName = "ZenlessZoneZero.exe";
-  
+
     // Get the process from the name
     const process = HMC.getProcessNameList(processName);
-  
-    if(process.length > 0) {
-      // Get the Zenless Zone Zero Hwnd handle
-      const window = HMC.getProcessWindow(process[0].pid);
-  
-      // Get the Mod manager Hwnd handle
-      const manager = HMC.getForegroundWindow();
-  
-      if(window && manager) {
-        // ZZZ wont accept any keys if the manager is not run as admin.
-        // ZZZ wont accept virtual keys, only accepts direct input keys.
-        // Here is the trick to get ZZZ to register the VK input without admin:
-        
-        // 1. Press the F10 Key down on the manager
-        HMC.sendKeyboard(VK_F10, true);
-  
-        // 2. Set focus on ZZZ window
-        window.setFocus(true);
-        
-        // 3. Wait a reasonable amount of time for the key to register
-        await sleep(75);
-  
-        // 4. Set focus on the Manager window
-        manager.setFocus(true);
-  
-        // 5. Wait again for the window
-        await sleep(50);
-  
-        // 6. Release the F10 Key
-        HMC.sendKeyboard(VK_F10, false);
-  
-        // 7. Set focus on ZZZ window again
-        window.setFocus(true);
-  
-        refreshInZzzSuccess = true;
-      }
-    }
+
+    if (process.length <= 0) return 2;
+
+
+    // Get the Zenless Zone Zero Hwnd handle
+    const window = HMC.getProcessWindow(process[0].pid);
+
+    // Get the Mod manager Hwnd handle
+    const manager = HMC.getForegroundWindow();
+
+    if (!window) return 3;
+    if (!manager) return 4;
+
+    // ZZZ wont accept any keys if the manager is not run as admin.
+    // ZZZ wont accept virtual keys, only accepts direct input keys.
+    // Here is the trick to get ZZZ to register the VK input without admin:
+
+    // 1. Press the F10 Key down on the manager
+    HMC.sendKeyboard(VK_F10, true);
+
+    // 2. Set focus on ZZZ window
+    window.setFocus(true);
+
+    // 3. Wait a reasonable amount of time for the key to register
+    await sleep(75);
+
+    // 4. Set focus on the Manager window
+    manager.setFocus(true);
+
+    // 5. Wait again for the window
+    await sleep(50);
+
+    // 6. Release the F10 Key
+    HMC.sendKeyboard(VK_F10, false);
+
+    // 7. Set focus on ZZZ window again
+    window.setFocus(true);
+
+    refreshState = true;
   }
-  
-  return refreshInZzzSuccess;
 });
 
 

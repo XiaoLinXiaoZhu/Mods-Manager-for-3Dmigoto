@@ -5,7 +5,7 @@ s-page {
   --s-color-on-primary-container: #002022;
   --s-color-secondary: #4a6365;
   --s-color-on-secondary: #ffffff;
-  --s-color-secondary-container: #cce8ea;
+  --s-color-secondary-container: #4b8787;
   --s-color-on-secondary-container: #051f21;
   --s-color-tertiary: #4f5f7d;
   --s-color-on-tertiary: #ffffff;
@@ -58,8 +58,8 @@ s-page {
   --s-color-dark-on-surface: #e9e9e9;
   --s-color-dark-surface-variant: #00e5ff;
   --s-color-dark-on-surface-variant: #838483;
-  --s-color-dark-inverse-surface: #171717;
-  --s-color-dark-inverse-on-surface: #bbff00;
+  --s-color-dark-inverse-surface: #431c1c;
+  --s-color-dark-inverse-on-surface: #ff9d0b;
   --s-color-dark-inverse-primary: #00f1ff;
   --s-color-dark-surface-container: #0000002e;
   --s-color-dark-surface-container-high: #000000;

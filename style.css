@@ -327,7 +327,7 @@ s-dialog h3 {
     margin: 0px 8px;
     transform: skew(-20deg);
     border-radius: 8px;
-    background-color: var(--s-color-dark-secondary-container);
+    background-color: var(--s-color-secondary-container);
     transition: all 0.5s ease 0s;
     z-index: 0;
 }
