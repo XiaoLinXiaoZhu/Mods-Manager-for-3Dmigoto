@@ -29,7 +29,7 @@
     "auto-apply": "Auto Apply",
     "auto-apply-info": "Automatically apply configuration when selecting/deselecting mods (may cause slight lag)",
     "test-title": "Test Function",
-    "test-funciton-info": "When applying mods, the refresh in the zero area will be activated automatically(*Need to open with administrator privileges), there still have bugs and is not recommended for use",
+    "test-function-info": "When applying mods, the refresh in the zero area will be activated automatically(*Need to open with administrator privileges), there still have bugs and is not recommended for use",
     "dialog-ask-for-exePath": "Due to file structure restrictions, you need to manually specify refresh-in-zzz.bat here, which is generally located in the same directory as ZZZModManager",
     "save-change": "Save Changes",
     "dialog-ask-for-save-change": "Detected unsaved changes, save them?",

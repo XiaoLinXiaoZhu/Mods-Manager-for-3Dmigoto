@@ -29,7 +29,7 @@
   "auto-apply": "自动应用",
   "auto-apply-info": "当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)",
   "test-title": "测试功能",
-  "test-funciton-info":"启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)(存在bug,不建议使用)",
+  "test-function-info":"启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)(存在bug,不建议使用)",
   "dialog-ask-for-exePath": "因为文件结构限制，这里需要您手动指定refresh-in-zzz.bat，它一般位于和ZZZModManager同一目录下",
   "save-change": "保存修改",
   "dialog-ask-for-save-change": "检测到您有未保存的修改，是否保存？",

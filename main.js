@@ -3,6 +3,14 @@ const fs = require('fs');
 const { url } = require('inspector');
 const path = require('path');
 const shell = require('electron').shell;
+const HMC = require("hmc-win32");
+const os = require('os');
+
+const isMac = os.platform() === "darwin";
+const isWindows = os.platform() === "win32";
+const isLinux = os.platform() === "linux";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // 实际上 ___dirname 是当前文件所在的目录,但是 最终的目标是要找到 modResourceBackpack 的根文件夹，所以要找到这个文件夹的路径
 // 通过 在第一次打开时询问 rootdir 来 确认文件保存的位置
@@ -288,37 +296,61 @@ ipcMain.handle('apply-mods', async (event, mods) => {
 });
 
 ipcMain.handle("refresh-in-zzz", async (event) => {
-  //通过激活外部的程序 refresh-in-zzz.exe 来刷新zzz文件夹
+  let refreshInZzzSuccess = false;
 
-  //因为我无法解决asar包内的exe程序无法执行的问题，所以这里在开发的时候使用exePath，而打包之后，使用exePath2的路径
-  if (exePath === '') {
-    console.log("exePath is empty");
-    return '';
-  }
+  // Only availabe in windows
+  if(isWindows) {
 
-  const cmd = `start "" "${exePath}"`;
-  let stdout;
-  console.log(`cmd: ${cmd}`);
+    // Virtual key code for F10. This key is the default but
+    // can be changed in d3dx.ini. Future improvement.
+    const VK_F10 = 0x79; 
 
-  try {
-    // 执行exe程序
-    stdout = require('child_process').execSync(cmd, { encoding: 'utf-8' });
-    console.log('stdout:', stdout);
-    // 如果没有抛出异常，说明程序正常退出，退出状态码为0
-    console.log('程序正常退出，退出状态码: 0');
-  } catch (error) {
-    // 如果程序非正常退出，这里可以捕获到错误
-    if (error.status) {
-      console.error(`程序非正常退出，退出状态码: ${error.status}`);
-    } else {
-      // 处理其他类型的错误
-      console.error('发生了一个错误：', error.message);
+    // Process name. Should be set as a config value for 
+    // this to work while managing other games.
+    const processName = "ZenlessZoneZero.exe";
+  
+    // Get the process from the name
+    const process = HMC.getProcessNameList(processName);
+  
+    if(process.length > 0) {
+      // Get the Zenless Zone Zero Hwnd handle
+      const window = HMC.getProcessWindow(process[0].pid);
+  
+      // Get the Mod manager Hwnd handle
+      const manager = HMC.getForegroundWindow();
+  
+      if(window && manager) {
+        // ZZZ wont accept any keys if the manager is not run as admin.
+        // ZZZ wont accept virtual keys, only accepts direct input keys.
+        // Here is the trick to get ZZZ to register the VK input without admin:
+        
+        // 1. Press the F10 Key down on the manager
+        HMC.sendKeyboard(VK_F10, true);
+  
+        // 2. Set focus on ZZZ window
+        window.setFocus(true);
+        
+        // 3. Wait a reasonable amount of time for the key to register
+        await sleep(75);
+  
+        // 4. Set focus on the Manager window
+        manager.setFocus(true);
+  
+        // 5. Wait again for the window
+        await sleep(50);
+  
+        // 6. Release the F10 Key
+        HMC.sendKeyboard(VK_F10, false);
+  
+        // 7. Set focus on ZZZ window again
+        window.setFocus(true);
+  
+        refreshInZzzSuccess = true;
+      }
     }
   }
-
-  console.log(`succeed to execute ${cmd}，refresh-in-zzz.exe return: ${stdout}`);
-
-  return exePath;
+  
+  return refreshInZzzSuccess;
 });
 
 

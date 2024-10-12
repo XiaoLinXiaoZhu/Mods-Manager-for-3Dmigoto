@@ -104,6 +104,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggleFullscreen();
     }
 
+    // Hide platform specific components if not current platform
+    document.querySelectorAll("[data-platform]").forEach(element => {
+        const platforms = element.dataset.platform.split(",");
+
+        if(!platforms.includes(window.platform)) {
+            element.style.display = "none";
+        }
+    });
+
     // 创建 Intersection Observer
     // 用于检测modItem是否在视窗内,如果在视窗内则使其inWindow属性为true,否则为false
     // 用来代替 getBoundingClientRect() 来判断元素是否在视窗内,getBoundingClientRect()会导致页面重绘
@@ -177,7 +186,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
         if (ifAutofreshInZZZ) {
-            tryRefreshInZZZ();
+            ipcRenderer.invoke('refresh-in-zzz').then(result => {
+                result && snack('Successfully refreshed in ZZZ');
+            });
         }
     }
 
@@ -1156,40 +1167,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         //使用s-snackbar显示提示
         snack('Mods applied');
     })
-
-    async function tryRefreshInZZZ() {
-        //尝试刷新,使用async，防止阻塞
-        //使用cmd激活刷新的exe程序
-        if (exePath === '') {
-            console.log("exePath is empty");
-            return '';
-        }
-
-        const cmd = `start "" "${exePath}" /min`;
-        let stdout;
-        console.log(`cmd: ${cmd}`);
-
-        try {
-            // 执行exe程序
-            stdout = require('child_process').execSync(cmd, { encoding: 'utf-8' });
-            console.log('stdout:', stdout);
-            // 如果没有抛出异常，说明程序正常退出，退出状态码为0
-            console.log('程序正常退出，退出状态码: 0');
-        } catch (error) {
-            // 如果程序非正常退出，这里可以捕获到错误
-            if (error.status) {
-                console.error(`程序非正常退出，退出状态码: ${error.status}`);
-            } else {
-                // 处理其他类型的错误
-                console.error('发生了一个错误：', error.message);
-            }
-        }
-
-        console.log(`succeed to execute ${cmd}，refresh-in-zzz.exe return: ${stdout}`);
-        snack('Successfully refresh in ZZZ' + stdout);
-
-        return exePath;
-    }
 
     const unknownModConfirmButton = document.getElementById('unknown-mod-confirm');
     const unknownModIgnoreButton = document.getElementById('unknown-mod-ignore');
