@@ -1,4 +1,4 @@
-const { ipcRenderer, remote, contextBridge } = require('electron');
+const { ipcRenderer, remote } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
