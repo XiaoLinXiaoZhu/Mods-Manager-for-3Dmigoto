@@ -400,7 +400,11 @@
             <div id="mod-info-controller" class="OO-colunm-center">
               <s-button id="open-mod-url" type="filled-tonal" class="right-adhesive-button font-hongmeng">
                 <s-icon slot="start">
-                  <svg viewBox="0 0 960 960"><path d="M935.68 140.8a237.44 237.44 0 0 1 0 334.72l-204.16 204.16a237.44 237.44 0 0 1-334.72 0A64 64 0 0 1 486.4 588.8a108.8 108.8 0 0 0 153.6 0l204.8-203.52a108.8 108.8 0 0 0 0-153.6 107.52 107.52 0 0 0-153.6 0A64.256 64.256 0 0 1 600.32 140.8a238.08 238.08 0 0 1 335.36 0zM320 844.8a64 64 0 0 1 91.52 0 64 64 0 0 1 0 90.88 234.88 234.88 0 0 1-167.04 69.12A236.8 236.8 0 0 1 76.8 600.32L280.32 396.8a238.08 238.08 0 0 1 335.36 0A64.256 64.256 0 1 1 524.8 487.68a107.52 107.52 0 0 0-153.6 0L166.4 691.2a108.16 108.16 0 0 0 0 153.6 108.8 108.8 0 0 0 153.6 0z"></path></svg>
+                  <svg viewBox="0 0 960 960">
+                    <path
+                      d="M935.68 140.8a237.44 237.44 0 0 1 0 334.72l-204.16 204.16a237.44 237.44 0 0 1-334.72 0A64 64 0 0 1 486.4 588.8a108.8 108.8 0 0 0 153.6 0l204.8-203.52a108.8 108.8 0 0 0 0-153.6 107.52 107.52 0 0 0-153.6 0A64.256 64.256 0 0 1 600.32 140.8a238.08 238.08 0 0 1 335.36 0zM320 844.8a64 64 0 0 1 91.52 0 64 64 0 0 1 0 90.88 234.88 234.88 0 0 1-167.04 69.12A236.8 236.8 0 0 1 76.8 600.32L280.32 396.8a238.08 238.08 0 0 1 335.36 0A64.256 64.256 0 1 1 524.8 487.68a107.52 107.52 0 0 0-153.6 0L166.4 691.2a108.16 108.16 0 0 0 0 153.6 108.8 108.8 0 0 0 153.6 0z">
+                    </path>
+                  </svg>
                 </s-icon>
                 <p data-translate-key="open-mod-url">打开mod链接</p>
               </s-button>
@@ -440,60 +444,131 @@
     <!-- -询问文件保存位置 -->
     <s-dialog id="settings-dialog">
       <div slot="headline" data-translate-key="settings"> 设置 </div>
-
-      <div slot="text">
-        <div id="setting-get-theme">
-          <h3 data-translate-key="theme"> 主题 </h3>
-          <div id="theme-picker">
-            <s-chip selectable="true" type="default" selectable="true" id="auto">
-              <p data-translate-key="auto">自动</p>
-            </s-chip>
-            <s-chip selectable="true" type="default" selectable="true" id="dark">
-              <p data-translate-key="dark">暗色</p>
-            </s-chip>
-            <s-chip selectable="true" type="default" selectable="true" id="light">
-              <p data-translate-key="light">亮色</p>
-            </s-chip>
+      <div>
+        <div id="settings-dialog-container">
+          <div id="settings-menu" class="OO-box">
+            <input type="radio" name="settings-menu" id="normal-settings" class="settings-menu-radio" checked>
+            <label for="normal-settings" data-translate-key="normal-settings" class="font-hongmeng"> 常规设置 </label>
+            <input type="radio" name="settings-menu" id="advanced-settings" class="settings-menu-radio">
+            <label for="advanced-settings" data-translate-key="advanced-settings" class="font-hongmeng"> 高级设置 </label>
+            <input type="radio" name="settings-menu" id="about-settings" class="settings-menu-radio">
+            <label for="about-settings" data-translate-key="about" class="font-hongmeng"> 关于 </label>
           </div>
-        </div>
-        <s-divider></s-divider>
+          <div id="settings-content" class="OO-box">
+            <!-- 根据选择的设置选项展示不同的设置内容 -->
+            <!-- 常规设置 -->
+            <div id="settings-dialog-normal-settings" class="settings-dialog-tab">
+              <div class="OO-setting-bar" id="setting-get-language">
+                <h3 data-translate-key="language"> 语言 </h3>
+                <div id="language-picker">
+                  <input type="radio" name="language" id="zh-cn" class="language-radio" checked>
+                  <label for="zh-cn"> <s-chip selectable="true" type="default" selectable="true" id="zh-cn">
+                      <p data-translate-key="zh-cn">简体中文</p>
+                    </s-chip> </label>
+                  <input type="radio" name="language" id="en" class="language-radio">
+                  <label for="en"> <s-chip selectable="true" type="default" selectable="true" id="en">
+                      <p data-translate-key="en">English</p>
+                    </s-chip> </label>
+                </div>
+              </div>
+              <s-divider></s-divider>
+              <div class="OO-setting-bar" id="setting-get-theme">
+                <h3 data-translate-key="theme"> 主题 </h3>
+                <div id="theme-picker">
+                  <input type="radio" name="theme" id="auto" class="theme-radio" checked>
+                  <label for="auto"> <s-chip selectable="true" type="default" selectable="true" id="auto">
+                      <p data-translate-key="auto">自动</p>
+                    </s-chip> </label>
+                  <input type="radio" name="theme" id="dark" class="theme-radio">
+                  <label for="dark"> <s-chip selectable="true" type="default" selectable="true" id="dark">
+                      <p data-translate-key="dark">暗色</p>
+                    </s-chip> </label>
+                  <input type="radio" name="theme" id="light" class="theme-radio">
+                  <label for="light"> <s-chip selectable="true" type="default" selectable="true" id="light">
+                      <p data-translate-key="light">亮色</p>
+                    </s-chip> </label>
+                </div>
+              </div>
+              <s-divider></s-divider>
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="mod-source-path"> 模组资源位置 </h3>
+                <s-text-field style="display: grid">
+                  <input type="text" id="set-rootdir-input">
+                </s-text-field>
+              </div>
+              <s-divider></s-divider>
+              <div id="auto-apply" class="OO-setting-bar">
+                <h3 data-translate-key="auto-apply"> 自动应用 </h3>
+                <s-switch id="auto-apply-switch"></s-switch>
+              </div>
+              <p data-translate-key="auto-apply-info">当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)</p>
+              <div id="auto-refresh-function" data-platform="win32" class="OO-setting-bar">
+                <h3 data-translate-key="auto-refresh-in-zzz"> 自动刷新 </h3>
+                <s-switch id="auto-refresh-in-zzz"></s-switch>
+              </div>
+              <p data-translate-key="test-function-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
+              <s-divider></s-divider>
+            </div>
+            <div id="settings-dialog-advanced-settings" class="settings-dialog-tab">
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="mod-source-path"> 模组资源位置 </h3>
+                <s-text-field style="display: grid">
+                  <input type="text" id="set-rootdir-input">
+                </s-text-field>
+              </div>
+              <s-divider></s-divider>
+              <div class="OO-setting-bar" id="settings-init-config">
+                <h3 data-translate-key="init-config"> 初始化配置 </h3>
+                <s-button id="init-config-button" data-translate-key="init">
+                  初始化所有配置
+                </s-button>
+              </div>
 
-        <div id="settings-get-rootdir">
-          <h3 data-translate-key="mod-source-path">模组资源位置 </h2>
-            <s-text-field style="display: grid">
-              <input type="text" id="set-rootdir-input">
-            </s-text-field>
-        </div>
-        <s-divider></s-divider>
-        <div id="auto-apply">
-          <h3 data-translate-key="auto-apply"> 自动应用 </h3>
-          <div
-            style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
-            <p data-translate-key="auto-apply-info">当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)</p>
-            <s-switch id="auto-apply-switch"></s-switch>
-          </div>
-        </div>
-        <div id="test-function" data-platform="win32">
-          <h3 data-translate-key="test-title"> 测试功能 </h3>
-          <div
-            style="display: flex;flex-direction: row;align-items: center;align-content: center;justify-content: space-between;">
-            <p data-translate-key="test-function-info">启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)</p>
-            <s-switch id="auto-refresh-in-zzz"></s-switch>
-          </div>
-          <p data-translate-key="dialog-ask-for-exePath">因为文件结构限制，这里需要您手动指定refresh-in-zzz.exe，它一般位于和ZZZModManager同一目录下
-          </p>
-          <s-text-field style="display: grid" id="get-exePath-input">
-            <s-ripple attached="true">
-              <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></p>
-            </s-ripple>
-          </s-text-field>
-        </div>
+            </div>
 
-        <div id="settings-init-config">
-          <h3 data-translate-key="init-config"> 初始化配置 </h3>
-          <s-button type="outlined" id="init-config-button" style="margin-top: 10px;" data-translate-key="init">
-            初始化所有配置
-          </s-button>
+            <div id="settings-dialog-about-settings" class="settings-dialog-tab">
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="version"> 版本 </h3>
+                <p> 1.8.5 </p>
+              </div>
+
+              <div class="OO-setting-bar" style="height: fit-content;">
+                <p data-translate-key="about-content"> 本程序由 XLXZ 开发,开源免费,遵循GNU General Public License
+                  v3.0。用于管理基于3dmigoto的mod
+                  ,理论上来说也可以管理其他游戏的mod(只要是基于3dmigoto的) </p>
+              </div>
+              <div class="OO-setting-bar">
+                <p data-translate-key="about-version"> 最新版本在gamebanana上发布，如果你有任何问题或者建议，欢迎在github上提出 </p>
+              </div>
+              <div class="OO-setting-bar">
+                <p data-translate-key="about-author"> 作者：XLXZ </p>
+              </div>
+              <s-divider></s-divider>
+              <div class="OO-setting-bar" style="height: 100px;">
+                <h3 data-translate-key="about-thanks"> 感谢 soliddanii <br>提供的帮助 </h3>
+                <s-button class="link-button" type="text"
+                  link="https://github.com/soliddanii" data-translate-key="click-to-jump"> 点击跳转 </s-button>
+              </div>
+              <div class="OO-setting-bar">
+                <h3> Github </h3>
+                <s-button class="link-button" type="text"
+                  link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/" data-translate-key="click-to-jump"> 点击跳转 </s-button>
+              </div>
+              <div class="OO-setting-bar">
+                <h3> Gamebanana </h3>
+                <s-button class="link-button" type="text"
+                  link='https://gamebanana.com/tools/17889' data-translate-key="click-to-jump"> 点击跳转 </s-button>
+              </div>
+              <div class="OO-setting-bar">
+                <h3> Caimogu </h3>
+                <s-button class="link-button" type="text"
+                  link='https://www.caimogu.cc/post/1408504.html' data-translate-key="click-to-jump"> 点击跳转 </s-button>
+              </div>
+
+              <s-divider></s-divider>
+            </div>
+          </div>
+
         </div>
       </div>
 

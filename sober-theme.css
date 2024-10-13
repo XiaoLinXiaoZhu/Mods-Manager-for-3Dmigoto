@@ -53,7 +53,7 @@ s-page {
   --s-color-dark-background: #18181c;
   --s-color-dark-on-background: #cdd5c6;
   --s-color-dark-outline: #cce403;
-  --s-color-dark-outline-variant: #2a2c2b;
+  --s-color-dark-outline-variant: #303030;
   --s-color-dark-surface: #00ffff;
   --s-color-dark-on-surface: #e9e9e9;
   --s-color-dark-surface-variant: #00e5ff;
@@ -62,8 +62,8 @@ s-page {
   --s-color-dark-inverse-on-surface: #ff9d0b;
   --s-color-dark-inverse-primary: #00f1ff;
   --s-color-dark-surface-container: #0000002e;
-  --s-color-dark-surface-container-high: #000000;
-  --s-color-dark-surface-container-highest: #2a2c2b;
+  --s-color-dark-surface-container-high: #0b0b0bcd;
+  --s-color-dark-surface-container-highest: #191919;
   --s-color-dark-surface-container-low: #1d1f1e;
-  --s-color-dark-surface-container-lowest: #00ffff;
+  --s-color-dark-surface-container-lowest: #222222;
 }

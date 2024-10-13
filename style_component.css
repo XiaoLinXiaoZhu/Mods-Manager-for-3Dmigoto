@@ -130,6 +130,8 @@ p {
     width: fit-content;
 }
 
+/* -=================左侧粘性按钮================ */
+
 .left-adhesive-button {
     /* background-color: black; */
     height: 45px;
@@ -169,6 +171,9 @@ p {
     transition: all 0.1s ease-in-out 0s;
 } */
 
+
+/* -=================右侧粘性按钮================ */
+
 .right-adhesive-button {
     /* background-color: black; */
     height: 45px;
@@ -205,6 +210,9 @@ p {
 .right-adhesive-button[type='elevated'] p{
     transform: translateX(0px);
 }
+
+
+/* -=================并列按钮条组件================ */
 
 .button-bar {
     display: flex;
@@ -278,3 +286,82 @@ p {
     transform: skew(20deg);
 }
 
+/* -=================默认箱体样式================ */
+.OO-box {
+    border-radius: 20px;
+    border: 3px solid var(--s-color-outline-variant);
+    background-color: var(--s-color-surface-container-high);
+
+    padding: 10px;
+}
+
+
+/* -=================设置条组件================ */
+.OO-setting-bar {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    margin: 10px 0;
+    width: calc(100% - 40px);
+    height: 56px;
+    position: relative;
+    background-color: var(--s-color-surface-container-lowest);
+    color: var(--s-color-on-surface);
+    border-radius: 28px;
+    padding: 0 20px;
+    box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.2);
+    text-overflow: ellipsis;
+}
+
+.OO-setting-bar h3 {
+    margin: 0;
+    line-height: 1;
+    font-weight: bold;
+    font-size: 1.2em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 35%;
+}
+
+.OO-setting-bar s-text-field{
+    position: absolute;
+    --text-field-border-radius: 24px;
+    --text-field-padding: 24px;
+    --border-radius: 24px;
+    right: 5px;
+    height: calc(100% - 10px);
+    min-height: 0px;
+    min-width: 100px;
+}
+
+.OO-setting-bar input[type='radio'] {
+    display: none;
+}
+
+.OO-setting-bar input[type='radio']:checked+label>s-chip {
+    background-color: var(--s-color-primary);
+    color: var(--s-color-on-primary);
+}
+
+.OO-setting-bar s-switch {
+    position: absolute;
+    right: 10px;
+    min-width: 58px;
+    height: calc(100% - 20px);
+    min-height: 0px;
+}
+
+.OO-setting-bar s-button {
+    position: absolute;
+    right: 10px;
+    min-width: 58px;
+    height: calc(100% - 20px);
+    min-height: 0px;
+    font-size: 0.97em;
+    font-weight: 500;
+}

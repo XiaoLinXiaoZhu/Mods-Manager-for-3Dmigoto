@@ -7,8 +7,6 @@ const fs = require('fs');
 document.addEventListener('DOMContentLoaded', async () => {
 
     let lang = localStorage.getItem('lang') || 'en';
-    //翻译页面
-    translatePage(lang);
 
     //- 获取元素
     const drawerPage = document.getElementById('drawer-page');
@@ -21,6 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rootdirConfirmButton = document.getElementById('set-rootdir-confirm');
 
     //设置页面
+    const settingsMenu = document.getElementById('settings-menu');
+    const settingsDialogTabs = document.querySelectorAll('.settings-dialog-tab');
     const autoApplySwitch = document.getElementById('auto-apply-switch');
     let ifAutoApply = localStorage.getItem('auto-apply') || false;
     const autoRefreshInZZZSwitch = document.getElementById('auto-refresh-in-zzz');
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const getExePathInput = document.getElementById('get-exePath-input');
     let exePath = localStorage.getItem('exePath') || '';
     const themePicker = document.getElementById('theme-picker');
-    const themes = themePicker.querySelectorAll('s-chip');
+    const langPicker = document.getElementById('language-picker');
 
     //预设列表相关
     const presetContainer = document.getElementById('preset-container');
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll("[data-platform]").forEach(element => {
         const platforms = element.dataset.platform.split(",");
 
-        if(!platforms.includes(window.platform)) {
+        if (!platforms.includes(window.platform)) {
             element.style.display = "none";
         }
     });
@@ -226,6 +226,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         dialog.show();
     }
 
+    function setLang(newLang) {
+        //设置语言
+        lang = newLang;
+        localStorage.setItem('lang', lang);
+        
+        //翻译页面
+        translatePage(lang);
+
+        //设置页面同步修改显示情况
+
+        langPicker.value = lang;
+        // //languagePicker下面的子元素是radio，所以需要遍历
+        // langPicker.querySelectorAll('input').forEach(input => {
+        //     if (input.id == lang) {
+        //         input.checked = true;
+        //     }
+        //     else {
+        //         input.checked = false;
+        //     }
+        // });
+    }
+
     function setTheme(theme) {
         const sPages = document.querySelectorAll('s-page');
 
@@ -238,15 +260,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
         //在设置页面同步修改显示情况
-        themes.forEach(item => {
-            //将所有的type设置为default
-            if (item.id == theme) {
-                item.type = 'filled-tonal';
-            }
-            else {
-                item.type = 'default';
-            }
-        });
+        themePicker.value = theme;
+        //debug
+        console.log(`theme:${theme}`);
 
         //特殊样式手动更改
         if (theme != 'dark') {
@@ -273,7 +289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const translationPath = path.join(__dirname, 'locales', `${lang}.json`);
         //读取翻译文件
         const translation = JSON.parse(fs.readFileSync(translationPath));
-        //直接替换元素的textContent，不使用文档片段，比较两者的性能
+        //遍历所有需要翻译的元素，将其翻译
         elements.forEach(async element => {
             const key = element.getAttribute('data-translate-key');
             if (key in translation) {
@@ -287,7 +303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function snack(message,type = 'basic',duration = 4000) {
+    function snack(message, type = 'basic', duration = 4000) {
         //使用自定义的snackbar组件来显示消息
         customElements.get('s-snackbar').show({
             text: message,
@@ -742,7 +758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function applyPreset(presetName) {
         console.log("🟢load presetItem " + presetName);
-        
+
         if (currentPreset == presetName) {
             //如果点击的是当前的preset，则不进行任何操作
             return;
@@ -786,7 +802,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     //使用事件委托处理点击事件，减少事件绑定次数
     presetContainer.addEventListener('click', async (event) => {
         const presetItem = event.target.closest('#preset-item');
-        presetItem? editMode? deletePreset(presetItem.name): applyPreset(presetItem.name): null;
+        presetItem ? editMode ? deletePreset(presetItem.name) : applyPreset(presetItem.name) : null;
     });
 
     function filterMods() {
@@ -899,9 +915,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //bg.style.visibility = 'visible';
                 //width 还需要减去padding的量
                 modFilterBg.style.height = `${filterItemRect.height}px`;
-                modFilterBg.style.width = `${filterItemRect.width-15}px`;
+                modFilterBg.style.width = `${filterItemRect.width - 15}px`;
                 modFilterBg.style.top = `${filterItemRect.top - modFilterRect.top}px`;
-                modFilterBg.style.left = `${filterItemRect.left - modFilterRect.left +4}px`;
+                modFilterBg.style.left = `${filterItemRect.left - modFilterRect.left + 4}px`;
                 //0.5s后将bg隐藏
                 filterMods();
             }
@@ -929,7 +945,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     //-----------------------------事件监听--------------------------------
-    
+
 
     //-全屏按钮
     fullScreenButton.addEventListener('click', toggleFullscreen);
@@ -1056,6 +1072,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     //-setting-dialog相关
 
     //-展示设置页面
+    //设置页面使用的s-dialog是封装好的，无法通过css修改其样式，所以需要通过js来修改
+    const settingsDialogStyle = document.createElement('style');
+    settingsDialogStyle.innerHTML = `
+        .container {
+         width: calc(30% + 400px) !important;
+         min-width: calc(800px) !important;
+            height: 100% !important;
+        }`
+    settingsDialog.shadowRoot.appendChild(settingsDialogStyle);
+
+    //设置页面的展示按钮
     settingsShowButton.addEventListener('click', async () => {
         // 显示或隐藏settingsDialog
         showDialog(settingsDialog);
@@ -1069,19 +1096,87 @@ document.addEventListener('DOMContentLoaded', async () => {
         //显示当前 auto-refresh-in-zzz 的值
         autoRefreshInZZZSwitch.checked = ifAutofreshInZZZ;
 
-        //显示当前exePath
-        getExePathInput.querySelector('p').innerHTML = exePath;
+        // 显示当前页面
+        settingsDialogTabs.forEach(item => {
+            item.style.display = 'none';
+        });
+        //获取目前的checked的值
+        const checked = settingsMenu.querySelector('input:checked');
+        //根据checked的id来切换tab,如果checked为null，则默认显示第一个tab
+        checked? settingsDialog.querySelector(`#settings-dialog-${checked.id}`).style.display = 'block' : settingsDialog.querySelector(`#settings-dialog-normal-settings`).style.display = 'block';
     });
 
-
-    //设置主题
-    themes.forEach(item => {
-        item.addEventListener('click', () => {
-            setTheme(item.id);
+    //设置页面tab的切换
+    settingsMenu.addEventListener('click', (event) => {
+        //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
+        //获取目前的checked的值
+        const checked = settingsMenu.querySelector('input:checked');
+        //debug
+        console.log("checked:" + checked.id);
+        
+        //根据checked的id来切换tab
+        const tab = settingsDialog.querySelector(`#settings-dialog-${checked.id}`);
+        //debug
+        console.log("finding tab:" + `#settings-dialog-${checked.id}`);
+        if (!tab) {
+            console.log("tab is null");
+            return;
         }
-        );
-    }
-    );
+        //将所有的tab设置为display:none
+        settingsDialogTabs.forEach(item => {
+            item.style.display = 'none';
+            //debug
+            console.log("hide tab"+item.id);
+        });
+        //将当前的tab设置为display:block
+        tab.style.display = 'block';
+        //debug
+        console.log("show tab" + tab.id);
+    });
+
+    //设置语言
+    langPicker.addEventListener('click', (event) => {
+        //langPicker的子元素是input的radio，所以不需要判断到底点击的是哪个元素，直接切换checked的值即可
+        //获取目前的checked的值
+        const checked = langPicker.querySelector('input:checked');
+
+        //如果点击的是当前的语言，则不进行任何操作
+        if (!checked) {
+            console.log("checked is null");
+            return;
+        }
+        //debug
+        console.log(checked);
+        console.log("checked:" + checked.id);  
+         
+        if (checked.id == lang) {
+            return;
+        }
+
+        //根据checked的id来切换语言
+        setLang(checked.id);
+    });
+
+    //设置theme
+    themePicker.addEventListener('click', (event) => {
+        //themePicker的子元素是input的radio，所以不需要判断到底点击的是哪个元素，直接切换checked的值即可
+        //获取目前的checked的值
+        const checked = themePicker.querySelector('input:checked');
+        //debug
+        console.log("checked:" + checked.id);
+
+        //如果点击的是当前的theme，则不进行任何操作
+        if (!checked) {
+            console.log("checked is null");
+            return;
+        }
+        if (checked.id == localStorage.getItem('theme')) {
+            return;
+        }
+
+        //根据checked的id来切换theme
+        setTheme(checked.id);
+    });
 
     //设置rootdir
     rootdirConfirmButton.addEventListener('click', async () => {
@@ -1139,28 +1234,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             //tryGetAdmin();
         }
     });
-
-    //获得自动刷新的exe 的路径
-
-    getExePathInput.addEventListener('click', async () => {
-        const path = await ipcRenderer.invoke('get-exePath');
-        //debug
-        console.log("exePath: " + path);
-
-        if (ipcRenderer.invoke('check-exePath', exePath) && path) {
-            exePath = path;
-            //显示exePath
-            getExePathInput.querySelector('p').innerHTML = path;
-            //保存exePath
-            localStorage.setItem('exePath', exePath);
-
-            await ipcRenderer.invoke('set-exePath', path);
-        }
-        else {
-            snack('Please select the correct exe path');
-        }
-    });
-
 
     function tryGetAdmin() {
         //尝试获取管理员权限
