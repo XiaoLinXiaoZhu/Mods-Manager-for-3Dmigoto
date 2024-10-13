@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             //如果开启了自动应用，则自动应用
-            if (ifAutoApply) {
+            if (ifAutoApply == 'true') {
                 applyMods();
             }
 
@@ -794,7 +794,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             filterMods();
         }
         //如果开启了自动应用，则自动应用
-        if (ifAutoApply) {
+        if (ifAutoApply == true) {
             applyMods();
         }
     }
@@ -1232,7 +1232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //是否开启自动应用
     autoApplySwitch.addEventListener('change', () => {
-        ifAutoApply = autoApplySwitch.checked;
+        ifAutoApply = autoApplySwitch.checked;  
         //保存ifAutoApply
         localStorage.setItem('auto-apply', ifAutoApply);
         //debug
