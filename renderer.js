@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let ifAutoApply = localStorage.getItem('auto-apply') || false;
     const autoRefreshInZZZSwitch = document.getElementById('auto-refresh-in-zzz');
     let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
-    const getExePathInput = document.getElementById('get-exePath-input');
     let exePath = localStorage.getItem('exePath') || '';
     const themePicker = document.getElementById('theme-picker');
     const langPicker = document.getElementById('language-picker');
@@ -222,6 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 将 Dialog 的 display 设置为 block
         if (dialog.style.display != 'block') {
             dialog.style.display = 'block';
+            dialog.style.opacity = 1;
         }
         dialog.show();
     }
@@ -1076,11 +1076,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settingsDialogStyle = document.createElement('style');
     settingsDialogStyle.innerHTML = `
         .container {
-         width: calc(30% + 400px) !important;
-         min-width: calc(800px) !important;
-            height: 100% !important;
-        }`
+            width: calc(30% + 400px) !important;
+            min-width: calc(800px) !important;
+            max-width: 1100px !important;
+            height: calc(100% - 100px) !important;
+            overflow: hidden !important;
+            flex:1;
+        }
+        .action {
+            display: none !important;
+        }
+        s-scroll-view{
+        display: none;
+        }    
+        `
     settingsDialog.shadowRoot.appendChild(settingsDialogStyle);
+
+    //监听settingsDialog的关闭事件，当settingsDialog关闭时，将其所有的tab设置为display:none
+    settingsDialog.addEventListener('close', () => {
+        settingsDialogTabs.forEach(item => {
+            item.style.display = 'none';
+            item.style.opacity = '0';
+        });
+    });
 
     //设置页面的展示按钮
     settingsShowButton.addEventListener('click', async () => {

@@ -67,6 +67,18 @@ div.OO-colorfull-border {
     }
 }
 
+.fit-parent-width {
+    height: 100%;
+    width: 0;
+    padding-left: 100%;
+    overflow: hidden;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 
 /* -=============组件样式，实现自定义组件的默认样式=============== */
 s-chip {
@@ -129,6 +141,19 @@ p {
     height: fit-content;
     width: fit-content;
 }
+
+::-webkit-scrollbar{
+    width: 6px;
+    height: 6px;
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb{
+    background: var(--s-color-outline-variant, #c1c7ce);
+    border-radius: 3px;
+    transform: translateX(-10px);
+
+  }
+
 
 /* -=================左侧粘性按钮================ */
 
@@ -307,7 +332,7 @@ p {
     align-content: center;
     margin: 10px 0;
     width: calc(100% - 40px);
-    height: 56px;
+    height: 50px;
     position: relative;
     background-color: var(--s-color-surface-container-lowest);
     color: var(--s-color-on-surface);
@@ -351,7 +376,7 @@ p {
 .OO-setting-bar s-switch {
     position: absolute;
     right: 10px;
-    min-width: 58px;
+    width: 50px;
     height: calc(100% - 20px);
     min-height: 0px;
 }

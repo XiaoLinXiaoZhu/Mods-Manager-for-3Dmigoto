@@ -11,8 +11,6 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-
-
 :not(:defined) {
     display: none;
 }
@@ -244,19 +242,6 @@ body {
     margin: 5px 0;
 }
 
-.fit-parent-width {
-    height: 100%;
-    width: 0;
-    padding-left: 100%;
-    overflow: hidden;
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
 .fit-image-width {
     height: 100%;
     width: fit-content;
@@ -298,7 +283,7 @@ s-dialog h3 {
     right: 140px;
     border-radius: 0px 15px 0px 15px;
     background-color: var(--s-color-surface-container-high);
-
+    z-index: -1;
 }
 
 #bottom-buttons {
@@ -382,19 +367,21 @@ s-dialog h3 {
     width: 28%;
     max-width: 180px;
     margin:0px 10px;
-    padding-bottom: 40%;
+    height: 100%;
 }
 
 #settings-content {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    justify-content: center;
+    justify-content: flex-start;
     align-content: flex-start;
     flex-wrap: nowrap;
     flex: 1;
     height: 100%;
     padding: 10px 20px;
+    margin: 0px 10px 0px 0px;
+    overflow: auto;
 }
 
 #settings-menu .settings-menu-radio {
