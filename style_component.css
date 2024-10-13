@@ -142,9 +142,10 @@ p {
     margin-right: 40px;
 }
 
-.left-adhesive-button p{
+/* .left-adhesive-button p{
     transform: translateX(20px);
-}
+    transition: all 0.1s ease-in-out 0s;
+} */
 
 .left-adhesive-button::before {
     content: "";
@@ -163,9 +164,10 @@ p {
     transform: translateX(-20px);
 }
 
-.left-adhesive-button[type='elevated'] p{
+/* .left-adhesive-button[type='elevated'] p{
     transform: translateX(0px);
-}
+    transition: all 0.1s ease-in-out 0s;
+} */
 
 .right-adhesive-button {
     /* background-color: black; */

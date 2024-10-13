@@ -84,6 +84,10 @@ body {
     margin-right: 30px;
     color: var(--s-color-on-primary);
     background-color: var(--s-color-secondary-container);
+
+    p {
+        transform: translateX(20px);
+    }
 }
 
 #main-page {
