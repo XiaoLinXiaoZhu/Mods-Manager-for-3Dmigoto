@@ -64,6 +64,6 @@ s-page {
   --s-color-dark-surface-container: #0000002e;
   --s-color-dark-surface-container-high: #0b0b0beb;
   --s-color-dark-surface-container-highest: #191919;
-  --s-color-dark-surface-container-low: #1d1f1e;
-  --s-color-dark-surface-container-lowest: #222222;
+  --s-color-dark-surface-container-low: #222222;
+  --s-color-dark-surface-container-lowest: #323232;
 }

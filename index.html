@@ -364,73 +364,68 @@
       <!-- -属性详情界面 -->
 
       <div slot="end" id="info-page"
-        style="display: flex;justify-content: flex-start;flex-wrap: nowrap;flex-direction: column;align-items: center;width:300px;">
-
-        <s-card
-          style="height: fit-content;width: 100%;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
+        style="display: flex;justify-content: flex-start;flex-wrap: nowrap;flex-direction: column;align-items: center;width:300px;background-color: var(--s-color-surface-container);border-color: var(--s-color-outline-variant);">
+        <div class="OO-button-box"
+          style="padding: 3px 3px 20px 3px;height: fit-content;margin: 10px;width: calc(100% - 20px);border-radius: 10px;overflow: hidden;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;min-height: 100px;">
           <div style="width: 83%;height: fit-content;padding: 10px 0px;">
-            <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;">Mod name</h2>
+            <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;margin: 30px 0px;">Mod name</h2>
             <s-divider style="margin-top: -11px;width: 100%;"></s-divider>
 
           </div>
           <p id="mod-info-character"
             style="margin-top: -12px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 10px;padding-bottom: 10px;">
             Character</p>
-        </s-card>
+        </div>
+        <div id="mod-info-container" class="OO-colunm-center" style="height: 100%;">
 
-        <s-divider style="margin-top: 0px;"></s-divider>
-        <s-scroll-view style="height: 100%;width: 100%;">
-          <div id="mod-info-container" class="OO-colunm-center" style="height: 100%;">
-
-            <div id="img-container" style="width: 280px;height: 224px; border-radius: 10px; overflow: hidden;">
-              <img id="mod-info-image"
-                style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" src="default.png"
-                alt="Mod Image"> </img>
-            </div>
-            <s-card style="height: auto;width: 100%;display:flex;">
-              <div slot="text" style="height: auto;width: 250px;display:flex;">
-                <s-scroll-view style="height: 100%;width: 110%;">
-                  <p id="mod-info-description" style="white-space: normal;">Mod Description</p>
-                  <div style="height: 30px;"></div>
-                </s-scroll-view>
-              </div>
-            </s-card>
-            <s-divider></s-divider>
-            <div class="placeholder" style="flex: 1;"></div>
-            <div id="mod-info-controller" class="OO-colunm-center">
-              <s-button id="open-mod-url" type="filled-tonal" class="right-adhesive-button font-hongmeng">
-                <s-icon slot="start">
-                  <svg viewBox="0 0 960 960">
-                    <path
-                      d="M935.68 140.8a237.44 237.44 0 0 1 0 334.72l-204.16 204.16a237.44 237.44 0 0 1-334.72 0A64 64 0 0 1 486.4 588.8a108.8 108.8 0 0 0 153.6 0l204.8-203.52a108.8 108.8 0 0 0 0-153.6 107.52 107.52 0 0 0-153.6 0A64.256 64.256 0 0 1 600.32 140.8a238.08 238.08 0 0 1 335.36 0zM320 844.8a64 64 0 0 1 91.52 0 64 64 0 0 1 0 90.88 234.88 234.88 0 0 1-167.04 69.12A236.8 236.8 0 0 1 76.8 600.32L280.32 396.8a238.08 238.08 0 0 1 335.36 0A64.256 64.256 0 1 1 524.8 487.68a107.52 107.52 0 0 0-153.6 0L166.4 691.2a108.16 108.16 0 0 0 0 153.6 108.8 108.8 0 0 0 153.6 0z">
-                    </path>
-                  </svg>
-                </s-icon>
-                <p data-translate-key="open-mod-url">打开mod链接</p>
-              </s-button>
-              <s-button id="open-mod-dir" type="filled-tonal" class="right-adhesive-button font-hongmeng">
-                <s-icon slot="start">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path
-                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z">
-                    </path>
-                  </svg></s-icon>
-                <p data-translate-key="open-mod-dir">打开mod位置</p>
-              </s-button>
-              <s-button id="edit-mod-info" type="filled-tonal" class="right-adhesive-button font-hongmeng">
-                <s-icon slot="start">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path
-                      d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z">
-                    </path>
-                  </svg>
-                </s-icon>
-                <p data-translate-key="edit-mod-info">编辑mod信息</p>
-              </s-button>
-
+          <div class="OO-button-box" id="img-container"
+            style="padding: 3px 3px 20px 3px;height: 224px;margin: 10px;width: calc(100% - 20px);border-radius: 10px;overflow: hidden;box-sizing: border-box;padding-bottom: calc(80% + 30px) ;">
+            <div class="OO-shade-box OO-center-bg" id="mod-info-image"
+              style="width: 100%;border-radius: 8px;background-image: none;padding-bottom: 80%;">
             </div>
           </div>
-        </s-scroll-view>
+          <div class="OO-box OO-shade-box" style="height: auto;display:flex;">
+            <div
+              style="height: auto;width: 250px;display:flex;padding: 5px;overflow: auto;color:var(--s-color-on-surface-variant);">
+              <p id="mod-info-description" style="white-space: normal;">Mod Description</p>
+              <div style="height: 30px;"></div>
+            </div>
+          </div>
+          <s-divider></s-divider>
+          <div class="placeholder" style="flex: 1;"></div>
+          <div id="mod-info-controller" class="OO-colunm-center" style="position: absolute;bottom: 10px;">
+            <s-button id="open-mod-url" type="filled-tonal" class="right-adhesive-button font-hongmeng">
+              <s-icon slot="start">
+                <svg viewBox="0 0 960 960">
+                  <path
+                    d="M935.68 140.8a237.44 237.44 0 0 1 0 334.72l-204.16 204.16a237.44 237.44 0 0 1-334.72 0A64 64 0 0 1 486.4 588.8a108.8 108.8 0 0 0 153.6 0l204.8-203.52a108.8 108.8 0 0 0 0-153.6 107.52 107.52 0 0 0-153.6 0A64.256 64.256 0 0 1 600.32 140.8a238.08 238.08 0 0 1 335.36 0zM320 844.8a64 64 0 0 1 91.52 0 64 64 0 0 1 0 90.88 234.88 234.88 0 0 1-167.04 69.12A236.8 236.8 0 0 1 76.8 600.32L280.32 396.8a238.08 238.08 0 0 1 335.36 0A64.256 64.256 0 1 1 524.8 487.68a107.52 107.52 0 0 0-153.6 0L166.4 691.2a108.16 108.16 0 0 0 0 153.6 108.8 108.8 0 0 0 153.6 0z">
+                  </path>
+                </svg>
+              </s-icon>
+              <p data-translate-key="open-mod-url">打开mod链接</p>
+            </s-button>
+            <s-button id="open-mod-dir" type="filled-tonal" class="right-adhesive-button font-hongmeng">
+              <s-icon slot="start">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z">
+                  </path>
+                </svg></s-icon>
+              <p data-translate-key="open-mod-dir">打开mod位置</p>
+            </s-button>
+            <s-button id="edit-mod-info" type="filled-tonal" class="right-adhesive-button font-hongmeng">
+              <s-icon slot="start">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                  <path
+                    d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z">
+                  </path>
+                </svg>
+              </s-icon>
+              <p data-translate-key="edit-mod-info">编辑mod信息</p>
+            </s-button>
+
+          </div>
+        </div>
 
       </div>
     </s-drawer>
@@ -443,8 +438,10 @@
     <!-- -dialog -->
     <!-- -询问文件保存位置 -->
     <s-dialog id="settings-dialog">
-      <div slot="headline" class="font-hongmeng" style="height: calc(100% - 35px);width: 100%;display: flex;padding: 0px;flex-direction: column;">
-        <h3 data-translate-key="settings" style="height: fit-content;margin: 10px 30px 5px 30px;font-size: 26px;">设置</h3>
+      <div slot="headline" class="font-hongmeng"
+        style="height: calc(100% - 35px);width: 100%;display: flex;padding: 0px;flex-direction: column;">
+        <h3 data-translate-key="settings" style="height: fit-content;margin: 10px 30px 5px 30px;font-size: 26px;">设置
+        </h3>
         <div id="settings-dialog-container">
           <div id="settings-menu" class="OO-box">
             <input type="radio" name="settings-menu" id="normal-settings" class="settings-menu-radio" checked>
@@ -506,7 +503,7 @@
                 <h3 data-translate-key="auto-refresh-in-zzz"> 自动刷新 </h3>
                 <s-switch id="auto-refresh-in-zzz"></s-switch>
               </div>
-              <p data-translate-key="test-function-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
+              <p data-translate-key="auto-refresh-in-zzz-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
               <s-divider></s-divider>
             </div>
             <div id="settings-dialog-advanced-settings" class="settings-dialog-tab">
@@ -546,23 +543,24 @@
               <s-divider></s-divider>
               <div class="OO-setting-bar" style="height: 100px;">
                 <h3 data-translate-key="about-thanks"> 感谢 soliddanii <br>提供的帮助 </h3>
-                <s-button class="link-button" type="text"
-                  link="https://github.com/soliddanii" data-translate-key="click-to-jump"> 点击跳转 </s-button>
+                <s-button class="link-button" type="text" link="https://github.com/soliddanii"
+                  data-translate-key="click-to-jump"> 点击跳转 </s-button>
               </div>
               <div class="OO-setting-bar">
                 <h3> Github </h3>
                 <s-button class="link-button" type="text"
-                  link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/" data-translate-key="click-to-jump"> 点击跳转 </s-button>
+                  link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/"
+                  data-translate-key="click-to-jump"> 点击跳转 </s-button>
               </div>
               <div class="OO-setting-bar">
                 <h3> Gamebanana </h3>
-                <s-button class="link-button" type="text"
-                  link='https://gamebanana.com/tools/17889' data-translate-key="click-to-jump"> 点击跳转 </s-button>
+                <s-button class="link-button" type="text" link='https://gamebanana.com/tools/17889'
+                  data-translate-key="click-to-jump"> 点击跳转 </s-button>
               </div>
               <div class="OO-setting-bar">
                 <h3> Caimogu </h3>
-                <s-button class="link-button" type="text"
-                  link='https://www.caimogu.cc/post/1408504.html' data-translate-key="click-to-jump"> 点击跳转 </s-button>
+                <s-button class="link-button" type="text" link='https://www.caimogu.cc/post/1408504.html'
+                  data-translate-key="click-to-jump"> 点击跳转 </s-button>
               </div>
 
               <s-divider></s-divider>
@@ -610,102 +608,105 @@
 
     <!-- -编辑mod信息 -->
     <s-dialog id="edit-mod-info-dialog">
-      <div slot="headline" data-translate-key="edit-mod-info"> 编辑mod信息 </div>
-      <div slot="text" id="edit-mod-info-dialog-container"
-        style="display: flex;flex-direction: column;align-items: center;">
-        <div id="edit-mod-info-dialog-top" style="display: flex;width: 100%;">
-          <!-- 展示mod当前名称、图片 -->
-          <s-card
-            style="width: 280px;min-width: 0;height: 400px;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;">
-            <div style="width: 83%;height: fit-content;padding: 0;margin: 0px 0px 0px 0;">
-              <h2 id="editDialog-mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;">Mod
-                name</h2>
-              <s-divider style="margin-top: 0;width: 100%;"></s-divider>
+      <div slot="headline" class="font-hongmeng">
+        <h3 data-translate-key="edit-mod-info" style="height: fit-content;margin: 10px 30px 5px 30px;font-size: 26px;">
+          编辑mod信息 </h3>
+        <div id="edit-mod-info-dialog-container" style="display: flex;flex-direction: column;align-items: center;">
+          <div id="edit-mod-info-dialog-top" style="display: flex;width: 100%;">
+            <!-- 展示mod当前名称、图片 -->
+            <div class="OO-box"
+              style="width: 280px;min-width: 0;display:flex;flex-direction: column;align-items: center;flex-wrap: nowrap;justify-content: flex-start;">
+              <div class="OO-box OO-shade-box"
+                style="width: calc(100% - 40px);padding: 10px 20px;margin:0;border-radius: 15px;">
+                <h3 id="editDialog-mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;">
+                  Mod name</h3>
+              </div>
+              <p id="editDialog-mod-info-character"
+                style="margin-top: 2px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 0;padding-bottom: 10px;">
+                Character</p>
 
+              <div id="img-container" style="width: 280px;height: 224px;border-radius: 0 30px;overflow: hidden;">
+                <img id="editDialog-mod-info-image"
+                  style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;"
+                  src="default.png" alt="Mod Image"> </img>
+              </div>
             </div>
-            <p id="editDialog-mod-info-character"
-              style="margin-top: -10px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 0;padding-bottom: 10px;">
-              Character</p>
 
-            <div id="img-container" style="width: 280px;height: 224px;border-radius: 0 30px;overflow: hidden;">
-              <img id="editDialog-mod-info-image"
-                style="width: 100% ;height:100%;max-width: 100%; max-height: 100%; object-fit: cover;" src="default.png"
-                alt="Mod Image"> </img>
-            </div>
-            <div class="placeholder" style="flex: 1;"></div>
-            <s-button type="outlined" id="edit-mod-image-select" style="margin-bottom: 20px;width: 83%;"
-              data-translate-key="edit-mod-image-preview">选择图片</s-button>
-          </s-card>
-
-          <s-card style="height: auto;margin-left: 1%;flex: 1;">
-            <div slot="text"
-              style="height: 83%;width: 83%;display:flex;margin: 0;padding: 8.5%;flex-direction: column;justify-content: space-around;align-content: center;align-items: center;">
-
-              <div style="width: 100%;height:auto;margin-top: 10px;">
-
+            <div style="height: 100%;margin-left: 1%;flex: 1;" id="edit-mod-info-content" class="OO-box">
+              <div class="OO-setting-bar">
                 <s-tooltip>
-                  <h3 slot="trigger" data-translate-key="mod-info-name"
-                    style="line-height: 1;margin: 5px -1px;color:var(--s-color-on-surface);"> mod名称 </h3>
+                  <h3 slot="trigger" data-translate-key="mod-info-name"> mod名称 </h3>
                   <p style="line-height: 1.2; word-wrap: break-word; max-width: 120px; overflow-wrap: break-word; white-space: normal;"
                     data-translate-key="mod-info-name-tip"> Mod名称就是文件夹名称，点击下方按钮前往文件夹处修改 </p>
                 </s-tooltip>
 
-                <s-text-field style="min-width: 100px;width: 100%;">
-                  <s-ripple attached="true"></s-ripple>
+                <s-button>
                   <p id="edit-mod-name" style="margin-left: 7px;"> </p>
-                </s-text-field>
+                </s-button>
               </div>
-              <div style="flex:1;"></div>
-              <div style="width: 100%;">
+
+              <div class="OO-setting-bar">
                 <s-tooltip>
-                  <h3 slot="trigger" data-translate-key="mod-info-character"
-                    style="line-height: 1;margin: 15px -1px 8px 0;color:var(--s-color-on-surface);"> 角色 </h3>
+                  <h3 slot="trigger" data-translate-key="mod-info-character"> 角色 </h3>
                   <p style="line-height: 1.2;" data-translate-key="mod-info-character-tip">
                     角色是mod所属的角色当然你也可以将其归为unknow、tools或者mise，它会作为分类的依据 </p>
                 </s-tooltip>
-                <s-text-field style="min-width: 100px">
+                <s-text-field>
                   <input type="text" id="edit-mod-character">
                 </s-text-field>
               </div>
-              <div style="flex:1;"></div>
-              <div style="width: 100%;">
+
+
+              <div class="OO-setting-bar">
                 <s-tooltip>
-                  <h3 slot="trigger" data-translate-key="mod-info-url"
-                    style="line-height: 1;margin: 15px -1px 8px 0;color:var(--s-color-on-surface);"> mod链接 </h3>
-                  <p style="line-height: 1.2;" data-translate-key="mod-info-url-tip">
-                    mod链接是mod的来源，可以是gamebanana、caimogu等 </p>
+                  <h3 slot="trigger" data-translate-key="mod-info-image"> mod图片 </h3>
+                  <p style="line-height: 1.2;" data-translate-key="mod-info-image-tip">
+                    mod图片是mod的展示图片(比例为3:2)，点击按钮选择图片
+                  </p>
                 </s-tooltip>
-                <s-text-field style="min-width: 100px">
-                  <input type="text" id="edit-mod-url">
-                </s-text-field>
+                <s-button type="outlined" id="edit-mod-image-select"
+                  data-translate-key="edit-mod-image-preview">选择图片</s-button>
               </div>
 
 
+              <div class="OO-setting-bar">
+                <s-tooltip>
+                  <h3 slot="trigger" data-translate-key="mod-info-url"> mod链接 </h3>
+                  <p style="line-height: 1.2;" data-translate-key="mod-info-url-tip">
+                    mod链接是mod的来源，可以是gamebanana、caimogu等 </p>
+                </s-tooltip>
+                <s-text-field>
+                  <input type="text" id="edit-mod-url">
+                </s-text-field>
+              </div>
+              <div class="OO-setting-bar" style="
+              display: flex;
+              flex-direction: column;
+              align-items: flex-start;
+              justify-content: space-between;height:150px;">
+                <s-tooltip style="padding:15px 0;">
+                  <h3 slot="trigger" data-translate-key="mod-info-description"> mod描述 </h3>
+                  <p style="line-height: 1.2;" data-translate-key="mod-info-description-tip">
+                    mod描述是对mod的简单描述，可以是作者、mod功能等 </p>
+                </s-tooltip>
+
+                <s-text-field class="OO-shade-box"
+                  style="min-height: calc(100% - 45px);height: 0px;border-radius: 20px;bottom: 5px;top: 40px;left: 5px;right: 5px;max-width: calc(100% - 10px);width: calc(100% - 10px);">
+                  <textarea type="text" id="edit-mod-description"></textarea>
+                </s-text-field>
+              </div>
+
+              <div>
+                <s-button type="text" id="edit-mod-info-cancel" data-translate-key="cancel">取消</s-button>
+                <s-button type="text" id="edit-mod-info-save" data-translate-key="save">保存</s-button>
+              </div>
             </div>
+
+          </div>
+
           </s-card>
         </div>
-
-        <div id="edit-mod-info-dialog-bottom" style="display: flex;width: 100%;">
-          <!-- 提供修改mod信息的描述的大的输入框 -->
-          <s-card style="height: auto;width: 100%;margin-top:0;">
-            <div slot="text"
-              style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-around;align-content: center;align-items: center;">
-              <s-text-field style="min-height: 120px;min-width: 100%;padding: 0 2px;border-radius: 30px;">
-                <textarea type="text" id="edit-mod-description"></textarea>
-              </s-text-field>
-            </div>
-          </s-card>
-          <s-card style="height: auto;margin-left: 1%;flex: 1;margin-top: 0;">
-            <div slot="text"
-              style="height: 100%;width: 83%;display:flex;margin: 0;padding: 0 8.5%;flex-direction: column;justify-content: space-evenly;">
-              <s-button type="text" id="edit-mod-info-cancel" data-translate-key="cancel">取消</s-button>
-              <s-button type="text" id="edit-mod-info-save" data-translate-key="save">保存</s-button>
-            </div>
-
-          </s-card>
-
-
-        </div>
+      </div>
       </div>
     </s-dialog>
 

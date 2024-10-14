@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     else {
         await ipcRenderer.invoke('set-rootdir', rootdir);
         await ipcRenderer.invoke('set-exePath', exePath);
+        setLang(lang);
         await loadModList();
         await loadPresets();
         refreshModFilter();
@@ -153,8 +154,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("exePath: " + exePath);
         console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
         console.log("ifAutoApply: " + ifAutoApply);
+        console.log("theme: " + localStorage.getItem('theme'));
+        console.log("lang: " + lang);
     }
     setTheme(localStorage.getItem('theme') || 'dark');
+    
 
 
     //- 内部函数
@@ -230,22 +234,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         //设置语言
         lang = newLang;
         localStorage.setItem('lang', lang);
-        
+        //debug
+        console.log(`lang:${lang}`);
+
         //翻译页面
         translatePage(lang);
 
         //设置页面同步修改显示情况
 
         langPicker.value = lang;
-        // //languagePicker下面的子元素是radio，所以需要遍历
-        // langPicker.querySelectorAll('input').forEach(input => {
-        //     if (input.id == lang) {
-        //         input.checked = true;
-        //     }
-        //     else {
-        //         input.checked = false;
-        //     }
-        // });
     }
 
     function setTheme(theme) {
@@ -939,7 +936,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         modInfoName.textContent = mod;
         modInfoCharacter.textContent = modInfo.character ? modInfo.character : 'Unknown';
         modInfoDescription.textContent = modInfo.description ? modInfo.description : 'No description';
-        modInfoImage.src = await getModImagePath(mod);
+
+        //获取mod的图片
+
+
+        let modImagePath = await getModImagePath(mod);
+        // 替换反斜杠为斜杠
+        modImagePath = modImagePath.replace(/\\/g, '/');
+        // 设置其backgroundImage
+        modInfoImage.style.backgroundImage = `url("${encodeURI(modImagePath)}")`;
+        // debug
+        console.log(`show mod image ${modImagePath}`);
     }
 
 
@@ -1121,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //获取目前的checked的值
         const checked = settingsMenu.querySelector('input:checked');
         //根据checked的id来切换tab,如果checked为null，则默认显示第一个tab
-        checked? settingsDialog.querySelector(`#settings-dialog-${checked.id}`).style.display = 'block' : settingsDialog.querySelector(`#settings-dialog-normal-settings`).style.display = 'block';
+        checked ? settingsDialog.querySelector(`#settings-dialog-${checked.id}`).style.display = 'block' : settingsDialog.querySelector(`#settings-dialog-normal-settings`).style.display = 'block';
     });
 
     //设置页面tab的切换
@@ -1129,9 +1136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
         //获取目前的checked的值
         const checked = settingsMenu.querySelector('input:checked');
-        //debug
-        console.log("checked:" + checked.id);
-        
+
         //根据checked的id来切换tab
         const tab = settingsDialog.querySelector(`#settings-dialog-${checked.id}`);
         //debug
@@ -1143,8 +1148,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         //将所有的tab设置为display:none
         settingsDialogTabs.forEach(item => {
             item.style.display = 'none';
-            //debug
-            console.log("hide tab"+item.id);
         });
         //将当前的tab设置为display:block
         tab.style.display = 'block';
@@ -1163,10 +1166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log("checked is null");
             return;
         }
-        //debug
-        console.log(checked);
-        console.log("checked:" + checked.id);  
-         
+
         if (checked.id == lang) {
             return;
         }
@@ -1232,7 +1232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //是否开启自动应用
     autoApplySwitch.addEventListener('change', () => {
-        ifAutoApply = autoApplySwitch.checked;  
+        ifAutoApply = autoApplySwitch.checked;
         //保存ifAutoApply
         localStorage.setItem('auto-apply', ifAutoApply);
         //debug
@@ -1437,6 +1437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     //-mod info 相关
+
     infoShowButton.addEventListener('click', async () => {
         //显示或隐藏modInfoDrawer
         //如果当前的type="outlined" 则将其切换为"filled"，并且开启drawer
@@ -1486,6 +1487,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     let tempModInfo;
     let tempImagePath;
 
+    //-====================编辑mod信息====================-
+    const editModInfoDialogStyle = document.createElement('style');
+    editModInfoDialogStyle.innerHTML = `
+        .container {
+            width: calc(30% + 400px) !important;
+            min-width: calc(600px) !important;
+            max-width: 900px !important;
+            height: calc(100% - 100px) !important;
+            overflow: hidden !important;
+            flex:1;
+        }
+        .action {
+            display: none !important;
+        }
+        s-scroll-view{
+        display: none;
+        }    
+        `
+    editModInfoDialog.shadowRoot.appendChild(editModInfoDialogStyle);
     //编辑mod.json文件
     editModInfoButton.addEventListener('click', async () => {
         //debug

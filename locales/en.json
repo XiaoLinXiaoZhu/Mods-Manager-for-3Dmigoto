@@ -25,11 +25,14 @@
     "fullscreen": "Fullscreen",
     "minimize": "Minimize",
     "compact": "Compact",
+    "normal-settings": "Normal Settings",
+    "advanced-settings": "Advanced Settings",
+    "language": "Language",
     "open-test-page": "Open Experimental Page",
     "auto-apply": "Auto Apply",
     "auto-apply-info": "Automatically apply configuration when selecting/deselecting mods (may cause slight lag)",
-    "test-title": "Test Function",
-    "test-function-info": "When applying mods, the refresh in the zero area will be activated automatically(*Need to open with administrator privileges), there still have bugs and is not recommended for use",
+    "auto-refresh-in-zzz": "Auto Refresh in ZZZ",
+    "auto-refresh-in-zzz-info": "When applying mods, the refresh in the zero area will be activated automatically(*Need to open with administrator privileges), there still have bugs and is not recommended for use",
     "dialog-ask-for-exePath": "Due to file structure restrictions, you need to manually specify refresh-in-zzz.bat here, which is generally located in the same directory as ZZZModManager",
     "save-change": "Save Changes",
     "dialog-ask-for-save-change": "Detected unsaved changes, save them?",
@@ -64,6 +67,9 @@
     "selected": "Selected",
     "about": "About",
     "about-content": "This program is developed by XLXZ, open-source and free, following the GNU General Public License v3.0. It is used to manage mods based on 3dmigoto, and theoretically, it can also manage mods for other games (as long as they are based on 3dmigoto).",
+    "version": "Version",
     "about-version": "The latest version is released on GameBanana. If you have any questions or suggestions, feel free to raise them on GitHub.",
-    "about-author": "Author: XLXZ"
+    "about-author": "Author: XLXZ",
+    "about-thanks": "Thanks to soliddanii<br> for the help!",
+    "click-to-jump": "Click to jump"
   }

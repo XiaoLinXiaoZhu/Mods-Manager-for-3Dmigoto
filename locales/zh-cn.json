@@ -25,11 +25,14 @@
   "fullscreen": "全屏",
   "minimize": "最小化",
   "compact": "紧凑",
+  "normal-settings": "常规设置",
+  "advanced-settings": "高级设置",
+  "language": "语言",
   "open-test-page": "打开实验性功能页面",
   "auto-apply": "自动应用",
   "auto-apply-info": "当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)",
-  "test-title": "测试功能",
-  "test-function-info":"启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)(存在bug,不建议使用)",
+  "auto-refresh-in-zzz": "在zzz中自动刷新模型",
+  "auto-refresh-in-zzz-info":"启用 应用mod时 将会自动在绝区零中激活刷新(*需要使用管理员权限打开)(存在bug,不建议使用)",
   "dialog-ask-for-exePath": "因为文件结构限制，这里需要您手动指定refresh-in-zzz.bat，它一般位于和ZZZModManager同一目录下",
   "save-change": "保存修改",
   "dialog-ask-for-save-change": "检测到您有未保存的修改，是否保存？",
@@ -64,6 +67,9 @@
   "selected": "已选择",
   "about": "关于",
   "about-content": "本程序由 XLXZ 开发,开源免费,遵循GNU General Public License v3.0。用于管理基于3dmigoto的mod ,理论上来说也可以管理其他游戏的mod(只要是基于3dmigoto的)",
+  "version": "版本",
   "about-version": "最新版本在gamebanana上发布，如果你有任何问题或者建议，欢迎在github上提出",
-  "about-author": "作者: XLXZ"
+  "about-author": "作者: XLXZ",
+  "about-thanks": "感谢 soliddanii<br> 提供的帮助！",
+  "click-to-jump": "点击跳转"
 }

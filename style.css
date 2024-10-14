@@ -29,6 +29,8 @@ body {
 #preset-list-drawer {
     width: 180px;
     height: 100%;
+    background-color: var(--s-color-surface-container);
+    border-color: var(--s-color-outline-variant);
 }
 
 #preset-list-drawer-headline {
@@ -363,14 +365,14 @@ s-dialog h3 {
     justify-content: space-evenly;
 }
 
-#settings-menu  {
+#settings-menu,#edit-mod-info-dialog-left  {
     width: 28%;
     max-width: 180px;
     margin:0px 10px;
     height: 100%;
 }
 
-#settings-content {
+#settings-content,#edit-mod-info-content {
     display: flex;
     flex-direction: column;
     align-items: stretch;
