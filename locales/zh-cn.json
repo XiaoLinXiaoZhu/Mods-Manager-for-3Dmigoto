@@ -47,6 +47,8 @@
   "auto-refresh-in-zzz-info": "启用 应用mod时 将会自动在绝区零中激活刷新",
   "auto-start-game": "自动启动游戏",
   "auto-start-game-info": "启用应用mod时将会自动启动Mod加载器和游戏",
+  "use-admin": "使用管理员权限",
+  "use-admin-info": "启动程序时是否使用管理员权限(需要重启程序生效)这样在打开加载器和游戏时就不需要再次获取管理员权限,但是管理员模式将会禁用图片拖拽功能",
   "modRootDir": "mod根目录",
   "modRootDir-info": " Mod根目录为modLoader读取mod的位置，一般为'Mods'文件夹 ",
   "modBackpackDir": "mod背包目录",

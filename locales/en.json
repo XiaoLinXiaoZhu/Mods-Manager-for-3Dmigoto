@@ -48,6 +48,8 @@
     "auto-refresh-in-zzz-info": "When applying mods, the refresh in ZZZ will be activated automatically",
     "auto-start-game": "Auto Start Game",
     "auto-start-game-info": "Automatically start the Mod Loader and the game when applying mods",
+    "use-admin": "Use Admin",
+    "use-admin-info": "Whether to use administrator privileges when starting the program (requires program restart to take effect). This way, you don't need to get administrator privileges again when opening the loader and the game, but the administrator mode will disable the drag-and-drop function for images",
     "modRootDir": "MOD Root Directory",
     "modRootDir-info": "The MOD root directory is the location where the modLoader reads the mod, usually the 'Mods' folder",
     "modBackpackDir": "MOD Backpack Directory",

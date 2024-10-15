@@ -24,6 +24,7 @@ let modRootDir = '';
 let modBackpackDir = '';
 let modLoaderDir = '';
 let gameDir = '';
+let ifUseAdmin = false;
 
 ipcMain.handle('get-translate', async (event, lang) => {
   // 读取对应的json文件，文件位于locales文件夹下,文件名为lang.json
@@ -128,6 +129,7 @@ ipcMain.handle('sync-localStorage', async (event,userConfig) => {
   modBackpackDir = userConfig.modBackpackDir;
   modLoaderDir = userConfig.modLoaderDir;
   gameDir = userConfig.gameDir;
+  ifUseAdmin = userConfig.ifUseAdmin;
 }
 );
 
@@ -589,6 +591,28 @@ ipcMain.handle('set-bounds', async (event, boundsStr) => {
       }
     }
   } catch (e) { }
+});
+
+// 使用管理员模式重新启动
+ipcMain.handle('restart-as-admin', async () => {
+  // 通过管理员模式重新启动
+  if (isWindows) {
+    const exePath = process.execPath;
+
+    //当使用开发模式时，需要将exePath为electron.exe，而不是app的exe
+    if (exePath.endsWith('electron.exe')) {
+      console.log(`in development mode, cannot restart with electron.exe`);
+      return;
+    }
+    console.log(`restart as admin: ${exePath}`);
+    //使用管理员模式重新启动
+    require('child_process').exec(`powershell -Command "Start-Process '${exePath}' -Verb RunAs"`);
+    //关闭当前窗口
+    app.quit();
+  }
+  else {
+    console.log('restart as admin: not supported');
+  }
 });
 
 

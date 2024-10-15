@@ -493,9 +493,9 @@
                 <s-switch id="auto-apply-switch"></s-switch>
               </div>
               <p data-translate-key="auto-apply-info">当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)</p>
-              <div id="auto-refresh-function" data-platform="win32" class="OO-setting-bar">
+              <div id="auto-refresh-function" class="OO-setting-bar">
                 <h3 data-translate-key="auto-refresh-in-zzz"> 自动刷新 </h3>
-                <s-switch id="auto-refresh-in-zzz"></s-switch>
+                <s-switch id="auto-refresh-in-zzz" data-platform="win32"></s-switch>
               </div>
               <p data-translate-key="auto-refresh-in-zzz-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
               <s-divider></s-divider>
@@ -507,6 +507,11 @@
               </div>
               <p data-translate-key="auto-start-game-info">启动程序的时候也一并启动游戏和modLoader(需要在进阶设置设置游戏目录和modLoader目录)</p>
               <s-divider></s-divider>
+              <div id="use-admin" class="OO-setting-bar" >
+                <h3 data-translate-key="use-admin"> 使用管理员权限 </h3>
+                <s-switch id="use-admin-switch" data-platform="win32"></s-switch>
+              </div>
+              <p data-translate-key="use-admin-info">启动程序时是否使用管理员权限(需要重启程序生效)</p>
             </div>
             <div id="settings-dialog-advanced-settings" class="settings-dialog-tab">
               <!-- -高级设置 -->

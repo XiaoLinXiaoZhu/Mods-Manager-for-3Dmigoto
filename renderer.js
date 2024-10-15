@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let ifAutoApply = localStorage.getItem('auto-apply') || false;
     let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
     let ifAutoStartGame = localStorage.getItem('auto-start-game') || false;
+    let ifUseAdmin = localStorage.getItem('use-admin') || false;
     let exePath = localStorage.getItem('exePath') || '';
 
 
@@ -149,6 +150,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     else {
         await asyncLocalStorage();
+        if (ifUseAdmin == 'true' && !HMC.isAdmin()) {
+            //如果使用管理员权限，则以管理员权限重启
+            ipcRenderer.invoke('restart-as-admin');
+            //debug
+            console.log("restart as admin");
+            return;
+        }
+        
         await loadModList();
         await loadPresets();
         refreshModFilter();
@@ -841,6 +850,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    //-----------设置 use-admin-----------
+    const useAdminSwitch = document.getElementById('use-admin-switch');
+    useAdminSwitch.addEventListener('change', () => {
+        ifUseAdmin = useAdminSwitch.checked;
+        //保存ifUseAdmin
+        localStorage.setItem('use-admin', ifUseAdmin);
+        //debug
+        console.log("ifUseAdmin: " + ifUseAdmin);
+    });
+
     //-----------设置 modRootDir-----------
     const modRootDirInput = document.getElementById('set-modRootDir-input');
     modRootDirInput.addEventListener('click', async () => {
@@ -948,6 +967,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //显示当前 auto-start-game 的值
         autoStartGameSwitch.checked = ifAutoStartGame;
+
+        //显示当前 use-admin 的值
+        useAdminSwitch.checked = ifUseAdmin;
 
         //显示当前 theme 的值
         const theme = localStorage.getItem('theme');
@@ -1442,6 +1464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ifAutoApply: ifAutoApply,
             ifAutofreshInZZZ: ifAutofreshInZZZ,
             ifAutoStartGame: ifAutoStartGame,
+            ifUseAdmin: ifUseAdmin,
             theme: theme
         };
 
