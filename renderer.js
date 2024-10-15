@@ -2,6 +2,8 @@ const { ipcRenderer, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+//HMC 尽量不要在渲染进程中使用
+const HMC = require("hmc-win32");
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1796,7 +1798,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function getFilePathsFromSystemDialog(fileName, fileType) {
         const result = await ipcRenderer.invoke('get-file-path', fileName, fileType);
-        if (!result){
+        if (!result) {
             snack('Invalid file path');
             return '';
         }
@@ -1805,25 +1807,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         return result;
     }
 
-    async function startGame(){
+    async function startGame() {
         //debug
         console.log(`start game, gameDir:${gameDir}, modLoaderDir:${modLoaderDir}`);
         // 先启动 modLoader
-        
+
         //延时1s启动游戏
-        setTimeout(() => {
-            if (modLoaderDir == '') {
-                snack('Please select modLoaderDir first');
-                return;
-            }
-            ipcRenderer.invoke('start-mod-loader');
-            //启动游戏
-            if (gameDir == '') {
-                snack('Please select gameDir first');
-                return;
-            }
-            ipcRenderer.invoke('start-game');
-        }, 1000);
+        if (modLoaderDir == '') {
+            snack('Please select modLoaderDir first');
+            return;
+        }
+        ipcRenderer.invoke('start-mod-loader');
+
+        //启动游戏
+        if (gameDir == '') {
+            snack('Please select gameDir first');
+            return;
+        }
+        ipcRenderer.invoke('start-game');
     }
 }
 );

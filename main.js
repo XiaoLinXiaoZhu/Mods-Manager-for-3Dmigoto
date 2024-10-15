@@ -488,13 +488,23 @@ ipcMain.handle('start-mod-loader', async () => {
   }
   //console.log("start modLoader");
   //启动modLoader
-  execFile(modLoaderDir, (error) => {
-    if (error) {
-      console.error(`Error starting modLoader: ${error.message}`);
-      return false;
-    }
-    console.log('modLoader started successfully');
-  });
+  // execFile(modLoaderDir, (error) => {
+  //   if (error) {
+  //     console.error(`Error starting modLoader: ${error.message}`);
+  //     return false;
+  //   }
+  //   console.log('modLoader started successfully');
+  // });
+
+  //这里使用execFile会导致 modLoader以无窗口模式启动，并且无法关闭，所以这里使用spawn
+  // const modLoader = require('child_process').spawn(modLoaderDir);
+  // modLoader.stdout.on('data', (data) => {
+  //   console.log(`stdout: ${data}`);
+  // });
+
+  //使用spawn也会导致modLoader以无窗口模式启动，并且无法关闭，所以这里使用 HMC 提供的函数
+  HMC.openApp(modLoaderDir);
+
   return true;
 });
 
@@ -617,6 +627,22 @@ function createWindow() {
   //因为需要调整窗口大小，所以需要等待窗口加载完成
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+  });
+}
+
+// 防止多开，如果已经有一个实例在运行，则将焦点切换到已经运行的实例，并关闭当前实例
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  console.log('Another instance is running, focus the existing instance and close this instance');
+  app.quit();
+}
+else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    const mainWindow = BrowserWindow.getAllWindows()[0];
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
   });
 }
 
