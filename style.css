@@ -326,8 +326,8 @@ s-dialog h3 {
 #mod-info-controller s-button {
     margin-bottom: 7px;
     color: var(--s-color-on-primary);
-    transform: translateX(150px);
-    width: 200px;
+    transform: translateX(70px);
+    width: 300px;
     position: relative;
 
     s-icon{
@@ -342,9 +342,10 @@ s-dialog h3 {
     }
 }
 
-#mod-info-controller s-button:hover {
+/* 右下加按键浮动 *已删除 */
+/* #mod-info-controller s-button:hover {
     transform: translateX(30px);
-}
+} */
 
 
 
@@ -429,7 +430,6 @@ s-dialog h3 {
         margin: 0 2px;
 }
 }
-
 
   /* .container{
     width: 800px;

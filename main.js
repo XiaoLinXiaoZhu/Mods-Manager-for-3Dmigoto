@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const fs = require('fs');
 const { url } = require('inspector');
+const { execFile } = require('child_process');
 const path = require('path');
 const shell = require('electron').shell;
 const HMC = require("hmc-win32");
@@ -19,6 +20,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // 通过传递一个json文件来实现国际化
 // 需要的时候，通过读取json文件来显示对应的语言的内容
 
+let modRootDir = '';
+let modBackpackDir = '';
+let modLoaderDir = '';
+let gameDir = '';
 
 ipcMain.handle('get-translate', async (event, lang) => {
   // 读取对应的json文件，文件位于locales文件夹下,文件名为lang.json
@@ -55,8 +60,6 @@ ipcMain.handle('open-first-load-window', async (event) => {
 
 //auto move mod 
 ipcMain.handle('auto-move-mod', async (event) => {
-  const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
-  const modLoaderDir = path.join(rootdir, 'Mods');
   let ret = '';
 
   if (!fs.existsSync(modBackpackDir)) {
@@ -67,27 +70,34 @@ ipcMain.handle('auto-move-mod', async (event) => {
   else {
     //console.log("modResourceBackpack exist");
     //检测modResourceBackpack文件夹是否为空
-    if (fs.readdirSync(modBackpackDir).length === 0) {
-      ret = 'modResourceBackpack is empty,your mods have been moved to modResourceBackpack';
-    }
-    else {
-      //console.log("modResourceBackpack is not empty");
-      //将当前的modResourceBackpack文件夹重命名为modResourceBackpack.bak,在当前名称后面加上数字防止重名
-      let i = 0;
-      while (fs.existsSync(path.join(rootdir, `modResourceBackpack.bak${i}`))) {
-        i++;
-      }
-      fs.renameSync(modBackpackDir, path.join(rootdir, `modResourceBackpack.bak${i}`));
-      //创建modResourceBackpack文件夹
-      fs.mkdirSync(modBackpackDir);
-      ret = `your old modResourceBackpack has been renamed to modResourceBackpack.bak${i}`;
-    }
+    // if (fs.readdirSync(modBackpackDir).length === 0) {
+    //   ret = 'modResourceBackpack is empty,your mods have been moved to modResourceBackpack';
+    // }
+    // else {
+    //   //console.log("modResourceBackpack is not empty");
+    //   //将当前的modResourceBackpack文件夹重命名为modResourceBackpack.bak,在当前名称后面加上数字防止重名
+    //   let i = 1;
+    //   while (fs.existsSync(path.join(modRootDir,'..',  `modResourceBackpack.bak${i}`))) {
+    //     i++;
+    //   }
+    //   await fs.rename(modBackpackDir, path.join(modRootDir,'..', `modResourceBackpack.bak${i}`));
+    //   //创建modResourceBackpack文件夹
+    //   fs.mkdirSync(modBackpackDir);
+    //   ret = `your old modResourceBackpack has been renamed to modResourceBackpack.bak${i}`;
+    // }
+    ret = 'modResourceBackpack exist,your mods have been moved to modResourceBackpack';
   }
   //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹
-  fs.readdirSync(modLoaderDir).forEach(file => {
-    fs.cpSync(path.join(modLoaderDir, file), path.join(modBackpackDir, file), { recursive: true });
+  fs.readdirSync(modRootDir).forEach(file => {
+    //如果说，文件夹已经存在于modResourceBackpack文件夹中，提示用户存在冲突，稍后可以在主页面中手动处理
+    if (fs.existsSync(path.join(modBackpackDir, file))) {
+      ret = "detect file already exist in modResourceBackpack,you can handle it later";
+      ret += `\nconflict:${file}`;
+      return;
+    }
+    fs.cpSync(path.join(modRootDir, file), path.join(modBackpackDir, file), { recursive: true });
     //删除Mods文件夹里面的文件夹
-    fs.rmSync(path.join(modLoaderDir, file), { recursive: true, force: true });
+    fs.rmSync(path.join(modRootDir, file), { recursive: true, force: true });
   });
 
   return ret;
@@ -99,7 +109,6 @@ ipcMain.handle('auto-move-mod', async (event) => {
 
 //-------------------rootdir-------------------
 // 先尝试从localStorage中获取rootdir，如果没有则设置为默认值__dirname
-let rootdir = '';
 
 ipcMain.handle('check-rootdir', async (event, dir) => {
   //检查 dir 是否存在,如果存在则返回 true
@@ -107,24 +116,42 @@ ipcMain.handle('check-rootdir', async (event, dir) => {
 }
 );
 
-ipcMain.handle('set-rootdir', async (event, dir) => {
+ipcMain.handle('set-modRootDir', async (event, dir) => {
   //console.log("set rootdir: " + dir);
-  rootdir = dir;
+  modRootDir = dir;
 }
 );
 
-ipcMain.handle('get-rootdir', async (event) => {
-  //提示选择 3dmigoto.exe 文件
-  const result = await dialog.showOpenDialog({
-    properties: ['openFile'],
-    filters: [
-      { name: '3dmigoto', extensions: ['exe'] }
-    ]
-  });
+ipcMain.handle('sync-localStorage', async (event,userConfig) => {
+  //读取userConfig中的各个值，将主进程的值设置为userConfig中的值
+  modRootDir = userConfig.modRootDir;
+  modBackpackDir = userConfig.modBackpackDir;
+  modLoaderDir = userConfig.modLoaderDir;
+  gameDir = userConfig.gameDir;
+}
+);
+
+ipcMain.handle('get-file-path', async (event, fileName,fileType) => {
+  //通过文件选择对话框选择文件
+  let result;
+  if (fileType == 'directory') {
+    result = await dialog.showOpenDialog({
+      title: 'Select ' + fileName,
+      properties: ['openDirectory']
+    });
+  }
+  else {
+    result = await dialog.showOpenDialog({
+      title: 'Select ' + fileName,
+      properties: ['openFile'],
+      filters: [
+        { name: fileName, extensions: [fileType] }
+      ]
+    });
+  }
+
   if (!result.canceled) {
-    const exePath = result.filePaths[0];
-    //rootdir = path.dirname(exePath);
-    return exePath;
+    return result.filePaths[0];
   }
   return '';
 }
@@ -167,17 +194,17 @@ ipcMain.handle('get-exePath', async (event) => {
 //-------------------mods list 加载-------------------
 ipcMain.handle('get-mods', async () => {
   //增加纠错
-  if (rootdir === '') {
+  if (modRootDir === '') {
     //console.log("rootdir is empty");
-    rootdir = __dirname;
+    modRootDir = __dirname;
   }
-  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack'))) {
+  if (!fs.existsSync(modBackpackDir)) {
     //console.log("modResourceBackpack not found");
     return [];
   }
   //debug
   //console.log(`get-mods rootdir: ${rootdir}`);
-  const modDir = path.join(rootdir, 'modResourceBackpack');
+  const modDir = path.join(modBackpackDir);
   const mods = fs.readdirSync(modDir).filter(file => fs.statSync(path.join(modDir, file)).isDirectory());
   //输出mods
   //console.log(`load mods in ${modDir}: ${mods}`);
@@ -186,7 +213,7 @@ ipcMain.handle('get-mods', async () => {
 
 ipcMain.handle('get-mod-info', async (event, mod) => {
   //增加纠错
-  if (rootdir === '') {
+  if (modRootDir === '') {
     console.log("rootdir is empty");
     return {};
   }
@@ -194,11 +221,11 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
     console.log("mod is empty");
     return {};
   }
-  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+  if (!fs.existsSync(path.join(modBackpackDir, mod))) {
     console.log(`mod ${mod} not found`);
     return {};
   }
-  const modDir = path.join(rootdir, 'modResourceBackpack', mod);
+  const modDir = path.join(modBackpackDir, mod);
   const modInfoPath = path.join(modDir, 'mod.json');
   if (fs.existsSync(modInfoPath)) {
     // 这里为了兼容老的mod.json文件，如果没有url字段，则添加一个空的url字段
@@ -237,7 +264,7 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
 
 ipcMain.handle('set-mod-info', async (event, mod, modInfo) => {
   //增加纠错
-  if (rootdir === '') {
+  if (modRootDir === '') {
     console.log("rootdir is empty");
     return;
   }
@@ -245,11 +272,11 @@ ipcMain.handle('set-mod-info', async (event, mod, modInfo) => {
     console.log("mod is empty");
     return;
   }
-  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+  if (!fs.existsSync(path.join(modBackpackDir, mod))) {
     console.log(`mod ${mod} not found`);
     return;
   }
-  const modDir = path.join(rootdir, 'modResourceBackpack', mod);
+  const modDir = path.join(modBackpackDir, mod);
   const modInfoPath = path.join(modDir, 'mod.json');
   fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
 });
@@ -257,14 +284,11 @@ ipcMain.handle('set-mod-info', async (event, mod, modInfo) => {
 
 //-------------------应用mods-------------------
 ipcMain.handle('apply-mods', async (event, mods) => {
-  const modsDir = path.join(rootdir, 'Mods');
-  const modResourceDir = path.join(rootdir, 'modResourceBackpack');
-
   // 删除 未选中的mod 且 存在在modResourceBackpack文件夹中的mod
-  fs.readdirSync(modsDir).forEach(file => {
-    if (!mods.includes(file) && fs.existsSync(path.join(modResourceDir, file))) {
+  fs.readdirSync(modRootDir).forEach(file => {
+    if (!mods.includes(file) && fs.existsSync(path.join(modBackpackDir, file))) {
       // 删除文件夹,包括文件夹内的文件，使用异步方法
-      fs.rm(path.join(modsDir, file), { recursive: true, force: true }, (err) => {
+      fs.rm(path.join(modRootDir, file), { recursive: true, force: true }, (err) => {
         if (err) {
           //console.log(`failed to delete ${file}: ${err}`);
         }
@@ -276,8 +300,8 @@ ipcMain.handle('apply-mods', async (event, mods) => {
 
   // 复制选中的mod
   mods.forEach(mod => {
-    const src = path.join(modResourceDir, mod);
-    const dest = path.join(modsDir, mod);
+    const src = path.join(modBackpackDir, mod);
+    const dest = path.join(modRootDir, mod);
     if (!fs.existsSync(dest)) {
       // // 复制文件夹,包括文件夹内的文件，使用异步方法
       // fs.cp(src, dest, { recursive: true }, (err) => {
@@ -363,7 +387,7 @@ ipcMain.handle("refresh-in-zzz", async (event) => {
 
 //-------------------presets-------------------
 ipcMain.handle('save-preset', async (event, presetName, mods) => {
-  const presetDir = path.join(rootdir, 'presets');
+  const presetDir = path.join(modRootDir,'..', 'presets');
   if (!fs.existsSync(presetDir)) {
     fs.mkdirSync(presetDir);
   }
@@ -371,7 +395,7 @@ ipcMain.handle('save-preset', async (event, presetName, mods) => {
 });
 
 ipcMain.handle('get-presets', async () => {
-  const presetDir = path.join(rootdir, 'presets');
+  const presetDir = path.join(modRootDir,'..',  'presets');
   if (!fs.existsSync(presetDir)) {
     return [];
   }
@@ -379,7 +403,7 @@ ipcMain.handle('get-presets', async () => {
 });
 
 ipcMain.handle('load-preset', async (event, presetName) => {
-  const presetDir = path.join(rootdir, 'presets');
+  const presetDir = path.join(modRootDir,'..',  'presets');
   const presetPath = path.join(presetDir, `${presetName}.json`);
   if (fs.existsSync(presetPath)) {
     return JSON.parse(fs.readFileSync(presetPath));
@@ -388,7 +412,7 @@ ipcMain.handle('load-preset', async (event, presetName) => {
 });
 
 ipcMain.handle('delete-preset', async (event, presetName) => {
-  const presetDir = path.join(rootdir, 'presets');
+  const presetDir = path.join(modRootDir,'..',  'presets');
   const presetPath = path.join(presetDir, `${presetName}.json`);
   //console.log("delete preset: " + presetPath);
   if (fs.existsSync(presetPath)) {
@@ -400,33 +424,36 @@ ipcMain.handle('delete-preset', async (event, presetName) => {
 //打开mod文件夹
 ipcMain.handle('open-mod-folder', async (event, mod) => {
   //判断mod是否存在
-  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+  const modDir = path.join(modBackpackDir, mod);
+  if (!fs.existsSync(modDir)) {
     //console.log(`mod ${mod} not found`);
     return;
   }
-  shell.openPath(path.join(rootdir, 'modResourceBackpack', mod));
+  shell.openPath(modDir);
 });
 
 //打开mod.json文件
-ipcMain.handle('edit-mod-info', async (event, mod) => {
+ipcMain.handle('open-mod-json', async (event, mod) => {
   //判断mod是否存在
-  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod))) {
+  const modJsonDir = path.join(modBackpackDir, mod, 'mod.json');
+  const modDir = path.join(modBackpackDir, mod);
+  if (!fs.existsSync(modDir)) {
     //console.log(`mod ${mod} not found`);
     return;
   }
   //判断mod.json文件是否存在，如果不存在则创建一个默认的mod.json文件
-  if (!fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'))) {
+  if (!fs.existsSync(modJsonDir)) {
     const modInfo = {
       character: 'unknown',
       description: 'no description',
       imagePath: 'preview.jpg'
     };
-    fs.writeFileSync(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'), JSON.stringify(modInfo));
+    fs.writeFileSync(path.join(modJsonDir), JSON.stringify(modInfo));
   }
 
   //判断mod.json文件是否存在，如果存在则打开mod.json文件
-  if (fs.existsSync(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'))) {
-    shell.openPath(path.join(rootdir, 'modResourceBackpack', mod, 'mod.json'));
+  if (fs.existsSync(modJsonDir)) {
+    shell.openPath(modJsonDir);
   }
   else {
     //console.log(`mod.json not found in ${mod}`);
@@ -449,6 +476,47 @@ ipcMain.handle('select-image', async () => {
   return '';
 }
 );
+
+//-------------------自动化-------------------
+//启动modLoader
+ipcMain.handle('start-mod-loader', async () => {
+  //debug
+  console.log(`start modLoader: ${modLoaderDir}`);
+  if (!fs.existsSync(modLoaderDir)) {
+    console.log("exePath not found");
+    return false;
+  }
+  //console.log("start modLoader");
+  //启动modLoader
+  execFile(modLoaderDir, (error) => {
+    if (error) {
+      console.error(`Error starting modLoader: ${error.message}`);
+      return false;
+    }
+    console.log('modLoader started successfully');
+  });
+  return true;
+});
+
+//启动游戏
+ipcMain.handle('start-game', async () => {
+  if (!fs.existsSync(gameDir)) {
+    //console.log("gameDir not found");
+    return false;
+  }
+  //console.log("start game");
+  //启动游戏
+  execFile(gameDir, (error) => {
+    if (error) {
+      console.error(`Error starting game: ${error.message}`);
+      return false;
+    }
+    console.log('game started successfully');
+  });
+  return true;
+});
+
+
 
 //---------------------窗口控制---------------------
 ipcMain.handle('minimize-window', async () => {
@@ -517,13 +585,6 @@ ipcMain.handle('set-bounds', async (event, boundsStr) => {
 // 打开外部链接
 ipcMain.handle('open-external-link', async (event, link) => {
   shell.openExternal(link);
-});
-
-// 获取外部文件的路径
-ipcMain.handle('get-file-path', (event, filePath) => {
-  //debug
-  console.log(`get-file-path: ${filePath}`);
-  return filePath; // 直接返回文件路径
 });
 
 

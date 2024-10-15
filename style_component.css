@@ -351,7 +351,8 @@ p {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 35%;
+    max-width: 50%;
+    padding:5px 0;
 }
 
 .OO-setting-bar s-text-field {
@@ -401,6 +402,26 @@ p {
     min-width: 150px;
     width: 30%;
     max-width: 300px;
+}
+
+.OO-setting-bar s-picker{
+    position: absolute;
+    color: var(--s-color-on-surface);
+    --border-radius: 24px;
+    border-radius: 24px;
+    background-color: var(--s-color-background);
+
+    box-shadow: inset 2px 2px 10px var(--s-color-surface-container-high);
+    --border-color: var(--s-color-outline-variant);
+    --border-width: 2px;
+    right: 5px;
+    --height: 41px;
+    --padding: 72px;
+    height: calc(100% - 10px);
+    min-height: 0px;
+    min-width: 155px;
+    width: calc(30% + 5px);
+    max-width: 305px;
 }
 
 .OO-setting-bar s-button:not([type='text']) {

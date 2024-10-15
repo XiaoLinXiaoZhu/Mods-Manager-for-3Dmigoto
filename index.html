@@ -186,14 +186,14 @@
               <p data-translate-key="selected">已选择</p>
             </s-chip>
           </div>
-          <s-scroll-view
+          <div
             style="position:relative;height: 100%;width: 100%;overflow-x: hidden;overflow-y: hidden;white-space: nowrap;padding-left: 5px;"
             id="mod-filter-scroll">
             <div id="mod-filter-bg"></div>
             <div id="mod-filter"
               style="display: flex;flex-wrap: nowrap;align-items: center;width: fit-content;height: 100%;">
             </div>
-          </s-scroll-view>
+          </div>
 
         </div>
         <!-- -模组列表 -->
@@ -368,7 +368,8 @@
         <div class="OO-button-box"
           style="padding: 3px 3px 20px 3px;height: fit-content;margin: 10px;width: calc(100% - 20px);border-radius: 10px;overflow: hidden;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;min-height: 100px;">
           <div style="width: 83%;height: fit-content;padding: 10px 0px;">
-            <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;margin: 30px 0px;">Mod name</h2>
+            <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;margin: 30px 0px;">
+              Mod name</h2>
             <s-divider style="margin-top: -11px;width: 100%;"></s-divider>
 
           </div>
@@ -487,13 +488,6 @@
                 </div>
               </div>
               <s-divider></s-divider>
-              <div class="OO-setting-bar">
-                <h3 data-translate-key="mod-source-path"> 模组资源位置 </h3>
-                <s-text-field style="display: grid">
-                  <input type="text" id="set-rootdir-input">
-                </s-text-field>
-              </div>
-              <s-divider></s-divider>
               <div id="auto-apply" class="OO-setting-bar">
                 <h3 data-translate-key="auto-apply"> 自动应用 </h3>
                 <s-switch id="auto-apply-switch"></s-switch>
@@ -505,14 +499,53 @@
               </div>
               <p data-translate-key="auto-refresh-in-zzz-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
               <s-divider></s-divider>
+              
+              <!-- 启动程序的时候也一并启动游戏和modLoader -->
+              <div id="auto-start-game" class="OO-setting-bar">
+                <h3 data-translate-key="auto-start-game"> 自动启动游戏 </h3>
+                <s-switch id="auto-start-game-switch"></s-switch>
+              </div>
+              <p data-translate-key="auto-start-game-info">启动程序的时候也一并启动游戏和modLoader(需要在进阶设置设置游戏目录和modLoader目录)</p>
+              <s-divider></s-divider>
             </div>
             <div id="settings-dialog-advanced-settings" class="settings-dialog-tab">
+              <!-- -高级设置 -->
+              <!-- -在这里可以设定 modRootDir，modBackpackDir，modLoaderDir，gameDir -->
               <div class="OO-setting-bar">
-                <h3 data-translate-key="mod-source-path"> 模组资源位置 </h3>
+                <h3 data-translate-key="modRootDir"> mod根目录 </h3>
                 <s-text-field style="display: grid">
-                  <input type="text" id="set-rootdir-input">
+                  <input type="text" id="set-modRootDir-input">
                 </s-text-field>
               </div>
+              <p data-translate-key="modRootDir-info"> Mod根目录为modLoader读取mod的位置，一般为Mods文件夹 </p>
+              <s-divider></s-divider>
+
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="modBackpackDir"> mod背包目录 </h3>
+                <s-text-field style="display: grid">
+                  <input type="text" id="set-modBackpackDir-input">
+                </s-text-field>
+              </div>
+              <p data-translate-key="modBackpackDir-info"> mod背包目录为程序存储mod的位置，当mod被启用时，会从这里创建链接到mod根目录 </p>
+              <s-divider></s-divider>
+
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="modLoaderDir"> mod加载器目录 </h3>
+                <s-text-field style="display: grid">
+                  <input type="text" id="set-modLoaderDir-input">
+                </s-text-field>
+              </div>
+              <p data-translate-key="modLoaderDir-info"> Mod加载器目录为modLoader程序的位置，用于在管理器中打开modLoader </p>
+              <s-divider></s-divider>
+
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="gameDir"> 游戏目录 </h3>
+                <s-text-field style="display: grid">
+                  <input type="text" id="set-gameDir-input">
+                </s-text-field>
+              </div>
+              <p data-translate-key="gameDir-info"> 游戏目录为游戏程序的位置，用于在管理器中打开游戏 </p>
+
               <s-divider></s-divider>
               <div class="OO-setting-bar" id="settings-init-config">
                 <h3 data-translate-key="init-config"> 初始化配置 </h3>
@@ -524,11 +557,6 @@
             </div>
 
             <div id="settings-dialog-about-settings" class="settings-dialog-tab">
-              <div class="OO-setting-bar">
-                <h3 data-translate-key="version"> 版本 </h3>
-                <p> 1.8.5 </p>
-              </div>
-
               <div class="OO-setting-bar" style="height: fit-content;">
                 <p data-translate-key="about-content"> 本程序由 XLXZ 开发,开源免费,遵循GNU General Public License
                   v3.0。用于管理基于3dmigoto的mod

@@ -1,4 +1,4 @@
-const { ipcRenderer, dialog } = require('electron');
+const { ipcRenderer, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -12,22 +12,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     const drawerPage = document.getElementById('drawer-page');
 
     //rootdir相关
-    let rootdir = localStorage.getItem('rootdir') || __dirname;                //rootdir保存在localStorage中，如果没有则设置为默认值__dirname
+    // rootdir 的名称不明确，因此将会逐渐被废弃
+    // 现在使用 modRootDir 代替
+    let modRootDir = localStorage.getItem('modRootDir') || __dirname;                //modRootDir保存在localStorage中，如果没有则设置为默认值__dirname
+    let gameDir = localStorage.getItem('gameDir') || '';                             //gameDir保存在localStorage中，如果没有则设置为空
+    let modLoaderDir = localStorage.getItem('modLoaderDir') || '';                  //modLoaderDir保存在localStorage中，如果没有则设置为空
+    let modBackpackDir = localStorage.getItem('modBackpackDir') || '';              //modBackpackDir保存在localStorage中，如果没有则设置为空
+    let theme = localStorage.getItem('theme') || 'dark';                            //theme保存在localStorage中，如果没有则设置为dark
 
     const settingsDialog = document.getElementById('settings-dialog');
-    const rootdirInput = document.getElementById('set-rootdir-input');
-    const rootdirConfirmButton = document.getElementById('set-rootdir-confirm');
 
     //设置页面
     const settingsMenu = document.getElementById('settings-menu');
     const settingsDialogTabs = document.querySelectorAll('.settings-dialog-tab');
-    const autoApplySwitch = document.getElementById('auto-apply-switch');
+
     let ifAutoApply = localStorage.getItem('auto-apply') || false;
-    const autoRefreshInZZZSwitch = document.getElementById('auto-refresh-in-zzz');
     let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
+    let ifAutoStartGame = localStorage.getItem('auto-start-game') || false;
     let exePath = localStorage.getItem('exePath') || '';
-    const themePicker = document.getElementById('theme-picker');
-    const langPicker = document.getElementById('language-picker');
+
 
     //预设列表相关
     const presetContainer = document.getElementById('preset-container');
@@ -121,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 如果元素在视口内，则使其inWindow属性为true
             modItem.inWindow = entry.isIntersecting ? true : false;
             //debug
-            //console.log(`modItem ${modItem.id} inWindow:${modItem.inWindow}`);
+            console.log(`modItem ${modItem.id} inWindow:${modItem.inWindow}`);
         });
     }, {
         root: null, // 使用视口作为根
@@ -133,6 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 检测是否是第一次打开
     const firstOpen = localStorage.getItem('firstOpen');
 
+    setLang(lang);
     if (!firstOpen) {
         localStorage.setItem('firstOpen', 'false');
         //创建 firset-opne-window
@@ -142,363 +146,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         showDialog(refreshDialog);
     }
     else {
-        await ipcRenderer.invoke('set-rootdir', rootdir);
-        await ipcRenderer.invoke('set-exePath', exePath);
-        setLang(lang);
+        await asyncLocalStorage();
         await loadModList();
         await loadPresets();
         refreshModFilter();
 
+        //如果开启了自动启动游戏，则自动启动游戏
+        if (ifAutoStartGame == 'true') {
+            startGame();
+        }
+
         //debug
-        console.log("rootdir: " + rootdir);
-        console.log("exePath: " + exePath);
+        console.log("modRootDir: " + modRootDir);
+        console.log("gameDir: " + gameDir);
+        console.log("modLoaderDir: " + modLoaderDir);
+        console.log("modBackpackDir: " + modBackpackDir);
+
         console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
         console.log("ifAutoApply: " + ifAutoApply);
         console.log("theme: " + localStorage.getItem('theme'));
         console.log("lang: " + lang);
     }
     setTheme(localStorage.getItem('theme') || 'dark');
-    
 
-
-    //- 内部函数
-
-    async function applyMods() {
-        //获取选中的mods,mod 元素为 mod-item，当其checked属性为true时，表示选中
-        const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
-        //debug
-        console.log("selectedMods: " + selectedMods);
-        //检查mods文件夹下是否有modResourceBackpack文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modResourceBackpack文件夹
-        const modLoaderDir = path.join(rootdir, 'Mods');
-        const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
-        const unknownDirs = fs.readdirSync(modLoaderDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
-        if (unknownDirs.length > 0) {
-            //显示未知文件夹对话框
-            showDialog(unknownModDialog);
-            //显示未知文件夹
-            const unknownModList = document.getElementById('unknown-mod-list');
-            unknownModList.innerHTML = '';
-            unknownDirs.forEach(dir => {
-                const listItem = document.createElement('li');
-                listItem.textContent = dir;
-                unknownModList.appendChild(listItem);
-            });
-        }
-
-        else await ipcRenderer.invoke('apply-mods', selectedMods);
-
-        //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
-        if (ifAutofreshInZZZ) {
-            ipcRenderer.invoke('refresh-in-zzz').then(result => {
-                // Refresh in ZZZ success flag
-                // 0: Failed
-                // 1: Success
-                // 2: Cannot find the process
-                // 3: Cannot find the zenless zone zero window
-                // 4: Cannot find the mod manager window
-
-                switch (result) {
-                    case 0:
-                        snack('Refresh in ZZZ failed');
-                        break;
-                    case 1:
-                        snack('Refresh in ZZZ success');
-                        break;
-                    case 2:
-                        snack('Cannot find the process', 'error');
-                        break;
-                    case 3:
-                        snack('Cannot find the zenless zone zero window');
-                        break;
-                    case 4:
-                        snack('Cannot find the mod manager window');
-                        break;
-                    default:
-                        snack('Unknown error');
-                        break;
-                }
-            });
-        }
-    }
-
-    function showDialog(dialog) {
-        // 将 Dialog 的 display 设置为 block
-        if (dialog.style.display != 'block') {
-            dialog.style.display = 'block';
-            dialog.style.opacity = 1;
-        }
-        dialog.show();
-    }
-
-    function setLang(newLang) {
-        //设置语言
-        lang = newLang;
-        localStorage.setItem('lang', lang);
-        //debug
-        console.log(`lang:${lang}`);
-
-        //翻译页面
-        translatePage(lang);
-
-        //设置页面同步修改显示情况
-
-        langPicker.value = lang;
-    }
-
-    function setTheme(theme) {
-        const sPages = document.querySelectorAll('s-page');
-
-        //保存当前主题
-        localStorage.setItem('theme', theme);
-
-        sPages.forEach(page => {
-            page.theme = theme;
-        }
-        );
-
-        //在设置页面同步修改显示情况
-        themePicker.value = theme;
-        //debug
-        console.log(`theme:${theme}`);
-
-        //特殊样式手动更改
-        if (theme != 'dark') {
-            //将背景图片取消显示
-            sPages.forEach(page => {
-                page.style.backgroundImage = 'none';
-            }
-            );
-        }
-        else {
-            //将背景图片显示
-            sPages.forEach(page => {
-                page.style.backgroundImage = 'url(./src/background.png)';
-            }
-            );
-        }
-    }
-
-
-    function translatePage(lang) {
-        //获取所有需要翻译的元素
-        const elements = document.querySelectorAll('[data-translate-key]');
-        //获取翻译文件
-        const translationPath = path.join(__dirname, 'locales', `${lang}.json`);
-        //读取翻译文件
-        const translation = JSON.parse(fs.readFileSync(translationPath));
-        //遍历所有需要翻译的元素，将其翻译
-        elements.forEach(async element => {
-            const key = element.getAttribute('data-translate-key');
-            if (key in translation) {
-                element.textContent = translation[key];
-                //debug
-                //console.log(`Translate ${key} to ${translation[key]}`);
-            }
-            else {
-                console.log(`Translation for ${key} not found`);
-            }
-        });
-    }
-
-    function snack(message, type = 'basic', duration = 4000) {
-        //使用自定义的snackbar组件来显示消息
-        customElements.get('s-snackbar').show({
-            text: message,
-            type: type,
-            duration: duration
-        });
-    }
-
-    function clickModItem(modItem, event = null, rect = null) {
-        //获取鼠标相对于卡片的位置（百分比）
-        let x, y, rotateX, rotateY;
-        let rotateLevel = -20;
-        if (event != null) {
-            //如果传入了event，则使用event的位置
-            //获取鼠标相对于卡片的位置（百分比）
-            x = (event.clientX - rect.left) / rect.width;
-            y = (event.clientY - rect.top) / rect.height;
-        }
-        else {
-            //如果没有传入event，且modItem.checked为true，则设置为0，0.7，否则设置为0.7，0 偏移0.2*random
-            x = modItem.checked ? 0 : Math.random() / 5 + 0.7;
-            y = modItem.checked ? 0.7 : Math.random() / 5;
-        }
-        //根据鼠标相对于卡片的位置设置反转程度
-        rotateX = 2 * (y - 0.5);
-        rotateY = -2 * (x - 0.5);
-
-        //反转卡片状态
-        modItem.checked = !modItem.checked;
-        modItem.setAttribute('checked', modItem.checked ? 'true' : 'false');
-
-        if (!modItem.inWindow) {
-            //如果modItem不在视窗内，则不进行动画
-            return;
-        }
-
-
-        //添加动画
-        if (modItem.checked == true) {
-
-            modItem.animate([
-                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` },
-                { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1.05)` },
-                //缩小一点
-                { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1)` },
-                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` }
-            ], {
-                duration: 600,
-                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-                iterations: 1
-            });
-        }
-        else {
-            modItem.animate([
-                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` },
-
-                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(0.88)` },
-                //缩小一点
-                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(1)` },
-                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` }
-            ], {
-                duration: 800,
-                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-                iterations: 1
-            });
-        }
-    }
-
-    //获得mod的显示图片
-    async function getModImagePath(mod) {
-        //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
-        var modImageName = '';
-        const modPath = path.join(rootdir, 'modResourceBackpack', mod);
-        const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
-        const modInfoImagePath = modInfo.imagePath;
-
-        if (modInfoImagePath && fs.existsSync(path.join(modPath, modInfoImagePath))) {
-            modImageName = modInfoImagePath;
-            return path.join(modPath, modImageName);
-        }
-
-        const tryImageNames = ['preview.png', 'preview.jpg', 'preview.jpeg'];
-        tryImageNames.forEach(imageName => {
-            if (fs.existsSync(path.join(modPath, imageName))) {
-                modImageName = imageName;
-            }
-        });
-
-        if (modImageName != '') {
-            // 如果找到了图片文件，说明mod文件夹下有preview图片，但是没有在modInfo中设置imagePath，所以需要将其保存到modInfo中
-            modInfo.imagePath = modImageName;
-            ipcRenderer.invoke('set-mod-info', mod, modInfo);
-
-            // 使用snack提示用户自动保存了图片
-            snack(`Original image is ${modInfoImagePath},but not found, find ${modImageName} instead, auto saved to mod.json`);
-            return path.join(modPath, modImageName);
-        }
-
-        // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
-        const files = fs.readdirSync(path.join(rootdir, 'modResourceBackpack', mod));
-        const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
-        //如果没有图片文件，则使用默认图片,之后直接跳出程序
-        if (imageFiles.length <= 0) {
-            return path.join(__dirname, 'default.png');
-        }
-
-        modImageName = imageFiles[0];
-        //debug
-        //console.log(`modImageName:${modImageName}`);
-        return path.join(modPath, modImageName);
-    }
-
-    //使用替换的方式而不是清空再添加的方式实现loadModList，减少页面重绘次数
-    async function loadModList() {
-        //加载mod列表
-        mods = await ipcRenderer.invoke('get-mods');
-        //获取当前modContainer的所有子元素
-        const modContainerCount = modContainer.childElementCount;
-
-        //使用fragment来批量添加modItem，减少重绘次数
-        const fragment = document.createDocumentFragment();
-
-        mods.forEach(async (mod, index) => {
-            const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
-            var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
-            if (!modCharacters.includes(modCharacter)) {
-                modCharacters.push(modCharacter);
-            }
-
-            var modImagePath = await getModImagePath(mod);
-            var modDescription = modInfo.description ? modInfo.description : 'No description';
-
-            var modItem;
-            if (index < modContainerCount) {
-                modItem = modContainer.children[index];
-            }
-            else {
-                modItem = document.createElement('s-card');
-                modItem.innerHTML = `
-                <div slot="image" style="height: 200px;">
-                        <img src="" alt="" loading="lazy"/>
-                    </div>
-                    <div slot="headline" id="mod-item-headline"></div>
-                    <div slot="subhead" id="mod-item-subhead">
-                    </div>
-                    <div slot="text" id="mod-item-text">
-                        <s-scroll-view>
-                            <p id="mod-item-description"></p>
-                            <div class="placeholder"></div>
-                        </s-scroll-view>
-                    </div>
-                `
-                fragment.appendChild(modItem);
-            }
-
-            modItem.className = 'mod-item';
-            modItem.checked = false;
-            modItem.clickable = true;
-            modItem.inWindow = false;
-            modItem.id = mod;
-            modItem.character = modCharacter;
-            modItem.style = '';
-            modItem.querySelector('img').src = modImagePath;
-            modItem.querySelector('img').alt = mod;
-            modItem.querySelector('#mod-item-headline').textContent = mod;
-            modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
-            modItem.querySelector('#mod-item-description').textContent = modDescription;
-
-            //debug
-            //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
-            if (fragment.children.length == mods.length - modContainerCount) {
-                //如果是最后一个modItem,意味着所有的modItem都已经添加到fragment中，将fragment添加到modContainer中
-
-                modContainer.appendChild(fragment);
-
-                //如果是compactMode则需要将modContainer添加上compact = true
-                if (compactMode) {
-                    modContainer.setAttribute('compact', 'true');
-                }
-                else {
-                    modContainer.setAttribute('compact', 'false');
-                }
-
-                //将所有的的modItem添加到observer中
-                document.querySelectorAll('.mod-item').forEach(item => {
-                    observer.observe(item);
-                });
-            }
-
-        });
-
-        //删除多余的modItem
-        if (mods.length < modContainerCount) {
-            for (let i = mods.length; i < modContainerCount; i++) {
-                modContainer.removeChild(modContainer.children[mods.length]);
-            }
-        }
-    }
+    //-==============事件监听================
 
     //使用事件委托处理点击事件，减少事件绑定次数
     modContainer.addEventListener('click', (event) => {
@@ -669,7 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log(`update mod card cover of ${mod} with ${imageUrl}`);
         const imageExt = imageUrl.split(';')[0].split('/')[1];
         const modImageName = `preview.${imageExt}`;
-        const modImageDest = path.join(rootdir, 'modResourceBackpack', mod, modImageName);
+        const modImageDest = path.join(modBackpackDir, mod, modImageName);
         fs.writeFileSync(modImageDest, imageUrl.split(',')[1], 'base64');
 
         // 更新mod.json
@@ -1078,7 +749,162 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //-setting-dialog相关
 
-    //-展示设置页面
+    //-=============================设置页面=============================
+
+    //--------------设置语言----------------
+    const langPicker = document.getElementById('language-picker');
+    langPicker.addEventListener('click', (event) => {
+        //langPicker的子元素是input的radio，所以不需要判断到底点击的是哪个元素，直接切换checked的值即可
+        //获取目前的checked的值
+        const checked = langPicker.querySelector('input:checked');
+
+        //如果点击的是当前的语言，则不进行任何操作
+        if (!checked) {
+            console.log("checked is null");
+            return;
+        }
+
+        if (checked.id == lang) {
+            return;
+        }
+
+        //根据checked的id来切换语言
+        setLang(checked.id);
+    });
+
+    //----------------设置theme------------
+    const themePicker = document.getElementById('theme-picker');
+    themePicker.addEventListener('click', (event) => {
+        //themePicker的子元素是input的radio，所以不需要判断到底点击的是哪个元素，直接切换checked的值即可
+        //获取目前的checked的值
+        const checked = themePicker.querySelector('input:checked');
+        //debug
+        console.log("checked:" + checked.id);
+
+        //如果点击的是当前的theme，则不进行任何操作
+        if (!checked) {
+            console.log("checked is null");
+            return;
+        }
+        if (checked.id == localStorage.getItem('theme')) {
+            return;
+        }
+
+        //根据checked的id来切换theme
+        setTheme(checked.id);
+    });
+
+    //----------------设置auto-apply----------------
+    const autoApplySwitch = document.getElementById('auto-apply-switch');
+    autoApplySwitch.addEventListener('change', () => {
+        ifAutoApply = autoApplySwitch.checked;
+        //保存ifAutoApply
+        localStorage.setItem('auto-apply', ifAutoApply);
+        //debug
+        console.log("ifAutoApply: " + ifAutoApply);
+    });
+
+
+    //----------------设置auto-refresh-in-zzz----------------
+    const autoRefreshInZZZSwitch = document.getElementById('auto-refresh-in-zzz');
+    //是否开启自动刷新
+    autoRefreshInZZZSwitch.addEventListener('change', () => {
+        ifAutofreshInZZZ = autoRefreshInZZZSwitch.checked;
+        //保存ifAutofreshInZZZ
+        localStorage.setItem('auto-refresh-in-zzz', ifAutofreshInZZZ);
+        //debug
+        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
+    });
+
+    //-----------设置 auto-start-game-----------
+    const autoStartGameSwitch = document.getElementById('auto-start-game-switch');
+    autoStartGameSwitch.addEventListener('change', () => {
+        ifAutoStartGame = autoStartGameSwitch.checked;
+        //保存ifAutoStartGame
+        localStorage.setItem('auto-start-game', ifAutoStartGame);
+        //debug
+        console.log("ifAutoStartGame: " + ifAutoStartGame);
+
+        if (ifAutoStartGame) {
+            //如果开启了自动启动游戏，则检查modLoaderDir和gameDir是否存在
+            if (!fs.existsSync(modLoaderDir) || !fs.existsSync(gameDir)) {
+                snack('Invalid modLoaderDir or gameDir, please set them in advanced settings');
+                //恢复原来的ifAutoStartGame
+                ifAutoStartGame = false;
+                autoStartGameSwitch.checked = false;
+                //保存ifAutoStartGame
+                localStorage.setItem('auto-start-game', ifAutoStartGame);
+                return;
+            }
+        }
+    });
+
+    //-----------设置 modRootDir-----------
+    const modRootDirInput = document.getElementById('set-modRootDir-input');
+    modRootDirInput.addEventListener('click', async () => {
+        const modRootDir = await getFilePathsFromSystemDialog('Mods', 'directory');
+        //让 modRootDirInput 的 value属性 为 用户选择的路径
+        if (modRootDir !== '') {
+            modRootDirInput.value = modRootDir;
+            localStorage.setItem('modRootDir', modRootDir);
+            asyncLocalStorage();
+            snack(`Mod root directory set to ${modRootDir}`);
+        }
+        else {
+            snack('Please select your mod root directory');
+        }
+    });
+
+    //-----------设置 modBackpackDir-----------
+    const modBackpackDirInput = document.getElementById('set-modBackpackDir-input');
+    modBackpackDirInput.addEventListener('click', async () => {
+        const modBackpackDir = await getFilePathsFromSystemDialog('Mod Resource Backpack', 'directory');
+        //让 modBackpackDirInput 的 value属性 为 用户选择的路径
+        if (modBackpackDir !== '') {
+            modBackpackDirInput.value = modBackpackDir;
+            localStorage.setItem('modBackpackDir', modBackpackDir);
+            asyncLocalStorage();
+            snack(`Mod backpack directory set to ${modBackpackDir}`);
+        }
+        else {
+            snack('Please select your mod backpack directory');
+        }
+    }
+    );
+
+    //-----------设置 modLoaderDir-----------
+    const modLoaderDirInput = document.getElementById('set-modLoaderDir-input');
+    modLoaderDirInput.addEventListener('click', async () => {
+        const modLoaderDir = await getFilePathsFromSystemDialog('Mod Loader', 'exe');
+        //让 modLoaderDirInput 的 value属性 为 用户选择的路径
+        if (modLoaderDir !== '') {
+            modLoaderDirInput.value = modLoaderDir;
+            localStorage.setItem('modLoaderDir', modLoaderDir);
+            asyncLocalStorage();
+            snack(`Mod loader path set to ${modLoaderDir}`);
+        }
+        else {
+            snack('Please select your mod loader path');
+        }
+    });
+
+    //-----------设置 gameDir-----------
+    const gameDirInput = document.getElementById('set-gameDir-input');
+    gameDirInput.addEventListener('click', async () => {
+        const gameDir = await getFilePathsFromSystemDialog('Game', 'exe');
+        //让 gameDirInput 的 value属性 为 用户选择的路径
+        if (gameDir !== '') {
+            gameDirInput.value = gameDir;
+            localStorage.setItem('gameDir', gameDir);
+            asyncLocalStorage();
+            snack(`Game path set to ${gameDir}`);
+        }
+        else {
+            snack('Please select your game path');
+        }
+    });
+
+    //---------更改setting-dialog的样式---------
     //设置页面使用的s-dialog是封装好的，无法通过css修改其样式，所以需要通过js来修改
     const settingsDialogStyle = document.createElement('style');
     settingsDialogStyle.innerHTML = `
@@ -1107,19 +933,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    //设置页面的展示按钮
+    //---------设置页面初始化---------
     settingsShowButton.addEventListener('click', async () => {
         // 显示或隐藏settingsDialog
         showDialog(settingsDialog);
-
-        //显示当前rootdir
-        rootdirInput.value = rootdir;
 
         //显示当前 auto-apply 的值
         autoApplySwitch.checked = ifAutoApply;
 
         //显示当前 auto-refresh-in-zzz 的值
         autoRefreshInZZZSwitch.checked = ifAutofreshInZZZ;
+
+        //显示当前 auto-start-game 的值
+        autoStartGameSwitch.checked = ifAutoStartGame;
+
+        //显示当前 theme 的值
+        const theme = localStorage.getItem('theme');
+        const themeRadio = themePicker.querySelector(`#${theme}`);
+        themeRadio ? themeRadio.checked = true : themePicker.querySelector('#dark').checked = true;
+
+        //显示当前 lang 的值
+        const lang = localStorage.getItem('lang');
+        const langRadio = langPicker.querySelector(`#${lang}`);
+        langRadio ? langRadio.checked = true : langPicker.querySelector('#en').checked = true;
+
+        //显示当前 modRootDir 的值
+        modRootDirInput.value = modRootDir;
+
+        //显示当前 modBackpackDir 的值
+        modBackpackDirInput.value = modBackpackDir;
+
+        //显示当前 modLoaderDir 的值
+        modLoaderDirInput.value = modLoaderDir;
+
+        //显示当前 gameDir 的值
+        gameDirInput.value = gameDir;
+
+
 
         // 显示当前页面
         settingsDialogTabs.forEach(item => {
@@ -1131,7 +981,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         checked ? settingsDialog.querySelector(`#settings-dialog-${checked.id}`).style.display = 'block' : settingsDialog.querySelector(`#settings-dialog-normal-settings`).style.display = 'block';
     });
 
-    //设置页面tab的切换
+    //-----------设置页面tab的切换-----------
     settingsMenu.addEventListener('click', (event) => {
         //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
         //获取目前的checked的值
@@ -1140,7 +990,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //根据checked的id来切换tab
         const tab = settingsDialog.querySelector(`#settings-dialog-${checked.id}`);
         //debug
-        console.log("finding tab:" + `#settings-dialog-${checked.id}`);
+        //console.log("finding tab:" + `#settings-dialog-${checked.id}`);
         if (!tab) {
             console.log("tab is null");
             return;
@@ -1154,132 +1004,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         console.log("show tab" + tab.id);
     });
-
-    //设置语言
-    langPicker.addEventListener('click', (event) => {
-        //langPicker的子元素是input的radio，所以不需要判断到底点击的是哪个元素，直接切换checked的值即可
-        //获取目前的checked的值
-        const checked = langPicker.querySelector('input:checked');
-
-        //如果点击的是当前的语言，则不进行任何操作
-        if (!checked) {
-            console.log("checked is null");
-            return;
-        }
-
-        if (checked.id == lang) {
-            return;
-        }
-
-        //根据checked的id来切换语言
-        setLang(checked.id);
-    });
-
-    //设置theme
-    themePicker.addEventListener('click', (event) => {
-        //themePicker的子元素是input的radio，所以不需要判断到底点击的是哪个元素，直接切换checked的值即可
-        //获取目前的checked的值
-        const checked = themePicker.querySelector('input:checked');
-        //debug
-        console.log("checked:" + checked.id);
-
-        //如果点击的是当前的theme，则不进行任何操作
-        if (!checked) {
-            console.log("checked is null");
-            return;
-        }
-        if (checked.id == localStorage.getItem('theme')) {
-            return;
-        }
-
-        //根据checked的id来切换theme
-        setTheme(checked.id);
-    });
-
-    //设置rootdir
-    rootdirConfirmButton.addEventListener('click', async () => {
-        //debug
-        console.log("rootdir: " + rootdirInput.value);
-        var dir = rootdirInput.value.trim();
-        //将特殊路径替换为几个预设路径
-        if (dir == 'default') {
-            dir = __dirname;
-        }
-
-        if (dir) {
-            //检查rootdir是否存在
-            const exists = await ipcRenderer.invoke('check-rootdir', dir);
-            if (exists) {
-                //保存rootdir
-                localStorage.setItem('rootdir', dir);
-                rootdir = dir;
-                await ipcRenderer.invoke('set-rootdir', dir);
-                //debug
-                console.log("rootdir: " + dir);
-                //重新加载mods
-                loadModList().then(() => { refreshModFilter(); });
-                loadPresets();
-            }
-            else {
-                snack('Root directory does not exist');
-            }
-        }
-        else {
-            snack('Root directory cannot be empty');
-        }
-    }
-    );
-
-    //是否开启自动应用
-    autoApplySwitch.addEventListener('change', () => {
-        ifAutoApply = autoApplySwitch.checked;
-        //保存ifAutoApply
-        localStorage.setItem('auto-apply', ifAutoApply);
-        //debug
-        console.log("ifAutoApply: " + ifAutoApply);
-    });
-
-    //是否开启自动刷新
-    autoRefreshInZZZSwitch.addEventListener('change', () => {
-        ifAutofreshInZZZ = autoRefreshInZZZSwitch.checked;
-        //保存ifAutofreshInZZZ
-        localStorage.setItem('auto-refresh-in-zzz', ifAutofreshInZZZ);
-        //debug
-        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
-
-        if (ifAutofreshInZZZ) {
-            //尝试获得管理员权限
-            //tryGetAdmin();
-        }
-    });
-
-    function tryGetAdmin() {
-        //尝试获取管理员权限
-
-        //使用powershell运行下面的命令
-        //Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs 获取管理员权限
-        //Start-Process $electronAppPath 使用管理员权限打开electron程序
-        const ps1Path = path.join(exePath, `..`, `runZZZMMasAdmin.ps1`);
-        const electronAppPath = path.join(exePath, `..`, `..`, `ZZZModManager.exe`);
-        //debug
-        console.log("ps1Path: " + ps1Path);
-
-        const options = { shell: true };
-
-        require('child_process').exec(`start powershell.exe "${ps1Path}" -electronAppPath "${__dirname}"
-            `, options, (err, stdout, stderr) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            console.log(stdout);
-            snack('Successfully get admin permission' + stdout);
-        }
-        );
-        //debug
-
-        console.log("tryGetAdmin");
-    }
 
     //-mod启用
     applyBtn.addEventListener('click', async () => {
@@ -1297,12 +1021,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const unknownModIgnoreButton = document.getElementById('unknown-mod-ignore');
     unknownModConfirmButton.addEventListener('click', async () => {
         //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹，跳过已经存在的文件夹
-        const modLoaderDir = path.join(rootdir, 'Mods');
-        const modBackpackDir = path.join(rootdir, 'modResourceBackpack');
-        const unknownDirs = fs.readdirSync(modLoaderDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
+        const unknownDirs = fs.readdirSync(modRootDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
         unknownDirs.forEach(dir => {
             //移动文件夹,使用异步函数
-            fs.rename(path.join(modLoaderDir, dir), path.join(modBackpackDir, dir), (err) => {
+            fs.rename(path.join(modRootDir, dir), path.join(modBackpackDir, dir), (err) => {
                 if (err) {
                     alert(err);
                 }
@@ -1592,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const imagePath = tempImagePath;
         const imageExt = path.extname(imagePath);
         const modImageName = 'preview' + imageExt;
-        const modImageDest = path.join(rootdir, 'modResourceBackpack', currentMod, modImageName);
+        const modImageDest = path.join(modRootDir, currentMod, modImageName);
 
         //复制图片
         console.log(`imagePath:${imagePath} modImageDest:${modImageDest}`);
@@ -1678,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.addEventListener('unload', function (event) {
         localStorage.setItem('fullscreen', isFullScreen);
+        asyncLocalStorage();
 
         if (!isFullScreen) {
             localStorage.setItem('bounds', JSON.stringify({
@@ -1686,6 +1409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 width: window.outerWidth,
                 height: window.innerHeight,
             }));
+            asyncLocalStorage();
         }
     });
 
@@ -1700,4 +1424,406 @@ document.addEventListener('DOMContentLoaded', async () => {
             await ipcRenderer.invoke('open-external-link', url);
         });
     });
-});
+
+
+
+    //-===================================内部函数===================================
+    //- 内部函数
+    async function asyncLocalStorage() {
+        //获取用户的设置
+        const userConfig = {
+            lang: lang,
+            modRootDir: modRootDir,
+            modLoaderDir: modLoaderDir,
+            modBackpackDir: modBackpackDir,
+            gameDir: gameDir,
+            ifAutoApply: ifAutoApply,
+            ifAutofreshInZZZ: ifAutofreshInZZZ,
+            ifAutoStartGame: ifAutoStartGame,
+            theme: theme
+        };
+
+        ipcRenderer.invoke('sync-localStorage', userConfig);
+    }
+    async function applyMods() {
+        //获取选中的mods,mod 元素为 mod-item，当其checked属性为true时，表示选中
+        const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
+        //debug
+        console.log("selectedMods: " + selectedMods);
+        //增加纠错
+        if (modRootDir == '') {
+            snack('Please select modRootDir first');
+            return;
+        }
+        if (modBackpackDir == '') {
+            snack('Please select modBackpackDir first');
+            return;
+        }
+
+        //检查mods文件夹下是否有modResourceBackpack文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modResourceBackpack文件夹下
+        const unknownDirs = fs.readdirSync(modRootDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
+        if (unknownDirs.length > 0) {
+            //显示未知文件夹对话框
+            showDialog(unknownModDialog);
+            //显示未知文件夹
+            const unknownModList = document.getElementById('unknown-mod-list');
+            unknownModList.innerHTML = '';
+            unknownDirs.forEach(dir => {
+                const listItem = document.createElement('li');
+                listItem.textContent = dir;
+                unknownModList.appendChild(listItem);
+            });
+        }
+
+        else await ipcRenderer.invoke('apply-mods', selectedMods);
+
+        //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
+        if (ifAutofreshInZZZ) {
+            ipcRenderer.invoke('refresh-in-zzz').then(result => {
+                // Refresh in ZZZ success flag
+                // 0: Failed
+                // 1: Success
+                // 2: Cannot find the process
+                // 3: Cannot find the zenless zone zero window
+                // 4: Cannot find the mod manager window
+
+                switch (result) {
+                    case 0:
+                        snack('Refresh in ZZZ failed');
+                        break;
+                    case 1:
+                        snack('Refresh in ZZZ success');
+                        break;
+                    case 2:
+                        snack('Cannot find the process', 'error');
+                        break;
+                    case 3:
+                        snack('Cannot find the zenless zone zero window');
+                        break;
+                    case 4:
+                        snack('Cannot find the mod manager window');
+                        break;
+                    default:
+                        snack('Unknown error');
+                        break;
+                }
+            });
+        }
+    }
+
+    function showDialog(dialog) {
+        // 将 Dialog 的 display 设置为 block
+        if (dialog.style.display != 'block') {
+            dialog.style.display = 'block';
+            dialog.style.opacity = 1;
+        }
+        dialog.show();
+    }
+
+    function setLang(newLang) {
+        //设置语言
+        lang = newLang;
+        localStorage.setItem('lang', lang);
+        //debug
+        console.log(`lang:${lang}`);
+        //设置页面同步修改显示情况
+        const langPicker = document.getElementById('language-picker');
+        langPicker.value = lang;
+        //翻译页面
+        translatePage(lang);
+    }
+
+    function setTheme(newTheme) {
+        //设置主题
+        theme = newTheme;
+        localStorage.setItem('theme', newTheme);
+        //debug
+        console.log(`theme:${newTheme}`);
+        //在设置页面同步修改显示情况
+        const themePicker = document.getElementById('theme-picker');
+        themePicker.value = newTheme;
+
+        //设置页面主题
+        const sPages = document.querySelectorAll('s-page');
+        sPages.forEach(page => {
+            page.theme = newTheme;
+        }
+        );
+        //特殊样式手动更改
+        if (newTheme != 'dark') {
+            //将背景图片取消显示
+            sPages.forEach(page => {
+                page.style.backgroundImage = 'none';
+            }
+            );
+        }
+        else {
+            //将背景图片显示
+            sPages.forEach(page => {
+                page.style.backgroundImage = 'url(./src/background.png)';
+            }
+            );
+        }
+    }
+
+
+    function translatePage(lang) {
+        //获取所有需要翻译的元素
+        const elements = document.querySelectorAll('[data-translate-key]');
+        //获取翻译文件
+        const translationPath = path.join(__dirname, 'locales', `${lang}.json`);
+        //读取翻译文件
+        const translation = JSON.parse(fs.readFileSync(translationPath));
+
+        let needTranslate = "";
+        //遍历所有需要翻译的元素，将其翻译
+        elements.forEach(async element => {
+            const key = element.getAttribute('data-translate-key');
+            if (key in translation) {
+                element.textContent = translation[key];
+                //debug
+                //console.log(`Translate ${key} to ${translation[key]}`);
+            }
+            else {
+                console.log(`Translation for ${key} not found`);
+                needTranslate += `"${key}"\n`;
+            }
+        });
+        if (needTranslate != "") {
+            console.log(`Translation for the following keys not found:\n${needTranslate}`);
+        }
+    }
+
+    function snack(message, type = 'basic', duration = 4000) {
+        //使用自定义的snackbar组件来显示消息
+        customElements.get('s-snackbar').show({
+            text: message,
+            type: type,
+            duration: duration
+        });
+    }
+
+    function clickModItem(modItem, event = null, rect = null) {
+        //获取鼠标相对于卡片的位置（百分比）
+        let x, y, rotateX, rotateY;
+        let rotateLevel = -20;
+        if (event != null) {
+            //如果传入了event，则使用event的位置
+            //获取鼠标相对于卡片的位置（百分比）
+            x = (event.clientX - rect.left) / rect.width;
+            y = (event.clientY - rect.top) / rect.height;
+        }
+        else {
+            //如果没有传入event，且modItem.checked为true，则设置为0，0.7，否则设置为0.7，0 偏移0.2*random
+            x = modItem.checked ? 0 : Math.random() / 5 + 0.7;
+            y = modItem.checked ? 0.7 : Math.random() / 5;
+        }
+        //根据鼠标相对于卡片的位置设置反转程度
+        rotateX = 2 * (y - 0.5);
+        rotateY = -2 * (x - 0.5);
+
+        //反转卡片状态
+        modItem.checked = !modItem.checked;
+        modItem.setAttribute('checked', modItem.checked ? 'true' : 'false');
+
+        if (!modItem.inWindow) {
+            //如果modItem不在视窗内，则不进行动画
+            return;
+        }
+
+
+        //添加动画
+        if (modItem.checked == true) {
+
+            modItem.animate([
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` },
+                { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1.05)` },
+                //缩小一点
+                { transform: `perspective( 500px ) translate(${-rotateY * 15}px,${rotateX * 15}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel}deg) scale(1)` },
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` }
+            ], {
+                duration: 600,
+                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                iterations: 1
+            });
+        }
+        else {
+            modItem.animate([
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg) scale(0.95)` },
+
+                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(0.88)` },
+                //缩小一点
+                { transform: `perspective( 500px ) translate(${-rotateY * 5}px,${rotateX * 5}px) rotateX(${rotateX * rotateLevel}deg) rotateY(${rotateY * rotateLevel * 0.2}deg) scale(1)` },
+                { transform: `perspective( 500px ) rotate3d(1,1,0,0deg)` }
+            ], {
+                duration: 800,
+                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                iterations: 1
+            });
+        }
+    }
+
+    //获得mod的显示图片
+    async function getModImagePath(mod) {
+        //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
+        var modImageName = '';
+        const modPath = path.join(modBackpackDir, mod);
+        const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+        const modInfoImagePath = modInfo.imagePath;
+
+        if (modInfoImagePath && fs.existsSync(path.join(modPath, modInfoImagePath))) {
+            modImageName = modInfoImagePath;
+            return path.join(modPath, modImageName);
+        }
+
+        const tryImageNames = ['preview.png', 'preview.jpg', 'preview.jpeg'];
+        tryImageNames.forEach(imageName => {
+            if (fs.existsSync(path.join(modPath, imageName))) {
+                modImageName = imageName;
+            }
+        });
+
+        if (modImageName != '') {
+            // 如果找到了图片文件，说明mod文件夹下有preview图片，但是没有在modInfo中设置imagePath，所以需要将其保存到modInfo中
+            modInfo.imagePath = modImageName;
+            ipcRenderer.invoke('set-mod-info', mod, modInfo);
+
+            // 使用snack提示用户自动保存了图片
+            snack(`Original image is ${modInfoImagePath},but not found, find ${modImageName} instead, auto saved to mod.json`);
+            return path.join(modPath, modImageName);
+        }
+
+        // 如果都没有的话，尝试寻找mod文件夹下的第一个图片文件
+        const files = fs.readdirSync(path.join(modPath));
+        const imageFiles = files.filter(file => file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg'));
+        //如果没有图片文件，则使用默认图片,之后直接跳出程序
+        if (imageFiles.length <= 0) {
+            return path.join(__dirname, 'default.png');
+        }
+
+        modImageName = imageFiles[0];
+        //debug
+        //console.log(`modImageName:${modImageName}`);
+        return path.join(modPath, modImageName);
+    }
+
+    //使用替换的方式而不是清空再添加的方式实现loadModList，减少页面重绘次数
+    async function loadModList() {
+        //加载mod列表
+        mods = await ipcRenderer.invoke('get-mods');
+        //获取当前modContainer的所有子元素
+        const modContainerCount = modContainer.childElementCount;
+
+        //使用fragment来批量添加modItem，减少重绘次数
+        const fragment = document.createDocumentFragment();
+
+        mods.forEach(async (mod, index) => {
+            const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
+            var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
+            if (!modCharacters.includes(modCharacter)) {
+                modCharacters.push(modCharacter);
+            }
+
+            var modImagePath = await getModImagePath(mod);
+            var modDescription = modInfo.description ? modInfo.description : 'No description';
+
+            var modItem;
+            if (index < modContainerCount) {
+                modItem = modContainer.children[index];
+            }
+            else {
+                modItem = document.createElement('s-card');
+                modItem.innerHTML = `
+            <div slot="image" style="height: 200px;">
+                    <img src="" alt="" loading="lazy"/>
+                </div>
+                <div slot="headline" id="mod-item-headline"></div>
+                <div slot="subhead" id="mod-item-subhead">
+                </div>
+                <div slot="text" id="mod-item-text">
+                    <s-scroll-view>
+                        <p id="mod-item-description"></p>
+                        <div class="placeholder"></div>
+                    </s-scroll-view>
+                </div>
+            `
+                fragment.appendChild(modItem);
+            }
+
+            modItem.className = 'mod-item';
+            modItem.checked = false;
+            modItem.clickable = true;
+            modItem.inWindow = false;
+            modItem.id = mod;
+            modItem.character = modCharacter;
+            modItem.style = '';
+            modItem.querySelector('img').src = modImagePath;
+            modItem.querySelector('img').alt = mod;
+            modItem.querySelector('#mod-item-headline').textContent = mod;
+            modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
+            modItem.querySelector('#mod-item-description').textContent = modDescription;
+
+            //debug
+            //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
+            if (fragment.children.length == mods.length - modContainerCount) {
+                //如果是最后一个modItem,意味着所有的modItem都已经添加到fragment中，将fragment添加到modContainer中
+
+                modContainer.appendChild(fragment);
+
+                //如果是compactMode则需要将modContainer添加上compact = true
+                if (compactMode) {
+                    modContainer.setAttribute('compact', 'true');
+                }
+                else {
+                    modContainer.setAttribute('compact', 'false');
+                }
+
+                //将所有的的modItem添加到observer中
+                document.querySelectorAll('.mod-item').forEach(item => {
+                    observer.observe(item);
+                });
+            }
+
+        });
+
+        //删除多余的modItem
+        if (mods.length < modContainerCount) {
+            for (let i = mods.length; i < modContainerCount; i++) {
+                modContainer.removeChild(modContainer.children[mods.length]);
+            }
+        }
+    }
+
+    async function getFilePathsFromSystemDialog(fileName, fileType) {
+        const result = await ipcRenderer.invoke('get-file-path', fileName, fileType);
+        if (!result){
+            snack('Invalid file path');
+            return '';
+        }
+        //debug
+        console.log(result);
+        return result;
+    }
+
+    async function startGame(){
+        //debug
+        console.log(`start game, gameDir:${gameDir}, modLoaderDir:${modLoaderDir}`);
+        // 先启动 modLoader
+        
+        //延时1s启动游戏
+        setTimeout(() => {
+            if (modLoaderDir == '') {
+                snack('Please select modLoaderDir first');
+                return;
+            }
+            ipcRenderer.invoke('start-mod-loader');
+            //启动游戏
+            if (gameDir == '') {
+                snack('Please select gameDir first');
+                return;
+            }
+            ipcRenderer.invoke('start-game');
+        }, 1000);
+    }
+}
+);
