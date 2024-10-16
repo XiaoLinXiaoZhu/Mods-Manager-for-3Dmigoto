@@ -1,4 +1,4 @@
-const { ipcRenderer, dialog, ipcMain } = require('electron');
+const { ipcRenderer, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     let modBackpackDir = localStorage.getItem('modBackpackDir') || '';
 
     //是否自动应用,自动在zzz中刷新，使用管理员权限
-    let ifAutoApply = localStorage.getItem('auto-apply') || false;
-    let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
-    let ifUseAdmin = localStorage.getItem('use-admin') || false;
+    let ifAutoApply = localStorage.getItem('ifAutoApply') || false;
+    let ifAutofreshInZZZ = localStorage.getItem('ifAutoRefreshInZZZ') || false;
+    let ifUseAdmin = localStorage.getItem('ifUseAdmin') || false;
     //是否自动启动游戏
-    let ifAutoStartGame = localStorage.getItem('auto-start-game') || false;
+    let ifAutoStartGame = localStorage.getItem('ifAutoStartGame') || false;
     let gameDir = localStorage.getItem('gameDir') || '';
     let modLoaderDir = localStorage.getItem('modLoaderDir') || '';
 
@@ -123,7 +123,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     //-=================检测是否是第一次打开=================
     // 检测是否是第一次打开
     const firstOpen = localStorage.getItem('firstOpen');
-
+    //  debug
+    // console.log(localStorage);
     if (!firstOpen) {
         firstLoad();
     }
@@ -1581,7 +1582,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 //console.log(`Translate ${key} to ${translation[key]}`);
             }
             else {
-                console.log(`Translation for ${key} not found`);
+                //console.log(`Translation for ${key} not found`);
                 needTranslate += `"${key}"\n`;
             }
         });
@@ -1819,8 +1820,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // 将参数传递给主进程
-        await asyncLocalStorage();
+        
+        //debug
+        //console.log(localStorage);
 
         if (ifUseAdmin == 'true' && !HMC.isAdmin()) {
             //如果使用管理员权限，则以管理员权限重启

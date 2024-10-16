@@ -222,6 +222,24 @@
             <s-button slot="action" type="text" id="auto-settings-cancel" data-translate-key="cancel">取消</s-button>
             <s-button slot="action" type="text" id="auto-settings-confirm" data-translate-key="confirm">确定</s-button>
         </s-dialog>
+
+        <!-- -询问是否使用管理员模式 -->
+        <s-dialog id="dialog" class="s-dialog">
+            <div slot="headline" class="font-hongmeng">
+                <h3 data-translate-key="dialog-ask-for-admin"> 选择是否使用管理员权限 </h3>
+                <div class="OO-box">
+                    <div class="OO-setting-bar">
+                        <h3 data-translate-key="use-admin"> 使用管理员权限 </h3>
+                        <s-switch id="use-admin-switch"></s-switch>
+                    </div>
+                    <p data-translate-key="use-admin-info">
+                        启动程序时是否使用管理员权限(需要重启程序生效),这样，在启动游戏和模组加载器时，将不会弹出UAC提示框。
+                    </p>
+                </div>
+            </div>
+            <s-button slot="action" type="text" id="admin-cancel" data-translate-key="cancel">取消</s-button>
+            <s-button slot="action" type="text" id="admin-confirm" data-translate-key="confirm">确定</s-button>
+        </s-dialog>
     </s-page>
 
 </body>

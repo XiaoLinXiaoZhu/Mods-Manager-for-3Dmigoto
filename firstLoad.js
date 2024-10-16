@@ -146,13 +146,16 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', userConfig.theme);
         //debug
         //console.log(userConfig);
+        //console.log(localStorage);
 
         ipcRenderer.invoke('set-modRootDir', userConfig.modRootDir);
     }
 
     function setLang(newLang) {
         //设置语言
-        localStorage.setItem('lang', newLang);
+        userConfig.lang = newLang;
+        //保存用户的设置
+        saveUserConfig();
         //debug
         console.log(`lang:${newLang}`);
 
@@ -306,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //-==================设置 auto-apply,auto-refresh-in-zzz 的事件监听==================
     const autoApplySwitch = document.querySelector('#auto-apply-switch');
     autoApplySwitch.addEventListener('change', () => {
-        userConfig.autoApply = autoApplySwitch.checked;
+        userConfig.ifAutoApply = autoApplySwitch.checked;
         saveUserConfig();
         //snack(`Auto Apply is now ${autoApplySwitch.checked ? 'enabled' : 'disabled'}`);
     });
@@ -314,9 +317,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const autoRefreshInZZZSwitch = document.querySelector('#auto-refresh-in-zzz-switch');
     autoRefreshInZZZSwitch.addEventListener('change', () => {
         const checked = autoRefreshInZZZSwitch.checked;
-        userConfig.autoRefreshInZZZ = checked;
+        userConfig.ifAutoRefreshInZZZ = checked;
         saveUserConfig();
         //snack(`Auto Refresh in ZZZ is now ${autoRefreshInZZZSwitch.checked ? 'enabled' : 'disabled'}`);
+    });
+
+    //-==================设置 use-admin 的事件监听==================
+    const useAdminSwitch = document.querySelector('#use-admin-switch');
+    useAdminSwitch.addEventListener('change', () => {
+        userConfig.ifUseAdmin = useAdminSwitch.checked;
+        saveUserConfig();
+        //snack(`Use Admin is now ${useAdminSwitch.checked ? 'enabled' : 'disabled'}`);
     });
 
 
@@ -328,6 +339,13 @@ document.addEventListener('DOMContentLoaded', () => {
         loading.style.display = 'none';
         const loaded = document.querySelector('#loaded');
         loaded.style.display = 'block';
+
+        // debug
+        // 输出当前的所有配置
+        console.log(userConfig);
+
+        // 输出当前的 localStorage
+        console.log(localStorage);
 
     }
     );
