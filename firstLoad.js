@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const { shell } = require("electron");
 
-const openFolder = (pathName)=>{
-	shell.openPath(path.join(pathName, "/"))
+const openFolder = (pathName) => {
+    shell.openPath(path.join(pathName, "/"))
 }
 
 async function getRootDirFromSystemDialog() {
@@ -25,7 +25,7 @@ function snack(message, type = 'basic', duration = 4000) {
 
 async function getFilePathsFromSystemDialog(fileName, fileType) {
     const result = await ipcRenderer.invoke('get-file-path', fileName, fileType);
-    if (!result){
+    if (!result) {
         snack('Invalid file path');
         return '';
     }
@@ -84,7 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
         modLoaderDir: localStorage.getItem('modLoaderDir') || '',
         modBackpackDir: localStorage.getItem('modBackpackDir') || '',
         modRootDir: localStorage.getItem('modRootDir') || '',
-        gameDir: localStorage.getItem('gameDir') || ''
+        gameDir: localStorage.getItem('gameDir') || '',
+        ifUseAdmin: localStorage.getItem('ifUseAdmin') || false,
+        ifAutoStartGame: localStorage.getItem('ifAutoStartGame') || false,
+        ifAutoApply: localStorage.getItem('ifAutoApply') || false,
+        ifAutoRefreshInZZZ: localStorage.getItem('ifAutoRefreshInZZZ') || false,
+        theme: localStorage.getItem('theme') || 'dark'
     };
 
     //依次打开 s-dialog 组件，s-dialog 组件会询问用户的默认设置
@@ -96,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //各个 s-dialog 组件的引用
     const languagePicker = document.querySelector('#language-picker');
     const selectRootDir = document.querySelector('#select-rootdir');
-    
+
 
     //自动移动和手动移动的按钮
     const autoMove = document.querySelector('#auto-move-mod');
@@ -108,11 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
     //debug
     console.log(sDialogs);
 
-    
+
 
 
     //延时1s打开第一个 s-dialog 组件
-    
+
     //- 内部函数
     const showDialog = (index) => {
         //debug
@@ -134,6 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('modBackpackDir', userConfig.modBackpackDir);
         localStorage.setItem('modRootDir', userConfig.modRootDir);
         localStorage.setItem('gameDir', userConfig.gameDir);
+        localStorage.setItem('ifUseAdmin', userConfig.ifUseAdmin);
+        localStorage.setItem('ifAutoStartGame', userConfig.ifAutoStartGame);
+        localStorage.setItem('ifAutoApply', userConfig.ifAutoApply);
+        localStorage.setItem('ifAutoRefreshInZZZ', userConfig.ifAutoRefreshInZZZ);
+        localStorage.setItem('theme', userConfig.theme);
         //debug
         //console.log(userConfig);
 
@@ -203,25 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(modRootDir);
     });
 
-
-    //-==================设置 modLoader 目录的事件监听==================
-    const selectModLoaderDir = document.querySelector('#select-mod-loader-dir');
-    const selectModLoaderDirInput = document.querySelector('#select-mod-loader-dir-input');
-    selectModLoaderDirInput.addEventListener('click', async () => {
-        const modLoaderDir = await getFilePathsFromSystemDialog('3dmigoto.exe', 'exe');
-        //让 select-mod-loader-dir-input 的 value属性 为 用户选择的路径
-        if (modLoaderDir !== '') {
-            selectModLoaderDirInput.value = modLoaderDir;
-            userConfig.modLoaderDir = modLoaderDir;
-            saveUserConfig();
-        }
-        else {
-            snack('Please select your modLoader.exe');
-        }
-        //debug
-        console.log(modLoaderDir);
-    });
-
     //-==================展示 modResourceBackpack 目录的事件监听==================
     const openModResourceBackpack = document.querySelector('#open-modResourceBackpack');
     openModResourceBackpack?.addEventListener('click', async () => {
@@ -233,32 +224,23 @@ document.addEventListener('DOMContentLoaded', () => {
         openFolder(userConfig.modBackpackDir);
     });
 
-    //-==================设置 游戏文件 的事件监听==================
-    const selectGameDir = document.querySelector('#select-game-dir');
-    const selectGameDirInput = document.querySelector('#select-game-dir-input');
-    selectGameDirInput.addEventListener('click', async () => {
-        const gameDir = await getFilePathsFromSystemDialog('zzz.exe', 'exe');
-        //让 select-game-dir-input 的 value属性 为 用户选择的路径
-        if (gameDir !== '') {
-            selectGameDirInput.value = gameDir;
-            userConfig.gameDir = gameDir;
-            saveUserConfig();
-        }
-        else {
-            snack('Please select your game root directory');
-        }
-        //debug
-        console.log(gameDir);
-    });
+    //autoMove按钮的事件监听
+    autoMove.addEventListener('click', async () => {
+        let ret = await ipcRenderer.invoke('auto-move-mod');
+        alert(ret);
+    }
+    );
 
+    //manualMove按钮的事件监听
+    manualMove.addEventListener('click', () => {
+        const modBackpackDir = userConfig.modBackpackDir;
+        if (fs.existsSync(modBackpackDir)) {
+            openFolder(modBackpackDir);
+        }
+    }
+    );
 
-    //-==================设置 auto-apply,auto-start-game,auto-refresh-in-zzz 的事件监听==================
-    const autoApplySwitch = document.querySelector('#auto-apply-switch');
-    autoApplySwitch.addEventListener('change', () => {
-        userConfig.autoApply = autoApplySwitch.checked;
-        saveUserConfig();
-        //snack(`Auto Apply is now ${autoApplySwitch.checked ? 'enabled' : 'disabled'}`);
-    });
+    //-==================设置 auto-start-game ==================
     const autoStartGameSwitch = document.querySelector('#auto-start-game-switch');
     autoStartGameSwitch.addEventListener('change', () => {
         const checked = autoStartGameSwitch.checked;
@@ -283,6 +265,52 @@ document.addEventListener('DOMContentLoaded', () => {
         saveUserConfig();
         //snack(`Auto Start Game is now ${autoStartGameSwitch.checked ? 'enabled' : 'disabled'}`);
     });
+
+    //-==================设置 modLoader 目录的事件监听==================
+    const selectModLoaderDir = document.querySelector('#select-mod-loader-dir');
+    const selectModLoaderDirInput = document.querySelector('#select-mod-loader-dir-input');
+    selectModLoaderDirInput.addEventListener('click', async () => {
+        const modLoaderDir = await getFilePathsFromSystemDialog('3dmigoto.exe', 'exe');
+        //让 select-mod-loader-dir-input 的 value属性 为 用户选择的路径
+        if (modLoaderDir !== '') {
+            selectModLoaderDirInput.value = modLoaderDir;
+            userConfig.modLoaderDir = modLoaderDir;
+            saveUserConfig();
+        }
+        else {
+            snack('Please select your modLoader.exe');
+        }
+        //debug
+        console.log(modLoaderDir);
+    });
+
+    //-==================设置 游戏文件 的事件监听==================
+    const selectGameDir = document.querySelector('#select-game-dir');
+    const selectGameDirInput = document.querySelector('#select-game-dir-input');
+    selectGameDirInput.addEventListener('click', async () => {
+        const gameDir = await getFilePathsFromSystemDialog('zzz.exe', 'exe');
+        //让 select-game-dir-input 的 value属性 为 用户选择的路径
+        if (gameDir !== '') {
+            selectGameDirInput.value = gameDir;
+            userConfig.gameDir = gameDir;
+            saveUserConfig();
+        }
+        else {
+            snack('Please select your game root directory');
+        }
+        //debug
+        console.log(gameDir);
+    });
+
+
+    //-==================设置 auto-apply,auto-refresh-in-zzz 的事件监听==================
+    const autoApplySwitch = document.querySelector('#auto-apply-switch');
+    autoApplySwitch.addEventListener('change', () => {
+        userConfig.autoApply = autoApplySwitch.checked;
+        saveUserConfig();
+        //snack(`Auto Apply is now ${autoApplySwitch.checked ? 'enabled' : 'disabled'}`);
+    });
+
     const autoRefreshInZZZSwitch = document.querySelector('#auto-refresh-in-zzz-switch');
     autoRefreshInZZZSwitch.addEventListener('change', () => {
         const checked = autoRefreshInZZZSwitch.checked;
@@ -291,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         //snack(`Auto Refresh in ZZZ is now ${autoRefreshInZZZSwitch.checked ? 'enabled' : 'disabled'}`);
     });
 
-    
+
     //最后一个 s-dialog 组件的事件监听
     sDialogs[sDialogs.length - 1].addEventListener('dismissed', () => {
         saveUserConfig();
@@ -301,22 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const loaded = document.querySelector('#loaded');
         loaded.style.display = 'block';
 
-    }
-    );
-
-    //autoMove按钮的事件监听
-    autoMove.addEventListener('click', async () => {
-        let ret = await ipcRenderer.invoke('auto-move-mod');
-        alert(ret);
-    }
-    );
-
-    //manualMove按钮的事件监听
-    manualMove.addEventListener('click', () => {
-        const modBackpackDir = userConfig.modBackpackDir;
-        if (fs.existsSync(modBackpackDir)) {
-            openFolder(modBackpackDir);
-        }
     }
     );
 
@@ -330,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //- 默认触发
     setTimeout(() => {
         showDialog(0);
-    }, 1000);
+    }, 500);
 }
 );
 

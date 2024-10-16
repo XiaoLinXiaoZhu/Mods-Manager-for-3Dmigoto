@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, screen, ipcRenderer } = require('electron');
 const fs = require('fs');
 const { url } = require('inspector');
 const { execFile } = require('child_process');
@@ -25,6 +25,7 @@ let modBackpackDir = '';
 let modLoaderDir = '';
 let gameDir = '';
 let ifUseAdmin = false;
+let ifAutoStartGame = false;
 
 ipcMain.handle('get-translate', async (event, lang) => {
   // 读取对应的json文件，文件位于locales文件夹下,文件名为lang.json
@@ -123,17 +124,40 @@ ipcMain.handle('set-modRootDir', async (event, dir) => {
 }
 );
 
-ipcMain.handle('sync-localStorage', async (event,userConfig) => {
+// 当第一次同步localStorage时，将要执行一些逻辑操作
+let firstSync = true;
+ipcMain.handle('sync-localStorage', async (event, userConfig) => {
   //读取userConfig中的各个值，将主进程的值设置为userConfig中的值
   modRootDir = userConfig.modRootDir;
   modBackpackDir = userConfig.modBackpackDir;
   modLoaderDir = userConfig.modLoaderDir;
   gameDir = userConfig.gameDir;
   ifUseAdmin = userConfig.ifUseAdmin;
+  ifAutoStartGame = userConfig.ifAutoStartGame;
+
+  //如果是第一次同步localStorage，则需要进行一些操作
+  if (!firstSync) return;
+
+  //检查是否 开启了 useAdmin
+  if (HMC.isAdmin() === false && ifUseAdmin === true) {
+    //如果开启了 useAdmin，则需要以管理员模式重新启动
+    // 通过管理员模式重新启动
+    restartAsAdmin();
+    return;
+  }
+
+  if (ifAutoStartGame === true) {
+    //启动游戏
+    // 之后不再在渲染进程中启动游戏，而是在主进程中启动游戏
+    startModLoader();
+    startGame();
+  }
+
+  firstSync = false;
 }
 );
 
-ipcMain.handle('get-file-path', async (event, fileName,fileType) => {
+ipcMain.handle('get-file-path', async (event, fileName, fileType) => {
   //通过文件选择对话框选择文件
   let result;
   if (fileType == 'directory') {
@@ -389,7 +413,7 @@ ipcMain.handle("refresh-in-zzz", async (event) => {
 
 //-------------------presets-------------------
 ipcMain.handle('save-preset', async (event, presetName, mods) => {
-  const presetDir = path.join(modRootDir,'..', 'presets');
+  const presetDir = path.join(modRootDir, '..', 'presets');
   if (!fs.existsSync(presetDir)) {
     fs.mkdirSync(presetDir);
   }
@@ -397,7 +421,7 @@ ipcMain.handle('save-preset', async (event, presetName, mods) => {
 });
 
 ipcMain.handle('get-presets', async () => {
-  const presetDir = path.join(modRootDir,'..',  'presets');
+  const presetDir = path.join(modRootDir, '..', 'presets');
   if (!fs.existsSync(presetDir)) {
     return [];
   }
@@ -405,7 +429,7 @@ ipcMain.handle('get-presets', async () => {
 });
 
 ipcMain.handle('load-preset', async (event, presetName) => {
-  const presetDir = path.join(modRootDir,'..',  'presets');
+  const presetDir = path.join(modRootDir, '..', 'presets');
   const presetPath = path.join(presetDir, `${presetName}.json`);
   if (fs.existsSync(presetPath)) {
     return JSON.parse(fs.readFileSync(presetPath));
@@ -414,7 +438,7 @@ ipcMain.handle('load-preset', async (event, presetName) => {
 });
 
 ipcMain.handle('delete-preset', async (event, presetName) => {
-  const presetDir = path.join(modRootDir,'..',  'presets');
+  const presetDir = path.join(modRootDir, '..', 'presets');
   const presetPath = path.join(presetDir, `${presetName}.json`);
   //console.log("delete preset: " + presetPath);
   if (fs.existsSync(presetPath)) {
@@ -480,55 +504,89 @@ ipcMain.handle('select-image', async () => {
 );
 
 //-------------------自动化-------------------
+
+// 使用管理员模式重新启动
+function restartAsAdmin() {
+  if (isWindows) {
+    const exePath = process.execPath;
+
+    //当使用开发模式时，exePath为electron.exe，所以说重新打开时是没用的，直接返回
+    if (exePath.endsWith('electron.exe')) {
+      console.log(`in development mode, cannot restart with electron.exe`);
+      return;
+    }
+    console.log(`restart as admin: ${exePath}`);
+    //使用管理员模式重新启动
+    require('child_process').exec(`powershell -Command "Start-Process '${exePath}' -Verb RunAs"`);
+    //关闭当前窗口
+    app.quit();
+    return true;
+  }
+
+  if (isMac) {
+    // Mac OS
+    // 使用 sudo -S 来获取管理员权限
+    // 通过 osascript 来执行 AppleScript
+    // AppleScript 用于获取管理员权限
+
+    // AppleScript
+    const appleScript = `do shell script "echo '${app.getPath('exe')}' | sudo -S open -a '${app.getPath('exe')}'"`;
+    // 执行 AppleScript
+    require('child_process').exec(`osascript -e '${appleScript}'`);
+    // 关闭当前窗口
+    app.quit();
+    return true;
+  }
+
+  if (isLinux) {
+    // Linux
+    // 使用 pkexec 来获取管理员权限
+    // pkexec 用于获取管理员权限
+    require('child_process').exec(`pkexec ${app.getPath('exe')}`);
+    // 关闭当前窗口
+    app.quit();
+    return true;
+  }
+
+  console.log('restart as admin: unsupported platform');
+  return false;
+
+}
+ipcMain.handle('restart-as-admin', async () => {
+  return restartAsAdmin();
+});
+
 //启动modLoader
-ipcMain.handle('start-mod-loader', async () => {
+async function startModLoader() {
   //debug
   console.log(`start modLoader: ${modLoaderDir}`);
   if (!fs.existsSync(modLoaderDir)) {
     console.log("exePath not found");
     return false;
   }
-  //console.log("start modLoader");
-  //启动modLoader
-  // execFile(modLoaderDir, (error) => {
-  //   if (error) {
-  //     console.error(`Error starting modLoader: ${error.message}`);
-  //     return false;
-  //   }
-  //   console.log('modLoader started successfully');
-  // });
-
-  //这里使用execFile会导致 modLoader以无窗口模式启动，并且无法关闭，所以这里使用spawn
-  // const modLoader = require('child_process').spawn(modLoaderDir);
-  // modLoader.stdout.on('data', (data) => {
-  //   console.log(`stdout: ${data}`);
-  // });
-
-  //使用spawn也会导致modLoader以无窗口模式启动，并且无法关闭，所以这里使用 HMC 提供的函数
   HMC.openApp(modLoaderDir);
 
   return true;
+}
+ipcMain.handle('start-mod-loader', async () => {
+  return startModLoader();
 });
 
-//启动游戏
-ipcMain.handle('start-game', async () => {
+// 启动游戏
+// 这里不再在渲染进程中启动游戏，而是在主进程中启动游戏
+async function startGame() {
+  //debug
+  console.log(`start game: ${gameDir}`);
   if (!fs.existsSync(gameDir)) {
-    //console.log("gameDir not found");
+    console.log("gameDir not found");
     return false;
   }
-  //console.log("start game");
-  //启动游戏
-  execFile(gameDir, (error) => {
-    if (error) {
-      console.error(`Error starting game: ${error.message}`);
-      return false;
-    }
-    console.log('game started successfully');
-  });
+  HMC.openApp(gameDir);
   return true;
+}
+ipcMain.handle('start-game', async () => {
+  return startGame();
 });
-
-
 
 //---------------------窗口控制---------------------
 ipcMain.handle('minimize-window', async () => {
@@ -591,28 +649,6 @@ ipcMain.handle('set-bounds', async (event, boundsStr) => {
       }
     }
   } catch (e) { }
-});
-
-// 使用管理员模式重新启动
-ipcMain.handle('restart-as-admin', async () => {
-  // 通过管理员模式重新启动
-  if (isWindows) {
-    const exePath = process.execPath;
-
-    //当使用开发模式时，需要将exePath为electron.exe，而不是app的exe
-    if (exePath.endsWith('electron.exe')) {
-      console.log(`in development mode, cannot restart with electron.exe`);
-      return;
-    }
-    console.log(`restart as admin: ${exePath}`);
-    //使用管理员模式重新启动
-    require('child_process').exec(`powershell -Command "Start-Process '${exePath}' -Verb RunAs"`);
-    //关闭当前窗口
-    app.quit();
-  }
-  else {
-    console.log('restart as admin: not supported');
-  }
 });
 
 

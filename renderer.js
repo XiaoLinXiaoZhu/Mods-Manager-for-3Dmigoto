@@ -8,32 +8,64 @@ const HMC = require("hmc-win32");
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+    //------------user-config----------------
     let lang = localStorage.getItem('lang') || 'en';
+    let theme = localStorage.getItem('theme') || 'dark';
+    let isFullScreen = localStorage.getItem('fullscreen') === 'true';
+    const bounds = localStorage.getItem('bounds');
 
-    //- 获取元素
+    // modRootDir: modLoader用于加载mod的根目录
+    let modRootDir = localStorage.getItem('modRootDir') || __dirname;
+    // modBackpackDir: mod的存储目录
+    let modBackpackDir = localStorage.getItem('modBackpackDir') || '';
+
+    //是否自动应用,自动在zzz中刷新，使用管理员权限
+    let ifAutoApply = localStorage.getItem('auto-apply') || false;
+    let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
+    let ifUseAdmin = localStorage.getItem('use-admin') || false;
+    //是否自动启动游戏
+    let ifAutoStartGame = localStorage.getItem('auto-start-game') || false;
+    let gameDir = localStorage.getItem('gameDir') || '';
+    let modLoaderDir = localStorage.getItem('modLoaderDir') || '';
+
+
+    //--------------状态变量----------------
+    let currentPreset = '';
+    let editMode = false;
+    let mods = [];
+    let modCharacters = [];
+    let modFilterCharacter = 'All';
+    let compactMode = false;
+    let currentMod = '';
+
+
+    //--------------Intersect Observer----------------
+    // 创建 Intersection Observer
+    // 用于检测modItem是否在视窗内,如果在视窗内则使其inWindow属性为true,否则为false
+    // 用来代替 getBoundingClientRect() 来判断元素是否在视窗内,getBoundingClientRect()会导致页面重绘
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const modItem = entry.target;
+            // 如果元素在视口内，则使其inWindow属性为true
+            modItem.inWindow = entry.isIntersecting ? true : false;
+            //debug
+            //console.log(`modItem ${modItem.id} inWindow:${modItem.inWindow}`);
+        });
+    }, {
+        root: null, // 使用视口作为根
+        rootMargin: '250px 100px', // 扩展视口边界
+        threshold: 0 // 只要元素进入视口就触发回调
+    });
+
+
+
+    //----------------------页面元素----------------------
     const drawerPage = document.getElementById('drawer-page');
-
-    //rootdir相关
-    // rootdir 的名称不明确，因此将会逐渐被废弃
-    // 现在使用 modRootDir 代替
-    let modRootDir = localStorage.getItem('modRootDir') || __dirname;                //modRootDir保存在localStorage中，如果没有则设置为默认值__dirname
-    let gameDir = localStorage.getItem('gameDir') || '';                             //gameDir保存在localStorage中，如果没有则设置为空
-    let modLoaderDir = localStorage.getItem('modLoaderDir') || '';                  //modLoaderDir保存在localStorage中，如果没有则设置为空
-    let modBackpackDir = localStorage.getItem('modBackpackDir') || '';              //modBackpackDir保存在localStorage中，如果没有则设置为空
-    let theme = localStorage.getItem('theme') || 'dark';                            //theme保存在localStorage中，如果没有则设置为dark
-
     const settingsDialog = document.getElementById('settings-dialog');
 
     //设置页面
     const settingsMenu = document.getElementById('settings-menu');
     const settingsDialogTabs = document.querySelectorAll('.settings-dialog-tab');
-
-    let ifAutoApply = localStorage.getItem('auto-apply') || false;
-    let ifAutofreshInZZZ = localStorage.getItem('auto-refresh-in-zzz') || false;
-    let ifAutoStartGame = localStorage.getItem('auto-start-game') || false;
-    let ifUseAdmin = localStorage.getItem('use-admin') || false;
-    let exePath = localStorage.getItem('exePath') || '';
-
 
     //预设列表相关
     const presetContainer = document.getElementById('preset-container');
@@ -45,9 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const presetEditButton = document.getElementById('preset-item-edit');
 
     const addPresetDialog = document.getElementById('add-preset-dialog');
-
-    let currentPreset = '';
-    let editMode = false;
 
     //控制按钮
     const settingsShowButton = document.getElementById('settings-show-button');
@@ -64,15 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     //mod列表相关
     const modContainer = document.getElementById('mod-container');
     const applyBtn = document.getElementById('apply-btn');
-
     const unknownModDialog = document.getElementById('unknown-mod-dialog');
 
-    const savePresetBtn = document.getElementById('save-preset-btn');
-    let mods = [];
-    let modCharacters = [];
-    let modFilterCharacter = 'All';
-
-    let compactMode = false;
     const compactModeButton = document.getElementById('compact-mode-button');
 
     //mod info 相关
@@ -80,7 +102,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modInfoCharacter = document.getElementById('mod-info-character');
     const modInfoDescription = document.getElementById('mod-info-description');
     const modInfoImage = document.getElementById('mod-info-image');
-    let currentMod = '';
 
     const infoShowButton = document.getElementById('info-show-button');
 
@@ -99,181 +120,139 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initConfigButton = document.getElementById('init-config-button');
     const refreshDialog = document.getElementById('refresh-dialog');
 
-    // Window size and position
-    const bounds = localStorage.getItem('bounds');
-    await ipcRenderer.invoke('set-bounds', bounds);
-
-    // Window fullscreen
-    let isFullScreen = localStorage.getItem('fullscreen') === 'true';
-    if (isFullScreen) {
-        toggleFullscreen();
-    }
-
-    // Hide platform specific components if not current platform
-    document.querySelectorAll("[data-platform]").forEach(element => {
-        const platforms = element.dataset.platform.split(",");
-
-        if (!platforms.includes(window.platform)) {
-            element.style.display = "none";
-        }
-    });
-
-    // 创建 Intersection Observer
-    // 用于检测modItem是否在视窗内,如果在视窗内则使其inWindow属性为true,否则为false
-    // 用来代替 getBoundingClientRect() 来判断元素是否在视窗内,getBoundingClientRect()会导致页面重绘
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const modItem = entry.target;
-            // 如果元素在视口内，则使其inWindow属性为true
-            modItem.inWindow = entry.isIntersecting ? true : false;
-            //debug
-            console.log(`modItem ${modItem.id} inWindow:${modItem.inWindow}`);
-        });
-    }, {
-        root: null, // 使用视口作为根
-        rootMargin: '250px 100px', // 扩展视口边界
-        threshold: 0 // 只要元素进入视口就触发回调
-    });
-
-    //- 初始化
+    //-=================检测是否是第一次打开=================
     // 检测是否是第一次打开
     const firstOpen = localStorage.getItem('firstOpen');
 
-    setLang(lang);
     if (!firstOpen) {
-        localStorage.setItem('firstOpen', 'false');
-        //创建 firset-opne-window
-        ipcRenderer.invoke('open-first-load-window');
-
-        //展示要求刷新的提示
-        showDialog(refreshDialog);
+        firstLoad();
     }
     else {
-        await asyncLocalStorage();
-        if (ifUseAdmin == 'true' && !HMC.isAdmin()) {
-            //如果使用管理员权限，则以管理员权限重启
-            ipcRenderer.invoke('restart-as-admin');
-            //debug
-            console.log("restart as admin");
-            return;
-        }
-        
-        await loadModList();
-        await loadPresets();
-        refreshModFilter();
-
-        //如果开启了自动启动游戏，则自动启动游戏
-        if (ifAutoStartGame == 'true') {
-            startGame();
-        }
-
-        //debug
-        console.log("modRootDir: " + modRootDir);
-        console.log("gameDir: " + gameDir);
-        console.log("modLoaderDir: " + modLoaderDir);
-        console.log("modBackpackDir: " + modBackpackDir);
-
-        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
-        console.log("ifAutoApply: " + ifAutoApply);
-        console.log("theme: " + localStorage.getItem('theme'));
-        console.log("lang: " + lang);
+        init();
     }
-    setTheme(localStorage.getItem('theme') || 'dark');
 
     //-==============事件监听================
+    //重新排序modItem
+    async function sortMods(hideItem) {
+        // 获取所有显示的modItem
+        const modItems = document.querySelectorAll('.mod-item:not([style*="display: none"])');
 
-    //使用事件委托处理点击事件，减少事件绑定次数
-    modContainer.addEventListener('click', (event) => {
-        const modItem = event.target.closest('.mod-item');
-        if (modItem) {
-            clickModItem(modItem, event, modItem.getBoundingClientRect());
-            currentMod = modItem.id;
-            showModInfo(currentMod);
-            //一旦点击了modItem，将其保存在currentPreset中
-            if (currentPreset != '') {
-                savePreset(currentPreset);
-            }
+        // 卡片的宽高
+        const cardHeight = compactMode ? 150 : 350;
+        const cardWidth = 250;
 
-            //如果开启了自动应用，则自动应用
-            if (ifAutoApply == 'true') {
-                applyMods();
-            }
+        // 计算每行的modItem数量
+        const modItemPerRow = Math.floor(modContainer.offsetWidth / 250);
 
-            let cardHeight = compactMode ? '150px' : '350px';
-            //如果modFilterCharacter为Selected，则将modItem切换为 clicked = false 的时候，将其隐藏
-            if (modFilterCharacter == 'Selected' && !modItem.checked) {
-                //添加消失动画
-                modItem.animate([
-                    { opacity: 1 },
-                    { opacity: 0 }
+        // 通过每个modItem的编号，我们可以计算出它的行和列
+        // 通过行和列，我们可以计算出它的位置
+        // 之后，我们可以计算删除 hideItem 后，其他 modItem 的位置
+        // 再次计算每个 modItem 的位置
+        // 之后，为视窗内的 modItem 添加动画，使其移动到新的位置
+        // 最后，实际隐藏 hideItem，其他的 modItem 会自动填补空缺
+        // 如果计算无误，中间不会发生闪烁
+
+        // 获取 hideItem 的 编号
+        const hideItemIndex = Array.from(modItems).indexOf(hideItem);
+
+        // 获取 hideItem 的行和列
+        const modItemRow = Math.floor(hideItemIndex / modItemPerRow);
+        const modItemColumn = hideItemIndex % modItemPerRow;
+
+        // 下面的方法效率较低，这里将其重构
+        // 不需要计算每个mod的row和column，只需要计算hideItem的row和column，之后可以根据hideItem的row和column计算其他mod的位置
+
+        // debug
+        console.log(`modItemLength:${modItems.length} modItemPerRow:${modItemPerRow} modItemsMaxRow:${Math.ceil(modItems.length / modItemPerRow)}`);
+        console.log(`hideItemIndex:${hideItemIndex} modItemRow:${modItemRow} modItemColumn:${modItemColumn}`);
+        for (let row = modItemRow; row < Math.ceil(modItems.length / modItemPerRow); row++) {
+            for (let column = 0; column < modItemPerRow; column++) {
+                const currentId = row * modItemPerRow + column;
+                // 获取当前 modItem
+                const currentModItem = modItems[currentId];
+                if (currentId <= hideItemIndex || currentMod.inWindow == false) {
+                    continue;
+                }
+                if (currentId >= modItems.length) {
+                    break;
+                }
+                // 对于这个 位于 row 行 column 列的 modItem，我们需要计算它的位置
+                // 获取当前 modItem 的位置
+                const currentX = column * (cardWidth + 10);
+                const currentY = row * (cardHeight + 10);
+
+                let targetX, targetY;
+                // 获取目标 modItem 的位置
+                if (column == 0) {
+                    // 如果它的列数为 0，那么它会移动到上一行的最后
+                    targetX = (modItemPerRow - 1) * (cardWidth + 10);
+                    targetY = (row - 1) * (cardHeight + 10);
+                }
+                else {
+                    // 如果它的列数不为 0，那么它会移动到上一个 modItem 的位置，即 column - 1
+                    targetX = (column - 1) * (cardWidth + 10);
+                    targetY = row * (cardHeight + 10);
+                }
+
+                // 添加动画,transform 指定的应该是相对位移，目标位置减去当前位置
+
+                //debug
+                console.log(`currentModItem:${currentModItem.id} currentX:${currentX} currentY:${currentY} targetX:${targetX} targetY:${targetY}`);
+                currentModItem.animate([
+                    { transform: `translate(0px, 0px) scale(0.95)` },
+                    { transform: `translate(${(targetX - currentX) / 2}px, ${(targetY - currentY) / 2}px) scale(0.8)` },
+                    { transform: `translate(${targetX - currentX}px, ${targetY - currentY}px) scale(0.9)` }
                 ], {
                     duration: 300,
                     easing: 'ease-in-out',
                     iterations: 1
                 });
-                //当动画结束后，将其display设置为none（也就是0.3秒后）
-                setTimeout(() => {
-                    modItem.style.display = 'none';
-                }, 300);
-                //让其他的元素进行浮动，填补空缺
-                //mod-container是grid布局，所以可以获取当前点击的modItem的行和列，然后将其左边的modItem左移，将下一行的第一个modItem移到当前行的最后
-                const modItems = document.querySelectorAll('.mod-item[style="display: block;"]');
-                //通过modContainer的width和modItem的width计算出每行的modItem数量
-                const modItemPerRow = Math.floor(modContainer.offsetWidth / 250);
-                //获取当前点击的modItem的行和列
-                const modItemIndex = Array.from(modItems).indexOf(modItem);
-                const modItemRow = Math.floor(modItemIndex / modItemPerRow);
-                const modItemColumn = modItemIndex % modItemPerRow;
-
-
-                //debug
-                console.log(`modItemPerRow:${modItemPerRow} modItemIndex:${modItemIndex} modItemRow:${modItemRow} modItemColumn:${modItemColumn}`);
-
-                //遍历所有的modItem，将当前行的mod左移以填补空缺，将下一行的第一个mod移到当前行的最后，以此类推
-                modItems.forEach(item => {
-                    const itemIndex = Array.from(modItems).indexOf(item);
-                    const itemRow = Math.floor(itemIndex / modItemPerRow);
-                    const itemColumn = itemIndex % modItemPerRow;
-                    if (itemRow == modItemRow && itemColumn > modItemColumn) {
-                        //debug
-                        //console.log(`move ${item.id} to left`);
-                        item.animate([
-                            { transform: `translateX(0px)` },
-                            { transform: `translateX(-250px)` }
-                        ], {
-                            duration: 300,
-                            easing: 'ease-in-out',
-                            iterations: 1
-                        });
-                    }
-                    if (itemRow > modItemRow && itemColumn == 0) {
-                        //debug
-                        //console.log(`move ${item.id} to up`);
-                        item.animate([
-                            { transform: `translateY(0px) translateX(0px)` },
-                            { transform: `translateY(-${cardHeight}) translateX(${(modItemPerRow - 1) * 260}px)` }
-                        ], {
-                            duration: 300,
-                            easing: 'ease-in-out',
-                            iterations: 1
-                        });
-                    }
-                    if (itemRow > modItemRow && itemColumn > 0) {
-                        //debug
-                        //console.log(`move ${item.id} to left`);
-                        item.animate([
-                            { transform: `translateX(0px)` },
-                            { transform: `translateX(-250px)` }
-                        ], {
-                            duration: 300,
-                            easing: 'ease-in-out',
-                            iterations: 1
-                        });
-                    }
-                }
-                );
             }
+        }
 
+        // 在0.3秒内隐藏 hideItem
+        hideItem.animate([
+            { opacity: 1 },
+            { opacity: 0 }
+        ], {
+            duration: 300,
+            easing: 'ease-in-out',
+            iterations: 1
+        });
+
+        //当动画结束后，将其display设置为none（也就是0.3秒后）
+        setTimeout(() => {
+            hideItem.style.display = 'none';
+        }, 300);
+    }
+
+    //使用事件委托处理点击事件，减少事件绑定次数
+    modContainer.addEventListener('click', (event) => {
+        const modItem = event.target.closest('.mod-item');
+        if (!modItem) {
+            //snack('Invalid click target');
+            return;
+        }
+
+        // 切换modItem的显示状态
+        clickModItem(modItem, event, modItem.getBoundingClientRect());
+
+        // 展示mod的信息
+        currentMod = modItem.id;
+        showModInfo(currentMod);
+
+        //一旦点击了modItem，将其保存在currentPreset中
+        savePreset(currentPreset);
+
+        // 如果开启了自动应用，则自动应用
+        if (ifAutoApply == 'true') {
+            applyMods();
+        }
+
+        // 如果modFilterCharacter为Selected，则将modItem切换为 clicked = false 的时候
+        // 则需要重新排序modItem
+        if (modFilterCharacter == 'Selected' && !modItem.checked) {
+            sortMods(modItem);
         }
     }
     );
@@ -290,7 +269,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentMod = modItem.id;
             showModInfo(currentMod);
         }
-
     });
 
     modContainer.addEventListener('drop', (event) => {
@@ -298,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const modItem = event.target.closest('.mod-item');
         if (!modItem) {
-            snack('Invalid drop target');
+            //snack('Invalid drop target');
             return;
         }
 
@@ -372,17 +350,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadPresets() {
-        // presetContainer.innerHTML = '';
-        // const presets = await ipcRenderer.invoke('get-presets');
-        // presets.forEach(preset => {
-        //     const presetItem = document.createElement('s-button');
-        //     presetItem.id = 'preset-item';
-        //     presetItem.type = "elevated";
-        //     presetItem.name = preset;
-        //     presetItem.innerHTML = preset;
-        //     presetContainer.appendChild(presetItem);
-        // });
-        // 上面的方法会导致preset元素闪烁，使用重复利用元素的方法来减少重绘次数
         editMode = false;
         const presets = await ipcRenderer.invoke('get-presets');
         const presetContainerCount = presetContainer.childElementCount;
@@ -605,6 +572,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function savePreset(presetName) {
+        if (presetName == '') {
+            return;
+        }
+        // presetName 应该是已经存在的 preset
         if (presetName) {
             const selectedMods = Array.from(document.querySelectorAll('.mod-item')).filter(item => item.checked).map(input => input.id);
             await ipcRenderer.invoke('save-preset', presetName, selectedMods);
@@ -628,7 +599,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 设置其backgroundImage
         modInfoImage.style.backgroundImage = `url("${encodeURI(modImagePath)}")`;
         // debug
-        console.log(`show mod image ${modImagePath}`);
+        //console.log(`show mod image ${modImagePath}`);
     }
 
 
@@ -1830,24 +1801,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         return result;
     }
 
-    async function startGame() {
+    async function init() {
+        // 设置窗口位置和大小
+        await ipcRenderer.invoke('set-bounds', bounds);
+        // 设置窗口全屏
+        if (isFullScreen) {
+            toggleFullscreen();
+        }
+        // 设置语言
+        setLang(lang);
+        // 隐藏不支持的功能
+        document.querySelectorAll("[data-platform]").forEach(element => {
+            const platforms = element.dataset.platform.split(",");
+
+            if (!platforms.includes(window.platform)) {
+                element.style.display = "none";
+            }
+        });
+
+        // 将参数传递给主进程
+        await asyncLocalStorage();
+
+        if (ifUseAdmin == 'true' && !HMC.isAdmin()) {
+            //如果使用管理员权限，则以管理员权限重启
+            ipcRenderer.invoke('restart-as-admin');
+            //debug
+            console.log("restart as admin");
+            return;
+        }
+
+        await loadModList();
+        await loadPresets();
+        refreshModFilter();
+
+        //如果开启了自动启动游戏，则自动启动游戏
+        if (ifAutoStartGame == 'true') {
+            startGame();
+        }
+
         //debug
-        console.log(`start game, gameDir:${gameDir}, modLoaderDir:${modLoaderDir}`);
-        // 先启动 modLoader
+        console.log("modRootDir: " + modRootDir);
+        console.log("gameDir: " + gameDir);
+        console.log("modLoaderDir: " + modLoaderDir);
+        console.log("modBackpackDir: " + modBackpackDir);
 
-        //延时1s启动游戏
-        if (modLoaderDir == '') {
-            snack('Please select modLoaderDir first');
-            return;
-        }
-        ipcRenderer.invoke('start-mod-loader');
-
-        //启动游戏
-        if (gameDir == '') {
-            snack('Please select gameDir first');
-            return;
-        }
-        ipcRenderer.invoke('start-game');
+        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
+        console.log("ifAutoApply: " + ifAutoApply);
+        console.log("theme: " + localStorage.getItem('theme'));
+        console.log("lang: " + lang);
+        setTheme(localStorage.getItem('theme') || 'dark');
     }
+
+    async function firstLoad() {
+        setLang(lang);
+        //创建 firset-opne-window
+        ipcRenderer.invoke('open-first-load-window');
+
+        //展示要求刷新的提示
+        showDialog(refreshDialog);
+
+        //设置firstOpen为false
+        localStorage.setItem('firstOpen', 'false');
+    }
+
 }
 );
