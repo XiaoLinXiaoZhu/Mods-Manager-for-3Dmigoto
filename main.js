@@ -162,7 +162,7 @@ ipcMain.handle('sync-localStorage', async (event, userConfig) => {
   //检查是否 开启了 autoStartGame
   //debug
   console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
-  if (ifAutoStartGame === true) {
+  if (ifAutoStartGame == "true") {
     //启动游戏
     // 之后不再在渲染进程中启动游戏，而是在主进程中启动游戏
     startModLoader();
