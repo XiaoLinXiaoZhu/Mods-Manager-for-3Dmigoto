@@ -283,30 +283,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     //3.拖动zip文件到modItem上，视为添加mod，但是暂时不实现
     function handleDropEvent(event, modItem, mod) {
         const items = event.dataTransfer.items;
+        
         // 只处理第一个文件
         const item = items[0].webkitGetAsEntry();
 
-        // 如果拖入的是文件夹，则视为用户想要添加一个mod
-        if (item.isDirectory) {
-            console.log('Directory:', item.fullPath);
-            handleFolderDrop(item);
-            return;
-        }
-        if (item.isFile) {
-            // 如果拖入的是文件，则视为用户想要更换mod的封面或者添加mod 压缩包
-            const file = items[0].getAsFile();
-            if (file.type.startsWith('image/')) {
-                // 交给 handleImageDrop 处理
-                handleImageDrop(file, modItem, mod);
+
+        // 从网页和本地拖入的文件似乎格式不一样
+        // 一个是 File 对象，一个是 Entry 对象
+        // 从网页拖入的文件是 File 对象，它没有 webkitGetAsEntry 方法，但是可以通过 type 属性判断文件类型
+        // 从本地拖入的文件是 Entry 对象，它有 webkitGetAsEntry 方法，可以通过getAsFile方法获取 File 对象
+
+        try {
+            items[0].webkitGetAsEntry();
+            // 如果上面的代码没有报错，说明是从本地拖入的文件
+            // debug
+            console.log(`get entry from drag event ${item.fullPath}`);
+            if (item.isDirectory) {
+                console.log('Directory:', item.fullPath);
+                handleFolderDrop(item);
                 return;
             }
-            if (file.name.endsWith('.zip')) {
-                // 交给 handleZipDrop 处理
-                handleZipDrop(file, modItem, mod);
-                return;
+            if (item.isFile) {
+                // 如果拖入的是文件，则视为用户想要更换mod的封面或者添加mod 压缩包
+                const file = items[0].getAsFile();
+                if (file.type.startsWith('image/')) {
+                    // 交给 handleImageDrop 处理
+                    handleImageDrop(file, modItem, mod);
+                    return;
+                }
+                if (file.name.endsWith('.zip')) {
+                    // 交给 handleZipDrop 处理
+                    handleZipDrop(file, modItem, mod);
+                    return;
+                }
+                console.log('File type:', file.type);
+                snack('Invalid file type：' + file.type);
             }
-            console.log('File type:', file.type);
-            snack('Invalid file type：' + file.type);
+        } catch (error) {
+            // webkitGetAsEntry 方法不存在，说明是从网页拖入的文件
+            // 从网页拖入的文件是 File 对象。
+            try{
+                const files = event.dataTransfer.files;
+                //debug
+                console.log(`get file from drag event ${files[0].name}`);
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        // 交给 handleImageDrop 处理
+                        handleImageDrop(file, modItem, mod);
+                        return;
+                    }
+                    console.log('File type:', file.type);
+                    snack('Invalid file type：' + file.type);
+                }
+            }
+            catch (error) {
+                console.log('Invalid drag event');
+                snack('Invalid drag event');
+            }
         }
     }
 
@@ -367,7 +401,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
     }
-
 
     function handleImageDrop(file, modItem, mod) {
         // 再次确认是否是图片文件
