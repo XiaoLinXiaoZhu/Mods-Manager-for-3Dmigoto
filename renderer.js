@@ -1823,24 +1823,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         //debug
         //console.log(localStorage);
-
-        if (ifUseAdmin == 'true' && !HMC.isAdmin()) {
-            //如果使用管理员权限，则以管理员权限重启
-            ipcRenderer.invoke('restart-as-admin');
-            //debug
-            console.log("restart as admin");
-            return;
-        }
-
-        await loadModList();
-        await loadPresets();
-        refreshModFilter();
-
-        //如果开启了自动启动游戏，则自动启动游戏
-        if (ifAutoStartGame == 'true') {
-            startGame();
-        }
-
         //debug
         console.log("modRootDir: " + modRootDir);
         console.log("gameDir: " + gameDir);
@@ -1852,6 +1834,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("theme: " + localStorage.getItem('theme'));
         console.log("lang: " + lang);
         setTheme(localStorage.getItem('theme') || 'dark');
+
+        
+        await loadModList();
+        await loadPresets();
+        refreshModFilter();
+
+        // 如果是管理员模式，似乎还需要再次获取mods
+        if (ifUseAdmin) {
+            setTimeout(async () => {
+                await loadModList();
+                await loadPresets();
+                refreshModFilter();
+            }, 500);
+        }
     }
 
     async function firstLoad() {
