@@ -1,6 +1,7 @@
 const { ipcRenderer, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { shell } = require('electron');
 
 //HMC 尽量不要在渲染进程中使用
 const HMC = require("hmc-win32");
@@ -341,7 +342,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         ipcRenderer.invoke('set-mod-info', mod, modInfo);
 
         // 更新modItem的图片
-        modItem.querySelector('img').src = modImageDest;
+        if (modItem != '') {
+
+            modItem.querySelector('img').src = modImageDest;
+
+        }
 
         // 刷新侧边栏的mod信息
         showModInfo(mod);
@@ -783,7 +788,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ifAutoApply = autoApplySwitch.checked;
         //保存ifAutoApply
         localStorage.setItem('ifAutoApply', ifAutoApply);
-                    //debug
+        //debug
         console.log("ifAutoApply: " + ifAutoApply);
     });
 
@@ -1297,7 +1302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     //保存当前编辑的mod的信息
-    function saveCurrentModInfo() {
+    async function saveCurrentModInfo() {
         //debug
         console.log("clicked saveCurrentModInfo");
         //保存当前编辑的mod的信息
@@ -1310,16 +1315,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const imagePath = tempImagePath;
         const imageExt = path.extname(imagePath);
         const modImageName = 'preview' + imageExt;
-        const modImageDest = path.join(modRootDir, currentMod, modImageName);
+        const modImageDest = path.join(modBackpackDir, currentMod, modImageName);
 
         //复制图片
         console.log(`imagePath:${imagePath} modImageDest:${modImageDest}`);
         //如果是默认图片则不复制
-        if (imagePath != path.join(__dirname, 'default.png') && imagePath != modImageDest) {
-            //强制覆盖
-            fs.copyFileSync(imagePath, modImageDest, fs.constants.COPYFILE_FICLONE);
+
+        if (imagePath == path.join(__dirname, 'default.png') || imagePath == modImageDest) {
+            return;
         }
 
+        // 复制图片
+        fs.copyFileSync(imagePath, modImageDest);
 
         //保存到tempModInfo中
         tempModInfo.imagePath = modImageName;
@@ -1338,7 +1345,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         //关闭对话框
         editModInfoDialog.dismiss();
         //刷新mod列表
-        loadModList().then(() => { refreshModFilter(); });
+        setTimeout(() => {
+            loadModList().then(() => { refreshModFilter(); });
+            //debug
+            console.log("refresh mod list after saving mod");
+        },1000);
     }
 
     const editModInfoSaveButton = document.getElementById('edit-mod-info-save');
@@ -1351,6 +1362,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (JSON.stringify(currentModInfo) != JSON.stringify(tempModInfo) || tempImagePath != currentImagePath) {
             saveCurrentModInfo();
+
         }
         else {
             //debug
@@ -1396,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.addEventListener('unload', function (event) {
         localStorage.setItem('fullscreen', isFullScreen);
-        
+
 
         if (!isFullScreen) {
             localStorage.setItem('bounds', JSON.stringify({
@@ -1627,6 +1639,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!modItem.inWindow) {
             //如果modItem不在视窗内，则不进行动画
+            console.log(`${modItem.id} is not in window`);
             return;
         }
 
@@ -1779,9 +1792,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                     modContainer.setAttribute('compact', 'false');
                 }
 
+                // const scorll = document.getElementsByClassName('mod-list')[0];
+                // //在modList第一个元素之前添加一个div，高度为modList的高度
+                // const placeholder = document.createElement('div');
+                // placeholder.style.height = `${scorll.clientHeight}px`;
+                // placeholder.className = 'placeholder';
+                // scorll.insertBefore(placeholder, modContainer);
+
+                // //为placeholder添加动画，其高度从modList的高度变为0
+                // placeholder.animate([
+                //     { height: `${scorll.clientHeight}px` },
+                //     { height: '0px' }
+                // ], {
+                //     duration: 200,
+                //     easing: 'ease-in-out',
+                //     iterations: 1
+                // });
+                // //在动画结束后(200ms)删除placeholder
+                // setTimeout(() => {
+                //     placeholder.remove();
+                // }, 200);
+
                 //将所有的的modItem添加到observer中
                 document.querySelectorAll('.mod-item').forEach(item => {
                     observer.observe(item);
+
+                    // 手动触发一次，以便加载当前视窗内的modItem
+                    if (item.getBoundingClientRect().top < window.innerHeight) {
+                        item.inWindow = true;
+                    }
                 });
             }
 
@@ -1828,7 +1867,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        
+
         //debug
         //console.log(localStorage);
         //debug
@@ -1843,7 +1882,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("lang: " + lang);
         setTheme(localStorage.getItem('theme') || 'dark');
 
-        
+
         await loadModList();
         await loadPresets();
         refreshModFilter();

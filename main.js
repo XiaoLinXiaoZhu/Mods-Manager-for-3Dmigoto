@@ -6,7 +6,7 @@ const path = require('path');
 const shell = require('electron').shell;
 const HMC = require("hmc-win32");
 const os = require('os');
-
+const { exec } = require('child_process');
 const isMac = os.platform() === "darwin";
 const isWindows = os.platform() === "win32";
 const isLinux = os.platform() === "linux";
@@ -518,6 +518,20 @@ ipcMain.handle('select-image', async () => {
   return '';
 }
 );
+
+
+// 在渲染进程复制图片文件不知道为什么不生效，所以这里在主进程中复制图片文件
+ipcMain.handle('copy-file', async (event, src, dest) => {
+  //debug
+  console.log(`copy file: ${src} to ${dest}`);
+  //判断dest文件是否存在，如果存在则删除
+  if (fs.existsSync(dest)) {
+    fs.rmSync(dest);
+    console.log(`delete file: ${dest}`);
+  }
+
+  fs.copyFileSync(src, dest);
+});
 
 //-------------------自动化-------------------
 
