@@ -259,6 +259,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     );
 
+    //如果是右键点击，则显示编辑mod.json的对话框
+    modContainer.addEventListener('contextmenu', (event) => {
+        const modItem = event.target.closest('.mod-item');
+        if (!modItem) {
+            return;
+        }
+        //显示编辑mod.json的对话框
+        currentMod = modItem.id;
+        showEditModInfoDialog();
+    });
+
     //使用事件委托处理拖放事件：
     // 当拖动文件且悬停在modItem上时，显示拖动的mod的信息
     modContainer.addEventListener('dragover', (event) => {
@@ -1233,7 +1244,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     editModInfoButton.addEventListener('click', async () => {
         //debug
         console.log("clicked editModInfoButton");
+        showEditModInfoDialog();
+    });
 
+    async function showEditModInfoDialog() {
         //改为程序内编辑，而不是打开外部编辑器
         if (currentMod == '') {
             snack('Please select a mod');
@@ -1263,7 +1277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //显示对话框
         showDialog(editModInfoDialog);
-    });
+    }
 
     //打开mod文件夹
     const editModInfoOpenFolderButton = document.getElementById('edit-mod-name');
@@ -1349,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadModList().then(() => { refreshModFilter(); });
             //debug
             console.log("refresh mod list after saving mod");
-        },1000);
+        }, 1000);
     }
 
     const editModInfoSaveButton = document.getElementById('edit-mod-info-save');
