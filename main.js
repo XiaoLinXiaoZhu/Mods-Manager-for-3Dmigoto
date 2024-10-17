@@ -182,7 +182,16 @@ ipcMain.handle('get-file-path', async (event, fileName, fileType) => {
       properties: ['openDirectory']
     });
   }
-  else {
+  else if (fileType == 'image') {
+    result = await dialog.showOpenDialog({
+      title: 'Select ' + fileName,
+      properties: ['openFile'],
+      filters: [
+        { name: fileName, extensions: ['jpg', 'png', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff'] }
+      ]
+    });
+  }
+  else{
     result = await dialog.showOpenDialog({
       title: 'Select ' + fileName,
       properties: ['openFile'],
@@ -502,22 +511,6 @@ ipcMain.handle('open-mod-json', async (event, mod) => {
     return;
   }
 });
-
-//选择mod封面
-ipcMain.handle('select-image', async () => {
-  //通过文件选择对话框选择图片
-  const result = await dialog.showOpenDialog({
-    properties: ['openFile'],
-    filters: [
-      { name: 'Images', extensions: ['jpg', 'png', 'jpeg'] }
-    ]
-  });
-  if (!result.canceled) {
-    return result.filePaths[0];
-  }
-  return '';
-}
-);
 
 
 // 在渲染进程复制图片文件不知道为什么不生效，所以这里在主进程中复制图片文件

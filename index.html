@@ -18,6 +18,8 @@
   </div>
 
   <s-page id="app" theme="dark">
+
+
     <!-- -alert -->
     <s-drawer style="width: 100%;" id="drawer-page">
       <!-- -预设控制 -->
@@ -107,15 +109,15 @@
 
             <!-- -关于按钮 -->
             <s-tooltip>
-              <s-icon-button slot="trigger" id="about-show-button"
-                onclick="document.getElementById('about-dialog').show()">
+              <s-icon-button slot="trigger" id="help-show-button"
+                onclick="document.getElementById('help-dialog-cn').show()">
                 <s-icon>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
                     <path d="m256-240-56-56 384-384H240v-80h480v480h-80v-344L256-240Z"></path>
                   </svg>
                 </s-icon>
               </s-icon-button>
-              <p data-translate-key="about">关于</p>
+              <p data-translate-key="help">帮助</p>
             </s-tooltip>
 
             <!-- -关闭按钮 -->
@@ -437,7 +439,7 @@
     </s-snackbar>
 
     <!-- -dialog -->
-    <!-- -询问文件保存位置 -->
+    <!-- -设置页面 -->
     <s-dialog id="settings-dialog">
       <div slot="headline" class="font-hongmeng"
         style="height: calc(100% - 35px);width: 100%;display: flex;padding: 0px;flex-direction: column;">
@@ -499,7 +501,7 @@
               </div>
               <p data-translate-key="auto-refresh-in-zzz-info">启用 应用mod时 将会自动在绝区零中激活刷新</p>
               <s-divider></s-divider>
-              
+
               <!-- 启动程序的时候也一并启动游戏和modLoader -->
               <div id="auto-start-game" class="OO-setting-bar">
                 <h3 data-translate-key="auto-start-game"> 自动启动游戏 </h3>
@@ -507,7 +509,7 @@
               </div>
               <p data-translate-key="auto-start-game-info">启动程序的时候也一并启动游戏和modLoader(需要在进阶设置设置游戏目录和modLoader目录)</p>
               <s-divider></s-divider>
-              <div id="use-admin" class="OO-setting-bar" >
+              <div id="use-admin" class="OO-setting-bar">
                 <h3 data-translate-key="use-admin"> 使用管理员权限 </h3>
                 <s-switch id="use-admin-switch" data-platform="win32"></s-switch>
               </div>
@@ -609,46 +611,19 @@
       <s-button slot="action" type="text" id="set-rootdir-confirm" data-translate-key="confirm">确定</s-button>
     </s-dialog>
 
-    <!-- -创建预设 -->
-    <s-dialog id="add-preset-dialog">
-      <div slot="headline" data-translate-key="ask-preset-name"> 请输入预设名称 </div>
-      <div slot="text">
-        <s-text-field style="display: grid" label="please input preset name">
-          <input type="text" id="add-preset-name">
-        </s-text-field>
-      </div>
-      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancel">取消</s-button>
-      <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
-    </s-dialog>
-
-    <!-- -警告未知mod -->
-    <s-dialog id="unknown-mod-dialog">
-      <div slot="headline" data-translate-key="unknown-mod"> 未知mod </div>
-      <div slot="text">
-        <p data-translate-key="dialog-ask-for-unknown-mod">
-          在mod列表中发现了未知mod，是否添加到modResourceBackup中?
-          如果选择不添加，程序将会忽略这些mod，但是可能会导致这些mod无法被该程序管理，并且可能会导致其他mod无法正常运行。
-        </p>
-        <p data-translate-key="unknown-mod-list"> 未知mod列表： </p>
-        <ul id="unknown-mod-list">
-
-        </ul>
-      </div>
-      <s-button slot="action" type="text" id="unknown-mod-ignore" data-translate-key="ignore">忽略</s-button>
-      <s-button slot="action" type="text" id="unknown-mod-confirm"
-        data-translate-key="add-to-modResourceBackpack">添加到modResourceBackup</s-button>
-    </s-dialog>
-
     <!-- -编辑mod信息 -->
     <s-dialog id="edit-mod-info-dialog">
       <div slot="headline" class="font-hongmeng">
         <h3 data-translate-key="edit-mod-info" style="height: fit-content;margin: 10px 30px 5px 30px;font-size: 26px;">
-          编辑mod信息 </h3>
+          编辑mod信息
+        </h3>
+
         <div id="edit-mod-info-dialog-container" style="display: flex;flex-direction: column;align-items: center;">
           <div id="edit-mod-info-dialog-top" style="display: flex;width: 100%;">
             <!-- 展示mod当前名称、图片 -->
             <div class="OO-box"
-              style="width: 280px;min-width: 0;display:flex;flex-direction: column;align-items: center;flex-wrap: nowrap;justify-content: flex-start;">
+              style="width: 280px;min-width: 0;display:flex;flex-direction: column;align-items: center;flex-wrap: nowrap;justify-content: flex-start;"
+              id="edit-mod-info-left">
               <div class="OO-box OO-shade-box"
                 style="width: calc(100% - 40px);padding: 10px 20px;margin:0;border-radius: 15px;">
                 <h3 id="editDialog-mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;">
@@ -713,10 +688,10 @@
                 </s-text-field>
               </div>
               <div class="OO-setting-bar" style="
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              justify-content: space-between;height:150px;">
+                          display: flex;
+                          flex-direction: column;
+                          align-items: flex-start;
+                          justify-content: space-between;height:150px;">
                 <s-tooltip style="padding:15px 0;">
                   <h3 slot="trigger" data-translate-key="mod-info-description"> mod描述 </h3>
                   <p style="line-height: 1.2;" data-translate-key="mod-info-description-tip">
@@ -736,12 +711,197 @@
             </div>
 
           </div>
-
-          </s-card>
         </div>
       </div>
+
+    </s-dialog>
+
+    <!-- -帮助页面 -->
+    <s-dialog id="help-dialog-cn">
+      <div slot="headline" class="font-hongmeng"
+        style="height: calc(100% - 35px);width: 100%;display: flex;padding: 0px;flex-direction: column;">
+        <h3 style="height: fit-content;margin: 10px 30px 5px 30px;font-size: 26px;">帮助 </h3>
+
+        <div id="help-dialog-container">
+          <div id="help-menu" class="OO-box">
+            <input type="radio" name="help-menu" id="help-preset" class="help-menu-radio" checked>
+            <label for="help-preset" class="font-hongmeng"> 使用preset管理你的mod </label>
+            <input type="radio" name="help-menu" id="help-mod" class="help-menu-radio">
+            <label for="help-mod" class="help-mod"> 导入mod，配置mod信息 </label>
+            <input type="radio" name="help-menu" id="help-auto" class="help-menu-radio">
+            <label for="help-auto" class="font-hongmeng"> 自动化 </label>
+            <input type="radio" name="help-menu" id="help-trouble" class="help-menu-radio">
+            <label for="help-trouble" class="font-hongmeng"> 故障排除 </label>
+          </div>
+          <div id="help-content" class="OO-box">
+            <!-- 根据选择的设置选项展示不同的设置内容 -->
+            <!-- -预设 -->
+            <div id="help-dialog-help-preset" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3> 使用preset管理你的mod </h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p> 你可以将你的一系列mod选项保存到preset中，以便在不同的mod组合中快速切换。所有预设的相关按钮都在右侧的预设栏中。你可以点击标题栏右侧的预设按钮来打开/关闭预设栏。 </p>
+              </div>
+              <div class="OO-setting-bar">
+                <h3>创建预设：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. 点击 添加预设 按钮,它位于预设栏的中部</p>
+                <p>2. 输入预设名称</p>
+                <p>3. 点击 确定 按钮</p>
+                <p>之后，你选中的mod将会被保存到该预设中。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>应用预设：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. 选择你想要应用的预设</p>
+                <p>2. 点击 主页面中的 应用配置 按钮</p>
+                <p>之后，你的预设将会被应用到模组加载器中。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>编辑预设：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>你的所有更改都会被保存到当前预设中，如果你不希望保存，可以创建一个新的临时预设，或者在程序开始时不选择预设。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>删除预设：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. 点击编辑预设按钮，之后每个预设的右侧会出现删除按钮</p>
+                <p>2. 点击删除按钮，将会删除该预设（你不能删除当前应用的预设）</p>
+              </div>
+
+              <div class="placeholder" style="flex: 1;min-height: 150px;"></div>
+            </div>
+            <!-- -mod -->
+            <div id="help-dialog-help-mod" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>导入mod：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>有两种方式导入mod</p>
+                <p>1. 将mod文件夹拖拽到主窗口中，他将自动把你的mod文件夹移动到modResourceBackpack中</p>
+                <p>2. 手动将文件夹移动到modResourceBackpack中，但是在管理员模式下，拖拽动作将会因为安全限制而无法执行</p>
+                <p>暂时还不支持导入zip文件，如果你需要导入zip文件，请先解压后再导入</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>配置mod信息：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. 点击mod列表中的mod，右侧将会展示mod的信息，再次点击右侧菜单栏的编辑mod信息按钮，将会弹出编辑mod信息的对话框，按照提示填写mod信息</p>
+                <p>2. 右键mod列表中的mod，将会编辑mod信息的对话框，按照提示填写mod信息</p>
+                <p>之后你的mod信息将会被保存到modResourceBackpack中，你可以在mod列表中看到你的mod信息</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>配置mod封面：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>有三种方式都能配置mod封面：</p>
+                <p>1. 在编辑mod信息的对话框中，点击设置封面图片按钮，将会打开文件选择器，选择你的封面图片</p>
+                <p>2. 将你的图片拖入mod卡片中，将会自动设置为mod封面（可以从网页中直接拖入）但是在管理员模式下，拖拽动作将会因为安全限制而无法执行</p>
+              </div>
+            </div>
+
+            <!-- -自动化 -->
+            <div id="help-dialog-help-auto" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3> 让自动化解放你的双手 </h3>
+              </div>
+              <div class="OO-setting-bar">
+                <h3>自动化</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>本程序能够自动化打开游戏和modLoader，以及在应用mod时自动激活绝区零的窗口并且使其刷新，但是这需要一点配置</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>自动应用：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>你可以在设置中启用自动应用配置，这样当你选择/取消选择mod时，程序将会自动应用配置，将选择的mod应用到模组加载器中。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>自动刷新：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>当 mod 被应用时，程序将会自动激活 zzz 的窗口并且使其刷新，这样你就不需要手动切换窗口了并且按下 F10 刷新了。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>自动启动游戏：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>当程序启动时，程序将会自动启动游戏和modLoader，但是这需要在设置中的高级设置中设置游戏目录和modLoader目录。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>使用管理员权限：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>当程序启动时，程序将会使用管理员权限。这样，当自动启动游戏时，游戏也会以管理员权限启动，而不会弹出UAC提示框。但是使用管理员模式会导致拖拽动作被禁用，通过拖拽导入mod和设置mod封面图片将会被禁用。
+                </p>
+              </div>
+            </div>
+
+            <!-- -故障排除 -->
+            <div id="help-dialog-help-trouble" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>故障排除</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>当程序发生故障时，你可以尝试以下方法解决问题：</p>
+                <p>1. 按下 F5 刷新页面，这可能会解决一些问题</p>
+                <p>2. 重启程序，这可能会解决一些问题</p>
+                <p>3. 按下 Ctrl + Shift + I 打开控制台，查看错误信息，这可能会帮助你找到问题</p>
+                <p>如果上述方法都无法解决问题，你可以将控制台中的错误信息截图并且提交到github或者gamebanana上，我会尽力帮助你解决问题</p>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
       </div>
     </s-dialog>
+
+    <!-- -创建预设 -->
+    <s-dialog id="add-preset-dialog">
+      <div slot="headline" data-translate-key="ask-preset-name"> 请输入预设名称 </div>
+      <div slot="text">
+        <s-text-field style="display: grid" label="please input preset name">
+          <input type="text" id="add-preset-name">
+        </s-text-field>
+      </div>
+      <s-button slot="action" type="text" id="dialog-cancel" data-translate-key="cancel">取消</s-button>
+      <s-button slot="action" type="text" id="preset-add-confirm" data-translate-key="confirm">确定</s-button>
+    </s-dialog>
+
+    <!-- -警告未知mod -->
+    <s-dialog id="unknown-mod-dialog">
+      <div slot="headline" data-translate-key="unknown-mod"> 未知mod </div>
+      <div slot="text">
+        <p data-translate-key="dialog-ask-for-unknown-mod">
+          在mod列表中发现了未知mod，是否添加到modResourceBackup中?
+          如果选择不添加，程序将会忽略这些mod，但是可能会导致这些mod无法被该程序管理，并且可能会导致其他mod无法正常运行。
+        </p>
+        <p data-translate-key="unknown-mod-list"> 未知mod列表： </p>
+        <ul id="unknown-mod-list">
+
+        </ul>
+      </div>
+      <s-button slot="action" type="text" id="unknown-mod-ignore" data-translate-key="ignore">忽略</s-button>
+      <s-button slot="action" type="text" id="unknown-mod-confirm"
+        data-translate-key="add-to-modResourceBackpack">添加到modResourceBackup</s-button>
+    </s-dialog>
+
 
     <!-- -提示是否保存更改 -->
     <s-dialog id="save-change-dialog">
@@ -762,22 +922,6 @@
         <s-button type="outlined" id="refresh-button" style="width: 83%;" data-translate-key="refresh"
           onclick="location.reload()">刷新</s-button>
       </div>
-    </s-dialog>
-
-    <!-- -关于 -->
-    <s-dialog id="about-dialog">
-      <div slot="headline" data-translate-key="about"> 关于 </div>
-      <div slot="text">
-        <p data-translate-key="about-content"> 本程序由 XLXZ 开发,开源免费,遵循GNU General Public License v3.0。用于管理基于3dmigoto的mod
-          ,理论上来说也可以管理其他游戏的mod(只要是基于3dmigoto的) </p>
-        <p data-translate-key="about-version"> 最新版本在gamebanana上发布，如果你有任何问题或者建议，欢迎在github上提出 </p>
-        <p data-translate-key="about-author"> 作者：XLXZ </p>
-        <s-button class="link-button" type="text"
-          link="https://github.com/XiaoLinXiaoZhu/Mods-Manager-for-3Dmigoto/">Github</s-button>
-        <s-button class="link-button" type="text" link='https://gamebanana.com/tools/17889'>Gamebanana</s-button>
-        <s-button class="link-button" type="text" link='https://www.caimogu.cc/post/1408504.html'>Caimogu</s-button>
-      </div>
-      <s-button slot="action" type="text" id="about-dialog-close" data-translate-key="close">关闭</s-button>
     </s-dialog>
 
 

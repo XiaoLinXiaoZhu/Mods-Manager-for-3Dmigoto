@@ -43,7 +43,7 @@
     "language": "Language",
     "open-test-page": "Open Experimental Page",
     "auto-apply": "Auto Apply",
-    "auto-apply-info": "Automatically apply configuration when selecting/deselecting mods (may cause slight lag)",
+    "auto-apply-info": "Automatically apply configuration when selecting/deselecting mods",
     "auto-refresh-in-zzz": "Auto Refresh in ZZZ",
     "auto-refresh-in-zzz-info": "When applying mods, the refresh in ZZZ will be activated automatically",
     "auto-start-game": "Auto Start Game",

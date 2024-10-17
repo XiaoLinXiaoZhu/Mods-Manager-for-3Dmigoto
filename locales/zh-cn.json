@@ -43,7 +43,7 @@
   "language": "语言",
   "open-test-page": "打开实验性功能页面",
   "auto-apply": "自动应用",
-  "auto-apply-info": "当选择/取消选择mod时自动应用配置(可能带来轻微卡顿)",
+  "auto-apply-info": "当选择/取消选择mod时自动应用配置",
   "auto-refresh-in-zzz": "在zzz中自动刷新模型",
   "auto-refresh-in-zzz-info": "启用 应用mod时 将会自动在绝区零中激活刷新",
   "auto-start-game": "自动启动游戏",

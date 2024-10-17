@@ -5,6 +5,7 @@ const { shell } = require('electron');
 
 //HMC 尽量不要在渲染进程中使用
 const HMC = require("hmc-win32");
+const { get } = require('http');
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -270,6 +271,122 @@ document.addEventListener('DOMContentLoaded', async () => {
         showEditModInfoDialog();
     });
 
+
+    //---------------------处理拖动事件---------------------
+    //处理拖动事件，有三种可能：
+    //1.拖动文件到modContainer的任意位置，视为添加mod
+    //2.拖动图片文件到modItem上，视为更改mod的封面
+    //3.拖动zip文件到modItem上，视为添加mod，但是暂时不实现
+    function handleDropEvent(event, modItem, mod) {
+        const items = event.dataTransfer.items;
+        // 只处理第一个文件
+        const item = items[0].webkitGetAsEntry();
+
+        // 如果拖入的是文件夹，则视为用户想要添加一个mod
+        if (item.isDirectory) {
+            console.log('Directory:', item.fullPath);
+            handleFolderDrop(item);
+            return;
+        }
+        if (item.isFile) {
+            // 如果拖入的是文件，则视为用户想要更换mod的封面或者添加mod 压缩包
+            const file = items[0].getAsFile();
+            if (file.type.startsWith('image/')) {
+                // 交给 handleImageDrop 处理
+                handleImageDrop(file, modItem, mod);
+                return;
+            }
+            if (file.name.endsWith('.zip')) {
+                // 交给 handleZipDrop 处理
+                handleZipDrop(file, modItem, mod);
+                return;
+            }
+            console.log('File type:', file.type);
+            snack('Invalid file type：' + file.type);
+        }
+    }
+
+    function handleFolderDrop(item) {
+        // 如果拖入的是文件夹，则视为用户想要添加一个mod
+        // 检查是否已经存在同名的mod
+        //debug
+        console.log(`handle folder drop: ${item.fullPath}`);
+        // 这里的 item.fullPath 是一个虚拟路径，以 / 开头，需要去掉
+        const modName = item.fullPath.slice(1);
+        if (fs.existsSync(path.join(modBackpackDir, modName))) {
+            snack(`Mod ${modName} already exists`);
+            return;
+        }
+        // 将文件夹拷贝到 modBackpackDir 中
+        // 但是这里的 item 的 fullPath 是一个虚拟路径，无法直接使用 fs 进行操作
+        // 但是我们可以递归读取每一个文件，然后将其拷贝到 modBackpackDir 的对应位置
+        copyFolder(item, modBackpackDir);
+        // 复制完成后，刷新 modList
+        //debug
+        console.log(`Copied folder: ${item.fullPath}`);
+        loadModList().then(() => {
+            // 刷新完成后，弹出提示
+            snack(`Added mod ${modName}`);
+            // 刷新fliter
+            refreshModFilter();
+            currentMod = modName;
+            showEditModInfoDialog();
+        });
+    }
+
+    // 递归复制文件夹
+    function copyFolder(item, targetDir) {
+        if (item.isDirectory) {
+            const reader = item.createReader();
+            reader.readEntries((entries) => {
+                entries.forEach((entry) => {
+                    const targetPath = path.join(targetDir, entry.fullPath);
+                    if (entry.isDirectory) {
+                        // 创建目标目录
+                        if (!fs.existsSync(targetPath)) {
+                            fs.mkdirSync(targetPath, { recursive: true });
+                        }
+                        // 递归复制子目录
+                        copyFolder(entry, targetDir);
+                    } else if (entry.isFile) {
+                        entry.file((file) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const buffer = Buffer.from(reader.result);
+                                fs.writeFileSync(targetPath, buffer);
+                                //console.log(`Copied file: ${targetPath}`);
+                            };
+                            reader.readAsArrayBuffer(file);
+                        });
+                    }
+                });
+            });
+        }
+    }
+
+
+    function handleImageDrop(file, modItem, mod) {
+        // 再次确认是否是图片文件
+        if (!file.type.startsWith('image/')) {
+            snack('Invalid image file');
+            return;
+        }
+        // 因为electron的file对象不是标准的file对象，所以需要使用reader来读取文件
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const imageUrl = event.target.result;
+            updateModCardCover(imageUrl, modItem, mod);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleZipDrop(file, modItem, mod) {
+        //debug
+        console.log(`handle zip drop: ${file.name}`);
+        //snack 提示
+        snack('Not implemented yet');
+    }
+
     //使用事件委托处理拖放事件：
     // 当拖动文件且悬停在modItem上时，显示拖动的mod的信息
     modContainer.addEventListener('dragover', (event) => {
@@ -281,59 +398,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             currentMod = modItem.id;
             showModInfo(currentMod);
+
         }
     });
 
     modContainer.addEventListener('drop', (event) => {
         event.preventDefault();
-
         const modItem = event.target.closest('.mod-item');
-        if (!modItem) {
-            //snack('Invalid drop target');
-            return;
-        }
 
-        const mod = modItem.id;
-        currentMod = mod;
-
-        var modInfo = ipcRenderer.invoke('get-mod-info', mod);
-        // 获取拖动的文件
-        const files = event.dataTransfer.files;
-
-        // debug
-        console.log(`drop on ${mod} , files:`, files);
-
-        // 如果拖拽的是文件
-        if (files.length > 0) {
-            const file = files[0];
-
-            // 校验文件是否是图片
-            if (file.type.startsWith('image/')) {
-                // 交给 handleImageDrop 处理
-                handleImageDrop(file, modItem, mod);
-                return;
-            }
-
-            //todo: 如果拖入的是zip文件，则交给handleZipDrop处理，但是解压zip文件似乎需要使用别的库，暂时不实现
-            // // 如果拖入的是zip文件，则交给handleZipDrop处理
-            // if (file.name.endsWith('.zip')) {
-            //     handleZipDrop(file, modItem, mod);
-            //     return;
-            // }
-
-            snack('Invalid file type');        // 如果不是图片文件，则提示用户
-            return;
-        }
+        modItem ? handleDropEvent(event, modItem, modItem.id) : handleDropEvent(event, '', currentMod);
     });
 
-    function handleImageDrop(file, modItem, mod) {
-        // 因为electron的file对象不是标准的file对象，所以需要使用reader来读取文件
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const imageUrl = event.target.result;
-            updateModCardCover(imageUrl, modItem, mod);
-        };
-        reader.readAsDataURL(file);
+    //同样为edit-mod-info-left添加拖放事件
+    const editModInfoLeft = document.getElementById('edit-mod-info-left');
+    editModInfoLeft.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'copy';
+    });
+
+    //同样为edit-mod-info-left添加拖放事件
+    editModInfoLeft.addEventListener('drop', (event) => {
+        event.preventDefault();
+
+        handleImageDrop(event, '', currentMod);
+
+        //拖放结束后，隐藏editModInfoDialog
+        editModInfoDialog.dismiss();
+        //因为没有modItem，所以在结束后需要刷新mod
+        loadModList();
+        showModInfo('');
+        setTimeout(() => {
+            showModInfo(currentMod);
+        }, 500);
+    });
+
+    function hID(file, modItem, mod) {
+
     }
 
     async function updateModCardCover(imageUrl, modItem, mod) {
@@ -354,9 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 更新modItem的图片
         if (modItem != '') {
-
             modItem.querySelector('img').src = modImageDest;
-
         }
 
         // 刷新侧边栏的mod信息
@@ -601,6 +699,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function showModInfo(mod) {
+        if (mod == '') {
+            //将modInfo清空
+            modInfoName.textContent = '';
+            modInfoCharacter.textContent = '';
+            modInfoDescription.textContent = '';
+            modInfoImage.style.backgroundImage = '';
+            return;
+        }
         const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
         //将info显示在 modInfo 中
         modInfoName.textContent = mod;
@@ -608,8 +714,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         modInfoDescription.textContent = modInfo.description ? modInfo.description : 'No description';
 
         //获取mod的图片
-
-
         let modImagePath = await getModImagePath(mod);
         // 替换反斜杠为斜杠
         modImagePath = modImagePath.replace(/\\/g, '/');
@@ -1017,6 +1121,86 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("show tab" + tab.id);
     });
 
+
+    //-============================ help-dialog ============================
+    //---------更改help-dialog的样式---------
+    //帮助页面使用的s-dialog是封装好的，无法通过css修改其样式，所以需要通过js来修改
+    const helpDialog = document.getElementById('help-dialog-cn');
+    const helpDialogStyle = document.createElement('style');
+    helpDialogStyle.innerHTML = `
+        .container {
+            width: calc(30% + 400px) !important;
+            min-width: calc(800px) !important;
+            max-width: 1100px !important;
+            height: calc(100% - 100px) !important;
+            overflow: hidden !important;
+            flex:1;
+        }
+        .action {
+            display: none !important;
+        }
+        s-scroll-view{
+        display: none;
+        }    
+        `
+    helpDialog.shadowRoot.appendChild(helpDialogStyle);
+
+    //监听helpDialog的关闭事件，当helpDialog关闭时，将其所有的tab设置为display:none
+    helpDialog.addEventListener('close', () => {
+        helpDialogTabs.forEach(item => {
+            item.style.display = 'none';
+            item.style.opacity = '0';
+        });
+    });
+
+    //---------帮助页面tab的切换---------
+    const helpMenu = document.getElementById('help-menu');
+    const helpDialogTabs = document.querySelectorAll('.help-dialog-tab');
+    helpMenu.addEventListener('click', (event) => {
+        //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
+        //获取目前的checked的值
+        const checked = helpMenu.querySelector('input:checked');
+
+        //根据checked的id来切换tab
+        const tab = helpDialog.querySelector(`#help-dialog-${checked.id}`);
+        //debug
+        //console.log("finding tab:" + `#help-dialog-${checked.id}`);
+        if (!tab) {
+            console.log("tab is null");
+            return;
+        }
+        //将所有的tab设置为display:none
+        helpDialogTabs.forEach(item => {
+            item.style.display = 'none';
+        });
+        //将当前的tab设置为display:block
+        tab.style.display = 'block';
+        //debug
+        console.log("show tab" + tab.id);
+    });
+
+    //---------显示帮助页面---------
+    const helpShowButton = document.getElementById('help-show-button');
+    helpShowButton.addEventListener('click', () => {
+        // 显示或隐藏helpDialog
+        showDialog(helpDialog);
+
+        // 显示当前页面
+        helpDialogTabs.forEach(item => {
+            item.style.display = 'none';
+        });
+        //获取目前的checked的值
+        const checked = helpMenu.querySelector('input:checked');
+        //根据checked的id来切换tab,如果checked为null，则默认显示第一个tab
+        checked ? helpDialog.querySelector(`#help-dialog-${checked.id}`).style.display = 'block' : helpDialog.querySelector(`#help-dialog-introduction`).style.display = 'block';
+    });
+
+
+
+
+
+
+
     //-mod启用
     applyBtn.addEventListener('click', async () => {
         applyMods();
@@ -1228,9 +1412,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             width: calc(30% + 400px) !important;
             min-width: calc(600px) !important;
             max-width: 900px !important;
-            height: calc(100% - 100px) !important;
+            height: fit-content !important;
+            min-height: 500px !important;
             overflow: hidden !important;
             flex:1;
+            padding-bottom: 30px;
         }
         .action {
             display: none !important;
@@ -1297,7 +1483,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         console.log("clicked editModInfoImagePreview");
         //打开文件选择对话框，选择图片
-        const imagePath = await ipcRenderer.invoke('select-image');
+        const imagePath = await getFilePathsFromSystemDialog('Cover', 'image');
 
         //这里只显示，保存在点击保存按钮时才会保存
         if (imagePath) {
@@ -1436,7 +1622,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
 
-    // about-dialog
+    // link-button
     const linkButton = document.querySelectorAll('.link-button');
     linkButton.forEach(button => {
         button.addEventListener('click', async () => {
@@ -1851,7 +2037,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function getFilePathsFromSystemDialog(fileName, fileType) {
         const result = await ipcRenderer.invoke('get-file-path', fileName, fileType);
         if (!result) {
-            snack('Invalid file path');
+            snack(`No ${fileType} selected`);
             return '';
         }
         //debug
