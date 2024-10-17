@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //是否自动应用,自动在zzz中刷新，使用管理员权限
     let ifAutoApply = localStorage.getItem('ifAutoApply') || false;
-    let ifAutofreshInZZZ = localStorage.getItem('ifAutoRefreshInZZZ') || false;
+    let ifAutoRefreshInZZZ = localStorage.getItem('ifAutoRefreshInZZZ') || false;
     let ifUseAdmin = localStorage.getItem('ifUseAdmin') || false;
     //是否自动启动游戏
     let ifAutoStartGame = localStorage.getItem('ifAutoStartGame') || false;
@@ -782,8 +782,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     autoApplySwitch.addEventListener('change', () => {
         ifAutoApply = autoApplySwitch.checked;
         //保存ifAutoApply
-        localStorage.setItem('auto-apply', ifAutoApply);
-        //debug
+        localStorage.setItem('ifAutoApply', ifAutoApply);
+                    //debug
         console.log("ifAutoApply: " + ifAutoApply);
     });
 
@@ -792,11 +792,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const autoRefreshInZZZSwitch = document.getElementById('auto-refresh-in-zzz');
     //是否开启自动刷新
     autoRefreshInZZZSwitch.addEventListener('change', () => {
-        ifAutofreshInZZZ = autoRefreshInZZZSwitch.checked;
-        //保存ifAutofreshInZZZ
-        localStorage.setItem('ifAutofreshInZZZ', ifAutofreshInZZZ);
+        ifAutoRefreshInZZZ = autoRefreshInZZZSwitch.checked;
+        //保存ifAutoRefreshInZZZ
+        localStorage.setItem('ifAutoRefreshInZZZ', ifAutoRefreshInZZZ);
         //debug
-        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
+        console.log("ifAutoRefreshInZZZ: " + ifAutoRefreshInZZZ);
     });
 
     //-----------设置 auto-start-game-----------
@@ -935,7 +935,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         autoApplySwitch.checked = ifAutoApply;
 
         //显示当前 auto-refresh-in-zzz 的值
-        autoRefreshInZZZSwitch.checked = ifAutofreshInZZZ;
+        autoRefreshInZZZSwitch.checked = ifAutoRefreshInZZZ;
 
         //显示当前 auto-start-game 的值
         autoStartGameSwitch.checked = ifAutoStartGame;
@@ -1005,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyBtn.addEventListener('click', async () => {
         applyMods();
         //使用s-snackbar显示提示,如果开启了自动在ZZZ中刷新，则显示提示
-        if (ifAutofreshInZZZ) {
+        if (ifAutoRefreshInZZZ) {
             snack('Mods applied, refreshing in ZZZ');
         }
         else {
@@ -1434,7 +1434,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             modBackpackDir: modBackpackDir,
             gameDir: gameDir,
             ifAutoApply: ifAutoApply,
-            ifAutofreshInZZZ: ifAutofreshInZZZ,
+            ifAutoRefreshInZZZ: ifAutoRefreshInZZZ,
             ifAutoStartGame: ifAutoStartGame,
             ifUseAdmin: ifUseAdmin,
             theme: theme
@@ -1477,7 +1477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         else await ipcRenderer.invoke('apply-mods', selectedMods);
 
         //如果启用了 auto-refresh-in-zzz 则使用cmd激活刷新的exe程序
-        if (ifAutofreshInZZZ) {
+        if (ifAutoRefreshInZZZ) {
             ipcRenderer.invoke('refresh-in-zzz').then(result => {
                 // Refresh in ZZZ success flag
                 // 0: Failed
@@ -1837,7 +1837,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("modLoaderDir: " + modLoaderDir);
         console.log("modBackpackDir: " + modBackpackDir);
 
-        console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
+        console.log("ifAutoRefreshInZZZ: " + ifAutoRefreshInZZZ);
         console.log("ifAutoApply: " + ifAutoApply);
         console.log("theme: " + localStorage.getItem('theme'));
         console.log("lang: " + lang);
