@@ -109,11 +109,10 @@
 
             <!-- -关于按钮 -->
             <s-tooltip>
-              <s-icon-button slot="trigger" id="help-show-button"
-                onclick="document.getElementById('help-dialog-cn').show()">
+              <s-icon-button slot="trigger" id="help-show-button">
                 <s-icon>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path d="m256-240-56-56 384-384H240v-80h480v480h-80v-344L256-240Z"></path>
+                    <path d="M478-240q21 0 35.5-14.5T528-290q0-21-14.5-35.5T478-340q-21 0-35.5 14.5T428-290q0 21 14.5 35.5T478-240Zm-36-154h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path>
                   </svg>
                 </s-icon>
               </s-icon-button>
@@ -786,8 +785,8 @@
               </div>
               <div class="OO-box OO-shade-box">
                 <p>有两种方式导入mod</p>
-                <p>1. 将mod文件夹拖拽到主窗口中，他将自动把你的mod文件夹移动到modResourceBackpack中</p>
-                <p>2. 手动将文件夹移动到modResourceBackpack中，但是在管理员模式下，拖拽动作将会因为安全限制而无法执行</p>
+                <p>1. 将mod文件夹拖拽到主窗口中，他将自动把你的mod文件夹移动到modResourceBackpack中，但是在管理员模式下，拖拽动作将会因为安全限制而无法执行</p>
+                <p>2. 手动将文件夹移动到modResourceBackpack中</p>
                 <p>暂时还不支持导入zip文件，如果你需要导入zip文件，请先解压后再导入</p>
               </div>
 
@@ -867,6 +866,183 @@
             </div>
 
 
+          </div>
+        </div>
+      </div>
+    </s-dialog>
+
+    <!-- -帮助页面，但是英文 -->
+    <s-dialog id="help-dialog-en">
+      <div slot="headline" class="font-hongmeng"
+        style="height: calc(100% - 35px);width: 100%;display: flex;padding: 0px;flex-direction: column;">
+        <h3 style="height: fit-content;margin: 10px 30px 5px 30px;font-size: 26px;">Help</h3>
+
+        <div id="help-dialog-container">
+          <div id="help-menu" class="OO-box">
+            <input type="radio" name="help-menu-en" id="help-preset-en" class="help-menu-radio" checked>
+            <label for="help-preset-en" class="font-hongmeng">Manage your mods with presets</label>
+            <input type="radio" name="help-menu-en" id="help-mod-en" class="help-menu-radio">
+            <label for="help-mod-en" class="help-mod">Import mods, configure mod information</label>
+            <input type="radio" name="help-menu-en" id="help-auto-en" class="help-menu-radio">
+            <label for="help-auto-en" class="font-hongmeng">Automation</label>
+            <input type="radio" name="help-menu-en" id="help-trouble-en" class="help-menu-radio">
+            <label for="help-trouble-en" class="font-hongmeng">Troubleshooting</label>
+          </div>
+          <div id="help-content" class="OO-box">
+            <!-- Display different setting contents based on the selected option -->
+            <!-- -Presets -->
+            <div id="help-dialog-help-preset-en" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>Manage your mods with presets</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>You can save a series of mod options to a preset, allowing you to quickly switch between different
+                  mod combinations. All relevant buttons for presets are in the preset panel on the right. You can click
+                  the preset button on the right side of the title bar to open/close the preset panel.</p>
+              </div>
+              <div class="OO-setting-bar">
+                <h3>Create a preset:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. Click the Add Preset button, located in the middle of the preset panel</p>
+                <p>2. Enter the preset name</p>
+                <p>3. Click the OK button</p>
+                <p>Afterward, the selected mods will be saved to this preset.</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Apply a preset:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. Select the preset you want to apply</p>
+                <p>2. Click the Apply Configuration button on the main page</p>
+                <p>Afterward, your preset will be applied to the mod loader.</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Edit a preset:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>All changes will be saved to the current preset. If you do not wish to save, you can create a new
+                  temporary preset or start the program without selecting a preset.</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Delete a preset:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. Click the Edit Preset button, and a delete button will appear to the right of each preset</p>
+                <p>2. Click the delete button, and it will remove the preset (you cannot delete the currently applied
+                  preset)</p>
+              </div>
+
+              <div class="placeholder" style="flex: 1;min-height: 150px;"></div>
+            </div>
+            <!-- -Mods -->
+            <div id="help-dialog-help-mod-en" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>Import mods:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>There are two ways to import mods</p>
+                <p>1. Drag the mod folder into the main window, and it will automatically move your mod folder to the
+                  modResourceBackpack, but dragging actions will be disabled due to security restrictions when in
+                  administrator mode</p>
+                <p>2. Manually move the folder to the modResourceBackpack</p>
+                <p>Zip file imports are not supported at the moment. If you need to import a zip file, please extract it
+                  first before importing</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Configure mod information:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. Click on a mod in the mod list, and its information will be displayed on the right. Click the Edit
+                  Mod Information button in the right menu, and a dialog box for editing mod information will pop up.
+                  Fill in the mod information as prompted</p>
+                <p>2. Right-click on a mod in the mod list, and a dialog box for editing mod information will pop up.
+                  Fill in the mod information as prompted</p>
+                <p>Afterward, your mod information will be saved to the modResourceBackpack, and you can see your mod
+                  information in the mod list</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Configure mod cover:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>There are three ways to configure a mod cover:</p>
+                <p>1. In the edit mod information dialog box, click the Set Cover Image button, which will open a file
+                  selector. Choose your cover image</p>
+                <p>2. Drag your image into the mod card, and it will automatically set as the mod cover (you can drag
+                  directly from a webpage), but dragging actions will be disabled due to security restrictions when in
+                  administrator mode</p>
+              </div>
+            </div>
+
+            <!-- -Automation -->
+            <div id="help-dialog-help-auto-en" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>Let automation free your hands</h3>
+              </div>
+              <div class="OO-setting-bar">
+                <h3>Automation</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>This program can automate the opening of the game and modLoader, and when applying mods, it will
+                  automatically activate and refresh the zzz window, but this requires some configuration</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Auto-apply:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>You can enable auto-apply settings so that when you select/deselect mods, the program will
+                  automatically apply the configuration, applying the selected mods to the mod loader.</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Auto-refresh:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>When a mod is applied, the program will automatically activate the zzz window and refresh it, so you
+                  don't have to manually switch windows and press F10 to refresh.</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Auto-launch game:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>When the program starts, it will automatically launch the game and modLoader, but this requires
+                  setting the game directory and modLoader directory in the advanced settings.</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Use administrator privileges:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>When the program starts, it will use administrator privileges. This way, when the game is launched
+                  automatically, it will also start with administrator privileges without prompting a UAC dialog.
+                  However, using administrator mode will disable dragging actions, and importing mods and setting mod
+                  cover images by dragging will be disabled.
+                </p>
+              </div>
+            </div>
+
+            <!-- -Troubleshooting -->
+            <div id="help-dialog-help-trouble-en" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>Troubleshooting</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>If the program malfunctions, you can try the following methods to resolve the issue:</p>
+                <p>1. Press F5 to refresh the page, which may solve some issues</p>
+                <p>2. Restart the program, which may solve some issues</p>
+                <p>3. Press Ctrl + Shift + I to open the console and view error messages, which may help you identify
+                  the problem</p>
+                <p>If none of the above methods work, you can take a screenshot of the error message in the console and
+                  submit it to GitHub or GameBanana, and I will do my best to help you solve the problem</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

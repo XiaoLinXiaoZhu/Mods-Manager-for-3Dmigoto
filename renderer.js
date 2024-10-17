@@ -69,6 +69,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settingsMenu = document.getElementById('settings-menu');
     const settingsDialogTabs = document.querySelectorAll('.settings-dialog-tab');
 
+    //帮助页面
+    const helpDialog = document.getElementById('help-dialog-cn');
+    const helpDialogEn = document.getElementById('help-dialog-en');
+
     //预设列表相关
     const presetContainer = document.getElementById('preset-container');
     const presetListDisplayButton = document.getElementById('preset-list-button');
@@ -1125,7 +1129,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     //-============================ help-dialog ============================
     //---------更改help-dialog的样式---------
     //帮助页面使用的s-dialog是封装好的，无法通过css修改其样式，所以需要通过js来修改
-    const helpDialog = document.getElementById('help-dialog-cn');
     const helpDialogStyle = document.createElement('style');
     helpDialogStyle.innerHTML = `
         .container {
@@ -1145,6 +1148,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         `
     helpDialog.shadowRoot.appendChild(helpDialogStyle);
 
+    const helpDialogStyleEn = document.createElement('style');
+    helpDialogStyleEn.innerHTML = `
+        .container {
+            width: calc(30% + 400px) !important;
+            min-width: calc(800px) !important;
+            max-width: 1100px !important;
+            height: calc(100% - 100px) !important;
+            overflow: hidden !important;
+            flex:1;
+        }
+        .action {
+            display: none !important;
+        }
+        s-scroll-view{
+        display: none;
+        }
+        `
+    helpDialogEn.shadowRoot.appendChild(helpDialogStyleEn);
+    const helpDialogTabs = document.querySelectorAll('#help-dialog-cn .help-dialog-tab');
+
     //监听helpDialog的关闭事件，当helpDialog关闭时，将其所有的tab设置为display:none
     helpDialog.addEventListener('close', () => {
         helpDialogTabs.forEach(item => {
@@ -1153,9 +1176,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    const helpDialogTabsEn = document.querySelectorAll('#help-dialog-en .help-dialog-tab');
+    helpDialogEn.addEventListener('close', () => {
+        helpDialogTabsEn.forEach(item => {
+            item.style.display = 'none';
+            item.style.opacity = '0';
+        });
+    });
+
     //---------帮助页面tab的切换---------
-    const helpMenu = document.getElementById('help-menu');
-    const helpDialogTabs = document.querySelectorAll('.help-dialog-tab');
+    const helpMenu = document.querySelector('#help-dialog-cn #help-menu');
+
     helpMenu.addEventListener('click', (event) => {
         //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
         //获取目前的checked的值
@@ -1179,21 +1210,78 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("show tab" + tab.id);
     });
 
-    //---------显示帮助页面---------
-    const helpShowButton = document.getElementById('help-show-button');
-    helpShowButton.addEventListener('click', () => {
-        // 显示或隐藏helpDialog
-        showDialog(helpDialog);
+    const helpMenuEn = document.querySelector('#help-dialog-en #help-menu');
 
-        // 显示当前页面
-        helpDialogTabs.forEach(item => {
+    helpMenuEn.addEventListener('click', (event) => {
+        //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
+        //获取目前的checked的值
+        const checked = helpMenuEn.querySelector('input:checked');
+        console.log("finding tab:" + `#help-dialog-${checked.id}`);
+        //根据checked的id来切换tab
+        const tab = helpDialogEn.querySelector(`#help-dialog-${checked.id}`);
+        //debug
+
+        if (!tab) {
+            console.log("tab is null");
+            return;
+        }
+
+        //将所有的tab设置为display:none
+        helpDialogTabsEn.forEach(item => {
             item.style.display = 'none';
         });
-        //获取目前的checked的值
-        const checked = helpMenu.querySelector('input:checked');
-        //根据checked的id来切换tab,如果checked为null，则默认显示第一个tab
-        checked ? helpDialog.querySelector(`#help-dialog-${checked.id}`).style.display = 'block' : helpDialog.querySelector(`#help-dialog-introduction`).style.display = 'block';
+        //将当前的tab设置为display:block
+        tab.style.display = 'block';
+        //debug
+        console.log("show tab" + tab.id);
     });
+
+    //---------显示帮助页面---------
+    const helpShowButton = document.getElementById('help-show-button');
+    helpShowButton.addEventListener('click', showHelp);
+
+    function showHelp() {
+        // 根据当前的语言显示对应的帮助页面
+        if (lang == 'en') {
+            showDialog(helpDialogEn);
+            
+            //检查是否有checked的input，如果有，则将其对应的tab显示，否则隐藏所有的tab
+            const checked = helpMenuEn.querySelector('input:checked');
+            if (checked) {
+                //将当前的tab设置为display:block
+                const tab = helpDialogEn.querySelector(`#help-dialog-${checked.id}`);
+                tab.style.display = 'block';
+            }
+            else {
+                helpDialogTabsEn.forEach(item => {
+                    item.style.display = 'none';
+                });
+                helpDialogTabsEn[0].style.display = 'block';
+            }
+
+            //另外一个帮助页面dismiss   
+            helpDialog.style.display = 'none';
+        }
+        else {
+            showDialog(helpDialog);
+            //检查是否有checked的input，如果有，则将其对应的tab显示，否则隐藏所有的tab
+            const checked = helpMenu.querySelector('input:checked');
+            if (checked) {
+                //将当前的tab设置为display:block
+                const tab = helpDialog.querySelector(`#help-dialog-${checked.id}`);
+                tab.style.display = 'block';
+            }
+            else {
+                helpDialogTabs.forEach(item => {
+                    item.style.display = 'none';
+                });
+                helpDialogTabs[0].style.display = 'block';
+            }
+            
+            //另外一个帮助页面dismiss
+            helpDialogEn.style.display = 'none';
+        }
+    }
 
 
 
@@ -2046,6 +2134,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function init() {
+        // 检查有没有showedHelp这个localStorage，如果没有则展示help
+        const showedHelp = localStorage.getItem('showedHelp');
+        if (!showedHelp) {
+            //展示help
+            showHelp();
+            //设置showedHelp为true
+            localStorage.setItem('showedHelp', 'true');
+        }
         //debug
         console.log("init");
         // 同步用户设置
