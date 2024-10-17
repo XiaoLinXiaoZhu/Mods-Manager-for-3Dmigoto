@@ -135,17 +135,33 @@ ipcMain.handle('sync-localStorage', async (event, userConfig) => {
   ifUseAdmin = userConfig.ifUseAdmin;
   ifAutoStartGame = userConfig.ifAutoStartGame;
 
+  //debug
+  console.log(`firstSync: ${firstSync}`);
+
   //如果是第一次同步localStorage，则需要进行一些操作
   if (!firstSync) return;
 
   //检查是否 开启了 useAdmin
-  if (HMC.isAdmin() === false && ifUseAdmin === true) {
+  // //debug
+  // console.log(ifUseAdmin);
+  // //打印一下ifUseAdmin的类型
+  // console.log(typeof ifUseAdmin);
+  // console.log(`ifUseAdmin: ${ifUseAdmin}, isAdmin: ${HMC.isAdmin()}`);
+  // console.log("!HMC.isAdmin: " + !HMC.isAdmin());
+  // console.log("ifUseAdmin == true: " + ifUseAdmin == "true");
+  // console.log("!HMC.isAdmin() && ifUseAdmin == true: " + (!HMC.isAdmin() && ifUseAdmin == true));
+
+  //为什么这里的ifUseAdmin是字符串……导致ifUseAdmin == true这个判断不成立
+  if (ifUseAdmin == "true" && !HMC.isAdmin()) {
     //如果开启了 useAdmin，则需要以管理员模式重新启动
     // 通过管理员模式重新启动
     restartAsAdmin();
     return;
   }
 
+  //检查是否 开启了 autoStartGame
+  //debug
+  console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
   if (ifAutoStartGame === true) {
     //启动游戏
     // 之后不再在渲染进程中启动游戏，而是在主进程中启动游戏
@@ -506,7 +522,9 @@ ipcMain.handle('select-image', async () => {
 //-------------------自动化-------------------
 
 // 使用管理员模式重新启动
-function restartAsAdmin() {
+async function restartAsAdmin() {
+  //debug
+  console.log(`restart as admin: ${exePath}`);
   if (isWindows) {
     const exePath = process.execPath;
 

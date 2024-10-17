@@ -794,7 +794,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     autoRefreshInZZZSwitch.addEventListener('change', () => {
         ifAutofreshInZZZ = autoRefreshInZZZSwitch.checked;
         //保存ifAutofreshInZZZ
-        localStorage.setItem('auto-refresh-in-zzz', ifAutofreshInZZZ);
+        localStorage.setItem('ifAutofreshInZZZ', ifAutofreshInZZZ);
         //debug
         console.log("ifAutofreshInZZZ: " + ifAutofreshInZZZ);
     });
@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     autoStartGameSwitch.addEventListener('change', () => {
         ifAutoStartGame = autoStartGameSwitch.checked;
         //保存ifAutoStartGame
-        localStorage.setItem('auto-start-game', ifAutoStartGame);
+        localStorage.setItem('ifAutoStartGame', ifAutoStartGame);
         //debug
         console.log("ifAutoStartGame: " + ifAutoStartGame);
 
@@ -816,7 +816,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ifAutoStartGame = false;
                 autoStartGameSwitch.checked = false;
                 //保存ifAutoStartGame
-                localStorage.setItem('auto-start-game', ifAutoStartGame);
+                localStorage.setItem('ifAutoStartGame', ifAutoStartGame);
                 return;
             }
         }
@@ -827,7 +827,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     useAdminSwitch.addEventListener('change', () => {
         ifUseAdmin = useAdminSwitch.checked;
         //保存ifUseAdmin
-        localStorage.setItem('use-admin', ifUseAdmin);
+        localStorage.setItem('ifUseAdmin', ifUseAdmin);
         //debug
         console.log("ifUseAdmin: " + ifUseAdmin);
     });
@@ -1396,7 +1396,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.addEventListener('unload', function (event) {
         localStorage.setItem('fullscreen', isFullScreen);
-        asyncLocalStorage();
+        
 
         if (!isFullScreen) {
             localStorage.setItem('bounds', JSON.stringify({
@@ -1405,8 +1405,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 width: window.outerWidth,
                 height: window.innerHeight,
             }));
-            asyncLocalStorage();
         }
+        asyncLocalStorage();
     });
 
 
@@ -1439,6 +1439,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ifUseAdmin: ifUseAdmin,
             theme: theme
         };
+        //debug
+        console.log(userConfig);
 
         ipcRenderer.invoke('sync-localStorage', userConfig);
     }
@@ -1706,6 +1708,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //使用替换的方式而不是清空再添加的方式实现loadModList，减少页面重绘次数
     async function loadModList() {
+        //debug
+        console.log("loadModList");
         //加载mod列表
         mods = await ipcRenderer.invoke('get-mods');
         //获取当前modContainer的所有子元素
@@ -1803,6 +1807,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function init() {
+        //debug
+        console.log("init");
+        // 同步用户设置
+        asyncLocalStorage();
         // 设置窗口位置和大小
         await ipcRenderer.invoke('set-bounds', bounds);
         // 设置窗口全屏
