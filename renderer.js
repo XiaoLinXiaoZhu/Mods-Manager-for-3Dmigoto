@@ -1760,7 +1760,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         //检查mods文件夹下是否有modResourceBackpack文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modResourceBackpack文件夹下
-        const unknownDirs = fs.readdirSync(modRootDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
+        const unknownDirs = fs.readdirSync(modRootDir).filter(file => {
+            const filePath = path.join(modRootDir, file);
+            return fs.statSync(filePath).isDirectory() && !fs.existsSync(path.join(modBackpackDir, file));
+        });
         if (unknownDirs.length > 0) {
             //显示未知文件夹对话框
             showDialog(unknownModDialog);
