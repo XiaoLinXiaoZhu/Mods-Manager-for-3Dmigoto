@@ -25,11 +25,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     let ifAutoApply = localStorage.getItem('ifAutoApply') || false;
     let ifAutoRefreshInZZZ = localStorage.getItem('ifAutoRefreshInZZZ') || false;
     let ifUseAdmin = localStorage.getItem('ifUseAdmin') || false;
+
     //是否自动启动游戏
     let ifAutoStartGame = localStorage.getItem('ifAutoStartGame') || false;
     let gameDir = localStorage.getItem('gameDir') || '';
     let modLoaderDir = localStorage.getItem('modLoaderDir') || '';
 
+    //配置切换选项
+    let ifAskSwitchConfig = localStorage.getItem('ifAskSwitchConfig') || false;
+    let configRootDir = localStorage.getItem('configRootDir') || '';
 
     //--------------状态变量----------------
     let currentPreset = '';
@@ -39,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let modFilterCharacter = 'All';
     let compactMode = false;
     let currentMod = '';
+    let ifAskedSwitchConfig = false;
 
 
     //--------------Intersect Observer----------------
@@ -125,6 +130,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     //设置初始化按钮
     const initConfigButton = document.getElementById('init-config-button');
     const refreshDialog = document.getElementById('refresh-dialog');
+
+    // 选择配置文件
+    const switchConfigDialog = document.getElementById('switch-config-dialog');
 
     //-=================检测是否是第一次打开=================
     // 检测是否是第一次打开
@@ -1101,6 +1109,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    //-----------设置 configRootDir-----------
+    const configRootDirInput = document.getElementById('set-configRootDir-input');
+    configRootDirInput.addEventListener('click', async () => {
+        const inputDir = await getFilePathsFromSystemDialog('Config', 'directory');
+        //让 configRootDirInput 的 value属性 为 用户选择的路径
+        if (inputDir !== '') {
+            configRootDirInput.value = inputDir;
+            // 检查 configRootDir 是否为空文件夹，如果里面有文件，则警告用户
+            const files = fs.readdirSync(inputDir);
+            if (files.length > 0) {
+                snack('Config directory is not empty');
+            }
+            localStorage.setItem('configRootDir', inputDir);
+            configRootDir = inputDir;
+            snack(`Config path set to ${inputDir}`);
+        }
+        else {
+            snack('Please select your config path');
+        }
+    });
+
+    //-----------设置 ifAskSwitchConfig-----------
+    const ifAskSwitchConfigSwitch = document.getElementById('if-ask-switch-config-switch');
+    ifAskSwitchConfigSwitch.addEventListener('change', () => {
+        const checked = ifAskSwitchConfigSwitch.checked;
+        if (checked && !fs.existsSync(configRootDir)) {
+            snack('Config directory does not exist,you need to set it first');
+            ifAskSwitchConfigSwitch.checked = false;
+            return;
+        }
+
+        ifAskSwitchConfig = checked;
+        //保存ifAskSwitchConfig
+        localStorage.setItem('ifAskSwitchConfig', ifAskSwitchConfig);
+        //debug
+        console.log("ifAskSwitchConfig: " + ifAskSwitchConfig);
+    }
+    );
+
     //---------更改setting-dialog的样式---------
     //设置页面使用的s-dialog是封装好的，无法通过css修改其样式，所以需要通过js来修改
     const settingsDialogStyle = document.createElement('style');
@@ -1168,6 +1215,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         //显示当前 gameDir 的值
         gameDirInput.value = gameDir;
+
+        //显示当前 configRootDir 的值
+        configRootDirInput.value = configRootDir;
+
+        //显示当前 ifAskSwitchConfig 的值
+        ifAskSwitchConfigSwitch.checked = ifAskSwitchConfig;
 
 
 
@@ -1806,6 +1859,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    //-------------------切换配置文件-------------------
+    const switchConfigButton = document.getElementById('switch-config-button');
+
+    switchConfigDialog.addEventListener("show", () => {
+        // debug show switchConfigDialog
+        const configList = document.getElementById('switch-config-list');
+        // 读取 configRootDir 下的所有文件夹，每一个文件夹对应一个配置文件，将其显示在列表中
+        const configDirs = fs.readdirSync(configRootDir).filter(file => fs.statSync(path.join(configRootDir, file)).isDirectory());
+        configList.innerHTML = '';
+        configDirs.forEach(dir => {
+            const listItem = document.createElement('div');
+            listItem.className = 'switch-config-list-item';
+            listItem.textContent = dir;
+            listItem.addEventListener('click', async () => {
+                // 切换配置文件
+                loadConfigFromFile(path.join(configRootDir, dir));
+                // 关闭对话框
+                switchConfigDialog.dismiss();
+            });
+            configList.appendChild(listItem);
+        }
+        );
+    });
+
+    switchConfigDialog.addEventListener('dismiss', () => {
+        init();
+    });
+
+
 
 
     //-===================================内部函数===================================
@@ -2214,7 +2296,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         return result;
     }
 
+
     async function init() {
+
+        // 测试，将ifAskSwitchConfig改为true
+        // ifAskSwitchConfig = 'true';
+        //debug
+        console.log("ifAskSwitchConfig: " + ifAskSwitchConfig);
+
         // 检查有没有showedHelp这个localStorage，如果没有则展示help
         const showedHelp = localStorage.getItem('showedHelp');
         if (!showedHelp) {
@@ -2222,6 +2311,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             showHelp();
             //设置showedHelp为true
             localStorage.setItem('showedHelp', 'true');
+        }
+
+        //检查是否是开起了在启动时询问切换配置文件
+        if (ifAskSwitchConfig == 'true' && ifAskedSwitchConfig == false) {
+            //展示询问切换配置文件对话框
+            setTimeout(() => {
+                showDialog(switchConfigDialog);
+            }, 500);
+            ifAskedSwitchConfig = true;
+            return;
+        }
+        else {
+            //如果不询问，则直接使用localStorage中的配置。
+            //debug
+            console.log("not ask config, use localStorage");
         }
         //debug
         console.log("init");
@@ -2283,6 +2387,120 @@ document.addEventListener('DOMContentLoaded', async () => {
         //设置firstOpen为false
         localStorage.setItem('firstOpen', 'false');
     }
+
+    function saveConfigToFile(configName, configDiscription) {
+        const configPath = path.join(configRootDir, configName);
+        const configFile = path.join(configPath, 'config.json');
+
+        if (configName == '') {
+            snack('Please enter a config name');
+            return;
+        }
+        if (!fs.existsSync(configRootDir)) {
+            fs.mkdirSync(configRootDir);
+            //debug
+            console.log(`configRootDir:${configRootDir} created`);
+        }
+        if (!fs.existsSync(configPath)) {
+            fs.mkdirSync(configPath);
+            //debug
+            console.log(`configPath:${configPath} created`);
+        }
+        //保存用户设置到config.json文件中
+
+        const userConfig = {
+            lang: lang,
+            modRootDir: modRootDir,
+            modLoaderDir: modLoaderDir,
+            modBackpackDir: modBackpackDir,
+            gameDir: gameDir,
+            ifAutoApply: ifAutoApply,
+            ifAutoRefreshInZZZ: ifAutoRefreshInZZZ,
+            ifAutoStartGame: ifAutoStartGame,
+            ifUseAdmin: ifUseAdmin,
+            theme: theme
+        };
+
+        fs.writeFileSync(configFile, JSON.stringify(userConfig));
+
+        if (configDiscription) {
+            fs.writeFileSync(path.join(configPath, 'description.txt'), configDiscription);
+        }
+
+        //debug
+        console.log(`userConfig:${userConfig} saved to ${configFile}`);
+    }
+
+    function loadConfigFromFile(configName) {
+        const configPath = path.join(configRootDir, configName);
+        const configFile = path.join(configPath, 'config.json');
+        const imageFile = path.join(configPath, 'background.png');
+
+        //debug
+        console.log(`loadConfigFromFile:${configFile}`);
+
+        if (!fs.existsSync(configFile)) {
+            snack('Config not found');
+            return;
+        }
+
+        //读取用户设置,并且设置到localStorage中
+        const userConfig = JSON.parse(fs.readFileSync(configFile));
+        //debug
+        console.log(`userConfig:${userConfig} loaded from ${configFile}`);
+        //设置用户设置
+        setLang(userConfig.lang);
+        modRootDir = userConfig.modRootDir;
+        modLoaderDir = userConfig.modLoaderDir;
+        modBackpackDir = userConfig.modBackpackDir;
+        gameDir = userConfig.gameDir;
+        ifAutoApply = userConfig.ifAutoApply;
+        ifAutoRefreshInZZZ = userConfig.ifAutoRefreshInZZZ;
+        ifAutoStartGame = userConfig.ifAutoStartGame;
+        ifUseAdmin = userConfig.ifUseAdmin;
+        theme = userConfig.theme;
+
+        //save to localStorage
+        saveLocalStorage();
+
+        //同步用户设置
+        asyncLocalStorage();
+    }
+
+    function saveLocalStorage() {
+        //将用户设置保存到localStorage中
+        LocalStorage.setItem('lang', lang);
+        LocalStorage.setItem('modRootDir', modRootDir);
+        LocalStorage.setItem('modLoaderDir', modLoaderDir);
+        LocalStorage.setItem('modBackpackDir', modBackpackDir);
+        LocalStorage.setItem('gameDir', gameDir);
+        LocalStorage.setItem('ifAutoApply', ifAutoApply);
+        LocalStorage.setItem('ifAutoRefreshInZZZ', ifAutoRefreshInZZZ);
+        LocalStorage.setItem('ifAutoStartGame', ifAutoStartGame);
+        LocalStorage.setItem('ifUseAdmin', ifUseAdmin);
+        LocalStorage.setItem('theme', theme);
+    }
+
+    const saveConfigButton = document.getElementById('save-config-button');
+    const saveConfigDialog = document.getElementById('save-config-dialog');
+    saveConfigButton.addEventListener('click', async () => {
+        //debug
+        console.log("clicked saveConfigButton");
+
+        //弹出 saveConfigDialog
+        showDialog(saveConfigDialog);
+    });
+
+    //保存配置文件，监控saveConfigDialog的dismiss事件
+    saveConfigDialog.addEventListener('dismiss', async () => {
+        //debug
+        console.log("saveConfigDialog dismissed");
+        //获取用户输入的configName
+        const configName = saveConfigDialog.querySelector('#save-config-name').value;
+        const configDiscription = saveConfigDialog.querySelector('#save-config-description').value;
+        //保存用户设置到config.json文件中
+        saveConfigToFile(configName, configDiscription);
+    });
 
 }
 );

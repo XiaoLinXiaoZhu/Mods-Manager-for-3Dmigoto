@@ -112,7 +112,9 @@
               <s-icon-button slot="trigger" id="help-show-button">
                 <s-icon>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path d="M478-240q21 0 35.5-14.5T528-290q0-21-14.5-35.5T478-340q-21 0-35.5 14.5T428-290q0 21 14.5 35.5T478-240Zm-36-154h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"></path>
+                    <path
+                      d="M478-240q21 0 35.5-14.5T528-290q0-21-14.5-35.5T478-340q-21 0-35.5 14.5T428-290q0 21 14.5 35.5T478-240Zm-36-154h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z">
+                    </path>
                   </svg>
                 </s-icon>
               </s-icon-button>
@@ -450,6 +452,9 @@
             <label for="normal-settings" data-translate-key="normal-settings" class="font-hongmeng"> 常规设置 </label>
             <input type="radio" name="settings-menu" id="advanced-settings" class="settings-menu-radio">
             <label for="advanced-settings" data-translate-key="advanced-settings" class="font-hongmeng"> 高级设置 </label>
+            <input type="radio" name="settings-menu" id="switch-config-settings" class="settings-menu-radio">
+            <label for="switch-config-settings" data-translate-key="switch-config-settings" class="font-hongmeng"> 切换配置
+            </label>
             <input type="radio" name="settings-menu" id="about-settings" class="settings-menu-radio">
             <label for="about-settings" data-translate-key="about" class="font-hongmeng"> 关于 </label>
           </div>
@@ -514,9 +519,9 @@
               </div>
               <p data-translate-key="use-admin-info">启动程序时是否使用管理员权限(需要重启程序生效)</p>
             </div>
+            <!-- -高级设置 -->
+            <!-- -在这里可以设定 modRootDir，modBackpackDir，modLoaderDir，gameDir -->
             <div id="settings-dialog-advanced-settings" class="settings-dialog-tab">
-              <!-- -高级设置 -->
-              <!-- -在这里可以设定 modRootDir，modBackpackDir，modLoaderDir，gameDir -->
               <div class="OO-setting-bar">
                 <h3 data-translate-key="modRootDir"> mod根目录 </h3>
                 <s-text-field style="display: grid">
@@ -561,7 +566,36 @@
               </div>
 
             </div>
+            <!-- -切换配置 -->
+            <!-- -在这里你可以选择开启在开始的时候选择配置文件的功能，并且设置配置文件保存位置 -->
+            <div id="settings-dialog-switch-config-settings" class="settings-dialog-tab">
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="if-ask-switch-config"> 是否询问切换配置 </h3>
+                <s-switch id="if-ask-switch-config-switch"></s-switch>
+              </div>
+              <p data-translate-key="if-ask-switch-config-info">启动程序时是否询问切换配置文件（需要先在下面指定文件夹），以在不同游戏中使用，否则将使用缓存中的配置文件</p>
+              <s-divider></s-divider>
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="config-dir"> 配置文件夹 </h3>
+                <s-text-field style="display: grid">
+                  <input type="text" id="set-configRootDir-input">
+                </s-text-field>
+              </div>
+              <p data-translate-key="config-dir-info"> 配置文件夹为存储配置文件的位置，程序将在这里寻找配置文件，配置文件以文件夹形式存储，内部的config.json为配置文件
+              </p>
+              <s-divider></s-divider>
+              <div class="OO-setting-bar">
+                <h3 data-translate-key="save-config"> 保存配置 </h3>
+                <s-button id="save-config-button" data-translate-key="save">
+                  保存配置
+                </s-button>
+              </div>
+              <p data-translate-key="save-config-info"> 保存当前配置到配置文件夹 </p>
+            </div>
 
+
+
+            <!-- -about page -->
             <div id="settings-dialog-about-settings" class="settings-dialog-tab">
               <div class="OO-setting-bar" style="height: fit-content;">
                 <p data-translate-key="about-content"> 本程序由 XLXZ 开发,开源免费,遵循GNU General Public License
@@ -1098,6 +1132,59 @@
         <s-button type="outlined" id="refresh-button" style="width: 83%;" data-translate-key="refresh"
           onclick="location.reload()">刷新</s-button>
       </div>
+    </s-dialog>
+
+    <!-- -切换配置 -->
+    <s-dialog id="switch-config-dialog">
+      <div slot="headline" data-translate-key="ask-switch-config"> 选择配置 </div>
+      <div slot="text">
+        <p data-translate-key="dialog-ask-for-switch-config"> 选择你想要应用的配置 </p>
+        <div id="switch-config-list" style="display: flex;flex-direction: column;align-items: center;">
+        </div>
+      </div>
+      <s-button slot="action" type="text" id="switch-config-ignore" data-translate-key="ignore">取消</s-button>
+      <s-button slot="action" type="text" id="switch-config-confirm" data-translate-key="confirm">确定</s-button>
+    </s-dialog>
+
+    <!-- -保存配置 -->
+    <!-- -这个页面和 edit-mod-info-dialog 样式保持一致 -->
+    <s-dialog id="save-config-dialog">
+      <div slot="headline" class="font-hongmeng">
+        <h3 data-translate-key="save-config"> 保存配置 </h3>
+
+        <div class="OO-box" style="display: flex;flex-direction: column;align-items: center;">
+          <div class="OO-setting-bar">
+            <s-tooltip>
+              <h3 slot="trigger" data-translate-key="save-config-name"> 配置名称 </h3>
+              <p style="line-height: 1.2; word-wrap: break-word; max-width: 120px; overflow-wrap: break-word; white-space: normal;"
+                data-translate-key="save-config-name-tip"> 配置名称将会被作为文件夹名称 </p>
+            </s-tooltip>
+            <s-text-field>
+              <input type="text" id="save-config-name">
+            </s-text-field>
+          </div>
+          <s-divider></s-divider>
+
+          <div class="OO-setting-bar" style="
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: space-between;height:150px;">
+            <s-tooltip style="padding:15px 0;">
+              <h3 slot="trigger" data-translate-key="config-description"> 配置描述 </h3>
+              <p style="line-height: 1.2;" data-translate-key="config-description-tip">
+                配置描述是对配置的简单描述，可以是作者、配置功能等 </p>
+            </s-tooltip>
+
+            <s-text-field class="OO-shade-box"
+              style="min-height: calc(100% - 45px);height: 0px;border-radius: 20px;bottom: 5px;top: 40px;left: 5px;right: 5px;max-width: calc(100% - 10px);width: calc(100% - 10px);">
+              <textarea type="text" id="save-config-description"></textarea>
+            </s-text-field>
+          </div>
+        </div>
+      </div>
+      <s-button slot="action" type="text" id="save-config-ignore" data-translate-key="ignore">取消</s-button>
+      <s-button slot="action" type="text" id="save-config-confirm" data-translate-key="confirm">确定</s-button>
     </s-dialog>
 
 

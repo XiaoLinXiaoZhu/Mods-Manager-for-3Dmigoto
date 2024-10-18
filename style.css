@@ -507,3 +507,25 @@ s-dialog h3 {
     padding: 0 14%;
     z-index: 0;
 }
+
+.switch-config-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.switch-config-list-item {
+    display: block;
+    padding: 16px 20px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: -2px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 17px;
+    z-index: 1;
+}
