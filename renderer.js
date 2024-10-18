@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     //3.拖动zip文件到modItem上，视为添加mod，但是暂时不实现
     function handleDropEvent(event, modItem, mod) {
         const items = event.dataTransfer.items;
-        
+
         // 只处理第一个文件
         const item = items[0].webkitGetAsEntry();
 
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             // webkitGetAsEntry 方法不存在，说明是从网页拖入的文件
             // 从网页拖入的文件是 File 对象。
-            try{
+            try {
                 const files = event.dataTransfer.files;
                 //debug
                 console.log(`get file from drag event ${files[0].name}`);
@@ -362,11 +362,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 复制完成后，刷新 modList
         //debug
         console.log(`Copied folder: ${item.fullPath}`);
-        loadModList().then(() => {
+        loadModList(() => {
             // 刷新完成后，弹出提示
             snack(`Added mod ${modName}`);
-            // 刷新fliter
-            refreshModFilter();
+
+            // 将筛选设置为 unknown
+            setFilter('Unknown');
+
             currentMod = modName;
             showEditModInfoDialog();
         });
@@ -391,6 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const reader = new FileReader();
                             reader.onload = () => {
                                 const buffer = Buffer.from(reader.result);
+                                // 如果 targetPath 不存在，则创建文件
                                 fs.writeFileSync(targetPath, buffer);
                                 //console.log(`Copied file: ${targetPath}`);
                             };
@@ -457,21 +460,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     editModInfoLeft.addEventListener('drop', (event) => {
         event.preventDefault();
 
-        handleImageDrop(event, '', currentMod);
+        const file = event.dataTransfer.files[0];
+        handleImageDrop(file, '', currentMod);
 
+        //这里只显示，保存在点击保存按钮时才会保存
+        const imagePath = getModImagePath(currentMod);
+        //debug
+        console.log(`imagePath:${imagePath}`);
+        //显示图片
+        imagePath.then((path) => {
+            editModInfoDialog.querySelector('#editDialog-mod-info-image').setAttribute('src', path);
+            tempImagePath = path;
+        });
+        //设置 currentInfo 为空
         //拖放结束后，隐藏editModInfoDialog
-        editModInfoDialog.dismiss();
+        //editModInfoDialog.dismiss();
         //因为没有modItem，所以在结束后需要刷新mod
-        loadModList();
+        loadModList(() => {
+            // 刷新完成后，弹出提示
+            //snack(`Updated cover for ${currentMod}`);
+
+            // 将筛选设置为 当前mod 的 character
+            const modInfo = ipcRenderer.invoke('get-mod-info', currentMod);
+            modInfo.then((info) => {
+                setFilter(info.character);
+            });
+        });
         showModInfo('');
         setTimeout(() => {
             showModInfo(currentMod);
         }, 500);
     });
-
-    function hID(file, modItem, mod) {
-
-    }
 
     async function updateModCardCover(imageUrl, modItem, mod) {
         // 将图片保存到modResourceBackpack文件夹中，文件名为preview+后缀名，并且将其保存到mod.json中
@@ -499,6 +518,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // snack提示
         snack(`Updated cover for ${mod}`);
+
+        // 返回 图片的路径
+        return modImageDest;
     }
 
     async function loadPresets() {
@@ -683,41 +705,66 @@ document.addEventListener('DOMContentLoaded', async () => {
             modFilter.appendChild(filterItem);
         }
         );
+    }
 
-        //使用事件委托处理点击事件，减少事件绑定次数
-        modFilter.addEventListener('click', (event) => {
-            const filterItem = event.target.closest('s-chip');
-            if (filterItem) {
-                const character = filterItem.id;
-                //debug
-                console.log("clicked filterItem " + character);
-                modFilterCharacter = character;
-                modFilterAll.type = 'default';
-                modFilterSelected.type = 'default';
-                //将自己的type设置为filled，其他的设置为default
-                const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
-                allfilterItems.forEach(item => {
-                    item.style.color = 'var(--s-color-on-surface)';
-                });
-                // 不再需要 type = 'filled' 的效果，因为现在使用bg来代替
-                // filterItem.type = 'filled';
+    //使用事件委托处理点击事件，减少事件绑定次数
+    modFilter.addEventListener('click', (event) => {
+        const filterItem = event.target.closest('s-chip');
+        if (filterItem) {
+            const character = filterItem.id;
+            //debug
+            console.log("clicked filterItem " + character);
+            modFilterCharacter = character;
+            modFilterAll.type = 'default';
+            modFilterSelected.type = 'default';
+            //将自己的type设置为filled，其他的设置为default
+            const allfilterItems = document.querySelectorAll('#mod-filter s-chip');
+            allfilterItems.forEach(item => {
+                item.style.color = 'var(--s-color-on-surface)';
+            });
+            // 不再需要 type = 'filled' 的效果，因为现在使用bg来代替
+            // filterItem.type = 'filled';
 
-                // 更改字体颜色
-                filterItem.style.color = 'var(--s-color-on-primary)';
+            // 更改字体颜色
+            filterItem.style.color = 'var(--s-color-on-primary)';
 
-                // 将bg的宽度设置为当前filterItem的宽度，并且设置bg的left为当前filterItem的left
+            // 将bg的宽度设置为当前filterItem的宽度，并且设置bg的left为当前filterItem的left
 
-                const filterItemRect = filterItem.getBoundingClientRect();
-                //这里获取的left是相对于视窗的，所以需要减去modFilter的left
-                const modFilterRect = modFilter.getBoundingClientRect();
-                //bg.style.visibility = 'visible';
-                //width 还需要减去padding的量
-                modFilterBg.style.height = `${filterItemRect.height}px`;
-                modFilterBg.style.width = `${filterItemRect.width - 15}px`;
-                modFilterBg.style.top = `${filterItemRect.top - modFilterRect.top}px`;
-                modFilterBg.style.left = `${filterItemRect.left - modFilterRect.left + 4}px`;
-                //0.5s后将bg隐藏
-                filterMods();
+            const filterItemRect = filterItem.getBoundingClientRect();
+            //这里获取的left是相对于视窗的，所以需要减去modFilter的left
+            const modFilterRect = modFilter.getBoundingClientRect();
+            //bg.style.visibility = 'visible';
+            //width 还需要减去padding的量
+            modFilterBg.style.height = `${filterItemRect.height}px`;
+            modFilterBg.style.width = `${filterItemRect.width - 15}px`;
+            modFilterBg.style.top = `${filterItemRect.top - modFilterRect.top}px`;
+            modFilterBg.style.left = `${filterItemRect.left - modFilterRect.left + 4}px`;
+            //0.5s后将bg隐藏
+            filterMods();
+        }
+    }
+    );
+
+    function setFilter(character) {
+        if (character == 'All') {
+            modFilterAll.click();
+            return;
+        }
+        if (character == 'Selected') {
+            modFilterSelected.click();
+            return;
+        }
+        // 检查是否存在这个character
+        if (!modCharacters.includes(character)) {
+            modFilterAll.click();
+            return;
+        }
+        const filterItems = document.querySelectorAll('#mod-filter s-chip');
+        filterItems.forEach(item => {
+            //debug 
+            //console.log(`item.id:${item.id} character:${character}`);
+            if (item.id == character) {
+                item.click();
             }
         }
         );
@@ -1277,7 +1324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 根据当前的语言显示对应的帮助页面
         if (lang == 'en') {
             showDialog(helpDialogEn);
-            
+
             //检查是否有checked的input，如果有，则将其对应的tab显示，否则隐藏所有的tab
             const checked = helpMenuEn.querySelector('input:checked');
             if (checked) {
@@ -1310,7 +1357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 helpDialogTabs[0].style.display = 'block';
             }
-            
+
             //另外一个帮助页面dismiss
             helpDialogEn.style.display = 'none';
         }
@@ -1639,15 +1686,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const modImageDest = path.join(modBackpackDir, currentMod, modImageName);
 
         //复制图片
-        console.log(`imagePath:${imagePath} modImageDest:${modImageDest}`);
+        console.log(`imagePath:${imagePath} \nmodImageDest:${modImageDest}`);
         //如果是默认图片则不复制
 
-        if (imagePath == path.join(__dirname, 'default.png') || imagePath == modImageDest) {
-            return;
+        if (imagePath != path.join(__dirname, 'default.png') && imagePath != modImageDest) {
+            // 复制图片
+            fs.copyFileSync(imagePath, modImageDest);
         }
 
-        // 复制图片
-        fs.copyFileSync(imagePath, modImageDest);
+
 
         //保存到tempModInfo中
         tempModInfo.imagePath = modImageName;
@@ -1666,11 +1713,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         //关闭对话框
         editModInfoDialog.dismiss();
         //刷新mod列表
-        setTimeout(() => {
-            loadModList().then(() => { refreshModFilter(); });
-            //debug
-            console.log("refresh mod list after saving mod");
-        }, 1000);
+
+
+        loadModList(() => {
+            // 切换 filter 为 currentModInfo.character
+            setFilter(currentModInfo.character);
+            // debug
+            console.log("set filter to currentModInfo.character,because of saving mod");
+        });
+        //debug
+        console.log("refresh mod list after saving mod");
     }
 
     const editModInfoSaveButton = document.getElementById('edit-mod-info-save');
@@ -2044,7 +2096,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     //使用替换的方式而不是清空再添加的方式实现loadModList，减少页面重绘次数
-    async function loadModList() {
+    async function loadModList(functionAfterLoad = null) {
         //debug
         console.log("loadModList");
         //加载mod列表
@@ -2055,6 +2107,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         //使用fragment来批量添加modItem，减少重绘次数
         const fragment = document.createDocumentFragment();
 
+        //清空modCharacters
+        modCharacters = [];
         mods.forEach(async (mod, index) => {
             const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
             var modCharacter = modInfo.character ? modInfo.character : 'Unknown';
@@ -2103,8 +2157,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             //debug
             //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
-            if (fragment.children.length == mods.length - modContainerCount) {
+            if (index == mods.length - 1) {
                 //如果是最后一个modItem,意味着所有的modItem都已经添加到fragment中，将fragment添加到modContainer中
+                //需要加载的前提是数目发生变化，但是如果只是刷新modInfo，item的数目不会发生变化
+                //使用上面的方法无法判断是否是最后一个modItem。
 
                 modContainer.appendChild(fragment);
 
@@ -2116,27 +2172,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     modContainer.setAttribute('compact', 'false');
                 }
 
-                // const scorll = document.getElementsByClassName('mod-list')[0];
-                // //在modList第一个元素之前添加一个div，高度为modList的高度
-                // const placeholder = document.createElement('div');
-                // placeholder.style.height = `${scorll.clientHeight}px`;
-                // placeholder.className = 'placeholder';
-                // scorll.insertBefore(placeholder, modContainer);
-
-                // //为placeholder添加动画，其高度从modList的高度变为0
-                // placeholder.animate([
-                //     { height: `${scorll.clientHeight}px` },
-                //     { height: '0px' }
-                // ], {
-                //     duration: 200,
-                //     easing: 'ease-in-out',
-                //     iterations: 1
-                // });
-                // //在动画结束后(200ms)删除placeholder
-                // setTimeout(() => {
-                //     placeholder.remove();
-                // }, 200);
-
                 //将所有的的modItem添加到observer中
                 document.querySelectorAll('.mod-item').forEach(item => {
                     observer.observe(item);
@@ -2146,6 +2181,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         item.inWindow = true;
                     }
                 });
+
+                // 刷新modFilter
+                refreshModFilter();
+                //如果有functionAfterLoad则执行
+                if (functionAfterLoad) {
+                    functionAfterLoad();
+                    //debug
+                    console.log("functionAfterLoad");
+                    functionAfterLoad = null;
+                }
             }
 
         });
@@ -2217,14 +2262,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await loadModList();
         await loadPresets();
-        refreshModFilter();
 
         // 如果是管理员模式，似乎还需要再次获取mods
-        if (ifUseAdmin) {
+        if (ifUseAdmin == 'true' && HMC.isAdmin) {
             setTimeout(async () => {
                 await loadModList();
                 await loadPresets();
-                refreshModFilter();
             }, 500);
         }
     }
