@@ -376,31 +376,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 递归复制文件夹
     function copyFolder(item, targetDir) {
+        // debug
+        console.log(`copy folder ${item.fullPath} to ${targetDir}`);
+        const relativePath = item.fullPath.slice(1); // 去掉开头的 '/'
+        const targetPath = path.join(targetDir, relativePath);
+
         if (item.isDirectory) {
+            if (!fs.existsSync(targetPath)) {
+                fs.mkdirSync(targetPath, { recursive: true });
+            }
             const reader = item.createReader();
             reader.readEntries((entries) => {
                 entries.forEach((entry) => {
-                    const targetPath = path.join(targetDir, entry.fullPath);
-                    if (entry.isDirectory) {
-                        // 创建目标目录
-                        if (!fs.existsSync(targetPath)) {
-                            fs.mkdirSync(targetPath, { recursive: true });
-                        }
-                        // 递归复制子目录
-                        copyFolder(entry, targetDir);
-                    } else if (entry.isFile) {
-                        entry.file((file) => {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                const buffer = Buffer.from(reader.result);
-                                // 如果 targetPath 不存在，则创建文件
-                                fs.writeFileSync(targetPath, buffer);
-                                //console.log(`Copied file: ${targetPath}`);
-                            };
-                            reader.readAsArrayBuffer(file);
-                        });
-                    }
+                    copyFolder(entry, targetDir);
                 });
+            });
+        } else if (item.isFile) {
+            item.file((file) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const buffer = Buffer.from(reader.result);
+                    // 如果 targetPath 不存在，则创建文件
+                    console.log(`Copied file from ${item.fullPath} to ${targetPath}`);
+                    fs.writeFileSync(targetPath, buffer);
+                };
+                reader.readAsArrayBuffer(file);
             });
         }
     }
