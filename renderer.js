@@ -6,6 +6,7 @@ const { shell } = require('electron');
 //HMC 尽量不要在渲染进程中使用
 const HMC = require("hmc-win32");
 const { get } = require('http');
+const { loadEnvFile } = require('process');
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -130,6 +131,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     //设置初始化按钮
     const initConfigButton = document.getElementById('init-config-button');
     const refreshDialog = document.getElementById('refresh-dialog');
+
+    // help 页面
+    const helpMenu = document.querySelector('#help-dialog-cn #help-menu');
+    const helpMenuEn = document.querySelector('#help-dialog-en #help-menu');
+    const helpDialogTabs = document.querySelectorAll('#help-dialog-cn .help-dialog-tab');
+    const helpDialogTabsEn = document.querySelectorAll('#help-dialog-en .help-dialog-tab');
+
 
     // 选择配置文件
     const switchConfigDialog = document.getElementById('switch-config-dialog');
@@ -1299,7 +1307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         `
     helpDialogEn.shadowRoot.appendChild(helpDialogStyleEn);
-    const helpDialogTabs = document.querySelectorAll('#help-dialog-cn .help-dialog-tab');
+
 
     //监听helpDialog的关闭事件，当helpDialog关闭时，将其所有的tab设置为display:none
     helpDialog.addEventListener('close', () => {
@@ -1309,7 +1317,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    const helpDialogTabsEn = document.querySelectorAll('#help-dialog-en .help-dialog-tab');
     helpDialogEn.addEventListener('close', () => {
         helpDialogTabsEn.forEach(item => {
             item.style.display = 'none';
@@ -1318,8 +1325,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     //---------帮助页面tab的切换---------
-    const helpMenu = document.querySelector('#help-dialog-cn #help-menu');
-
     helpMenu.addEventListener('click', (event) => {
         //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
         //获取目前的checked的值
@@ -1343,7 +1348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("show tab" + tab.id);
     });
 
-    const helpMenuEn = document.querySelector('#help-dialog-en #help-menu');
+
 
     helpMenuEn.addEventListener('click', (event) => {
         //因为页面全部都是input的radio，所以说不需要判断到底点击的是哪个元素，直接切换checked的值即可
@@ -1869,21 +1874,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         const configDirs = fs.readdirSync(configRootDir).filter(file => fs.statSync(path.join(configRootDir, file)).isDirectory());
         configList.innerHTML = '';
         configDirs.forEach(dir => {
-            const listItem = document.createElement('div');
-            listItem.className = 'switch-config-list-item';
-            listItem.textContent = dir;
-            listItem.addEventListener('click', async () => {
-                // 切换配置文件
-                loadConfigFromFile(path.join(configRootDir, dir));
-                // 关闭对话框
-                switchConfigDialog.dismiss();
-            });
-            configList.appendChild(listItem);
+            //检查description.txt是否存在，如果不存在则不显示
+            const descriptionPath = path.join(configRootDir, dir, 'description.txt');
+            let description = '';
+            if (fs.existsSync(descriptionPath)) {
+                description = fs.readFileSync(descriptionPath, 'utf-8');
+            }
+            const tape = createTape(dir, description, './src/tape-cover.png');
+            configList.appendChild(tape);
         }
         );
     });
 
     switchConfigDialog.addEventListener('dismiss', () => {
+        //debug
+        console.log("switchConfigDialog dismissed");
+        //读取当前的配置文件
+        const configList = document.getElementById('switch-config-list');
+        const configTaps = configList.querySelectorAll('.tape-container');
+        let currentConfig = '';
+        configTaps.forEach(tap => {
+            //debug
+           // console.log(`tap:${tap.name} clicked:${tap.clicked}`);
+            // 为什么这里又是字符串？
+            if (tap.clicked == true) {
+                currentConfig = tap.name;
+            }
+        });
+
+        //debug
+        console.log(`currentConfig:${currentConfig}`);
+
+        if (currentConfig != '') {
+            //切换配置文件
+            loadConfigFromFile(currentConfig);
+        }
+
         init();
     });
 
@@ -2298,7 +2324,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     async function init() {
-
+        //debug
+        console.log("init");
         // 测试，将ifAskSwitchConfig改为true
         // ifAskSwitchConfig = 'true';
         //debug
@@ -2327,8 +2354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             //debug
             console.log("not ask config, use localStorage");
         }
-        //debug
-        console.log("init");
+
         // 同步用户设置
         asyncLocalStorage();
         // 设置窗口位置和大小
@@ -2434,7 +2460,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function loadConfigFromFile(configName) {
         const configPath = path.join(configRootDir, configName);
         const configFile = path.join(configPath, 'config.json');
-        const imageFile = path.join(configPath, 'background.png');
+        //const imageFile = path.join(configPath, 'background.png');
 
         //debug
         console.log(`loadConfigFromFile:${configFile}`);
@@ -2469,16 +2495,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function saveLocalStorage() {
         //将用户设置保存到localStorage中
-        LocalStorage.setItem('lang', lang);
-        LocalStorage.setItem('modRootDir', modRootDir);
-        LocalStorage.setItem('modLoaderDir', modLoaderDir);
-        LocalStorage.setItem('modBackpackDir', modBackpackDir);
-        LocalStorage.setItem('gameDir', gameDir);
-        LocalStorage.setItem('ifAutoApply', ifAutoApply);
-        LocalStorage.setItem('ifAutoRefreshInZZZ', ifAutoRefreshInZZZ);
-        LocalStorage.setItem('ifAutoStartGame', ifAutoStartGame);
-        LocalStorage.setItem('ifUseAdmin', ifUseAdmin);
-        LocalStorage.setItem('theme', theme);
+        localStorage.setItem('lang', lang);
+        localStorage.setItem('modRootDir', modRootDir);
+        localStorage.setItem('modLoaderDir', modLoaderDir);
+        localStorage.setItem('modBackpackDir', modBackpackDir);
+        localStorage.setItem('gameDir', gameDir);
+        localStorage.setItem('ifAutoApply', ifAutoApply);
+        localStorage.setItem('ifAutoRefreshInZZZ', ifAutoRefreshInZZZ);
+        localStorage.setItem('ifAutoStartGame', ifAutoStartGame);
+        localStorage.setItem('ifUseAdmin', ifUseAdmin);
+        localStorage.setItem('theme', theme);
     }
 
     const saveConfigButton = document.getElementById('save-config-button');
@@ -2502,5 +2528,77 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveConfigToFile(configName, configDiscription);
     });
 
+
+    //-=================================tape display=================================
+
+    function createTape(title, subtitle, imgPath) {
+        const tape = document.createElement('div');
+        tape.className = 'tape-container';
+        tape.name = title;
+        tape.innerHTML = `
+      <!-- -磁带开始 -->
+        <!-- 点击区域 -->
+        <div class="tape-click-area">
+        </div>
+        <!-- -磁带脊柱 -->
+        <div class='tape-spine'>
+          <div class="tape-spine-cover">
+          </div>
+          <p class="tape-spine-text font-num">${title}</p>
+        </div>
+        <!-- -磁带封面 -->
+        <!-- 结构为：tape-box > tape-cover-container -->
+        <!-- tape-box > tape-body -->
+        <div class="tape-box">
+          <div class="tape-cover-container">
+            <img src="./src/tape-mask.png" alt="tape-mask">
+            <div class="tape-cover fit-parent-width" style="background-image: url(${imgPath});">
+            </div>
+            <!-- 文本 -->
+            <p class="tape-cover-title font-num">${title}</p>
+            <p class="tape-cover-subtitle font-hongmeng">${subtitle}</p>
+          </div>
+          <!-- -磁带本体 -->
+          <div class="tape-body fit-parent-width"></div>
+        </div>
+      <!-- -磁带结束 -->
+        `;
+
+        //事件绑定
+        initTapeEvent(tape);
+        return tape;
+    }
+
+
+
+    //-轮换预设卡片相关
+    function initTapeEvent(container) {
+        const tapeClickArea = container.querySelector('.tape-click-area');
+
+        //将其初始化为未点击状态
+        container.clicked = false;
+        container.setAttribute('clicked', 'false');
+        //点击时，切换展示 侧面tape-spine 或者 tape-cover。
+        tapeClickArea.addEventListener('click', () => {
+            //debug
+            console.log(`clicked tapeContainer ${container.name},set clicked to ${!container.clicked}`);
+
+            //将自己取反，其他的全部设置为false
+            container.clicked = !container.clicked;
+            container.setAttribute('clicked', container.clicked);
+            
+            const tapeContainers = document.querySelectorAll('.tape-container');
+            tapeContainers.forEach(tape => {
+                if (tape != container) {
+                    tape.clicked = false;
+                    tape.setAttribute('clicked', 'false');
+                }
+            });
+
+            //debug
+            console.log(`clicked tapeContainer ${container.name},current clicked is ${container.clicked}`);
+        }
+        );
+    }
 }
 );

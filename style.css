@@ -116,6 +116,7 @@ body {
     align-items: center;
     justify-content: start;
     justify-items: center;
+    min-height: 500px;
 }
 
 .mod-item[checked="true"] {
@@ -508,13 +509,8 @@ s-dialog h3 {
     z-index: 0;
 }
 
-.switch-config-list {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
+#switch-config-list {
+    max-height: 600px;
 }
 
 .switch-config-list-item {

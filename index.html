@@ -1135,15 +1135,21 @@
     </s-dialog>
 
     <!-- -切换配置 -->
-    <s-dialog id="switch-config-dialog">
-      <div slot="headline" data-translate-key="ask-switch-config"> 选择配置 </div>
-      <div slot="text">
+    <s-dialog id="switch-config-dialog" size="full">
+      <div slot="headline" class="font-hongmeng">
+        <h3 data-translate-key="ask-switch-config"> 选择配置 </h3>
+
         <p data-translate-key="dialog-ask-for-switch-config"> 选择你想要应用的配置 </p>
-        <div id="switch-config-list" style="display: flex;flex-direction: column;align-items: center;">
+        <div class="swiper-container" id="switch-config-list">
         </div>
+
       </div>
-      <s-button slot="action" type="text" id="switch-config-ignore" data-translate-key="ignore">取消</s-button>
-      <s-button slot="action" type="text" id="switch-config-confirm" data-translate-key="confirm">确定</s-button>
+      <div slot="action" class="OO-setting-bar" style="display: flex;justify-content: center;">
+        <h3 data-translate-key="cancel"> 取消 </h3>
+        </div>
+        <div slot="action" class="OO-setting-bar" style="display: flex;justify-content: center;">
+          <h3 data-translate-key="confirm"> 确定 </h3>
+          </div>
     </s-dialog>
 
     <!-- -保存配置 -->
