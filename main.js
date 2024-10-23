@@ -20,112 +20,27 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // 通过传递一个json文件来实现国际化
 // 需要的时候，通过读取json文件来显示对应的语言的内容
 
+
+//-======================== 核心变量 ========================
+let mainWindow = null;
+
+//------------------状态变量------------------
+
 let modRootDir = '';
 let modBackpackDir = '';
 let modLoaderDir = '';
 let gameDir = '';
 let ifUseAdmin = false;
 let ifAutoStartGame = false;
-
-ipcMain.handle('get-translate', async (event, lang) => {
-  // 读取对应的json文件，文件位于locales文件夹下,文件名为lang.json
-  const langDir = path.join(__dirname, 'locales');
-  const langPath = path.join(langDir, `${lang}.json`);
-  if (fs.existsSync(langPath)) {
-    return JSON.parse(fs.readFileSync(langPath));
-  }
-  else {
-    return {};
-  }
-}
-);
-
-//----------------------firstLoad----------------------
-//首次打开时询问用户的默认设置的窗口
-ipcMain.handle('open-first-load-window', async (event) => {
-  //创建一个新的窗口
-  const firstLoadWindow = new BrowserWindow({
-    frame: false,
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'firstLoad-preload.js'),
-      contextIsolation: false, // 启用 contextIsolation
-      nodeIntegration: true,
-      webSecurity: false,
-    },
-  });
-  firstLoadWindow.setMenuBarVisibility(false);
-  firstLoadWindow.loadFile('firstLoad.html');
-}
-);
-
-//auto move mod 
-ipcMain.handle('auto-move-mod', async (event) => {
-  let ret = '';
-
-  if (!fs.existsSync(modBackpackDir)) {
-    //console.log("modResourceBackpack don't exist,create it");
-    fs.mkdirSync(modBackpackDir);
-    ret = 'modResourceBackpack don\'t exist,succeed to create it,your mods have been moved to modResourceBackpack';
-  }
-  else {
-    //console.log("modResourceBackpack exist");
-    //检测modResourceBackpack文件夹是否为空
-    // if (fs.readdirSync(modBackpackDir).length === 0) {
-    //   ret = 'modResourceBackpack is empty,your mods have been moved to modResourceBackpack';
-    // }
-    // else {
-    //   //console.log("modResourceBackpack is not empty");
-    //   //将当前的modResourceBackpack文件夹重命名为modResourceBackpack.bak,在当前名称后面加上数字防止重名
-    //   let i = 1;
-    //   while (fs.existsSync(path.join(modRootDir,'..',  `modResourceBackpack.bak${i}`))) {
-    //     i++;
-    //   }
-    //   await fs.rename(modBackpackDir, path.join(modRootDir,'..', `modResourceBackpack.bak${i}`));
-    //   //创建modResourceBackpack文件夹
-    //   fs.mkdirSync(modBackpackDir);
-    //   ret = `your old modResourceBackpack has been renamed to modResourceBackpack.bak${i}`;
-    // }
-    ret = 'modResourceBackpack exist,your mods have been moved to modResourceBackpack';
-  }
-  //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹
-  fs.readdirSync(modRootDir).forEach(file => {
-    //如果说，文件夹已经存在于modResourceBackpack文件夹中，提示用户存在冲突，稍后可以在主页面中手动处理
-    if (fs.existsSync(path.join(modBackpackDir, file))) {
-      ret = "detect file already exist in modResourceBackpack,you can handle it later";
-      ret += `\nconflict:${file}`;
-      return;
-    }
-    fs.cpSync(path.join(modRootDir, file), path.join(modBackpackDir, file), { recursive: true });
-    //删除Mods文件夹里面的文件夹
-    fs.rmSync(path.join(modRootDir, file), { recursive: true, force: true });
-  });
-
-  return ret;
-});
-
-//--------------------turtoral--------------------
-//todo 通过打开教程窗口，打算是左边是wiki，右边是视频
+let ifAskSwitchConfig = false;
 
 
-//-------------------rootdir-------------------
-// 先尝试从localStorage中获取rootdir，如果没有则设置为默认值__dirname
+let functionAfterSync = null;
+let functionAfterSyncName = '';
 
-ipcMain.handle('check-rootdir', async (event, dir) => {
-  //检查 dir 是否存在,如果存在则返回 true
-  return fs.existsSync(dir);
-}
-);
 
-ipcMain.handle('set-modRootDir', async (event, dir) => {
-  //console.log("set rootdir: " + dir);
-  modRootDir = dir;
-}
-);
+// -===================== 事件处理 =====================
 
-// 当第一次同步localStorage时，将要执行一些逻辑操作
-let firstSync = true;
 ipcMain.handle('sync-localStorage', async (event, userConfig) => {
   //读取userConfig中的各个值，将主进程的值设置为userConfig中的值
   modRootDir = userConfig.modRootDir;
@@ -134,12 +49,10 @@ ipcMain.handle('sync-localStorage', async (event, userConfig) => {
   gameDir = userConfig.gameDir;
   ifUseAdmin = userConfig.ifUseAdmin;
   ifAutoStartGame = userConfig.ifAutoStartGame;
+  ifAskSwitchConfig = userConfig.ifAskSwitchConfig;
 
   //debug
-  console.log(`firstSync: ${firstSync}`);
-
-  //如果是第一次同步localStorage，则需要进行一些操作
-  if (!firstSync) return;
+  console.log(`[${new Date().toLocaleTimeString()}] success to sync localStorage`);
 
   //检查是否 开启了 useAdmin
   // //debug
@@ -151,25 +64,15 @@ ipcMain.handle('sync-localStorage', async (event, userConfig) => {
   // console.log("ifUseAdmin == true: " + ifUseAdmin == "true");
   // console.log("!HMC.isAdmin() && ifUseAdmin == true: " + (!HMC.isAdmin() && ifUseAdmin == true));
 
-  //为什么这里的ifUseAdmin是字符串……导致ifUseAdmin == true这个判断不成立
-  if (ifUseAdmin == "true" && !HMC.isAdmin()) {
-    //如果开启了 useAdmin，则需要以管理员模式重新启动
-    // 通过管理员模式重新启动
-    restartAsAdmin();
-    return;
-  }
+  if (functionAfterSync != null) {
+    //debug
+    console.log(`run functionAfterSync: ${functionAfterSyncName}`);
+    functionAfterSync();
 
-  //检查是否 开启了 autoStartGame
-  //debug
-  console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
-  if (ifAutoStartGame == "true") {
-    //启动游戏
-    // 之后不再在渲染进程中启动游戏，而是在主进程中启动游戏
-    startModLoader();
-    startGame();
+    //清空functionAfterSync
+    functionAfterSync = null;
+    functionAfterSyncName = 'null';
   }
-
-  firstSync = false;
 }
 );
 
@@ -191,7 +94,7 @@ ipcMain.handle('get-file-path', async (event, fileName, fileType) => {
       ]
     });
   }
-  else{
+  else {
     result = await dialog.showOpenDialog({
       title: 'Select ' + fileName,
       properties: ['openFile'],
@@ -538,6 +441,8 @@ async function restartAsAdmin() {
     //当使用开发模式时，exePath为electron.exe，所以说重新打开时是没用的，直接返回
     if (exePath.endsWith('electron.exe')) {
       console.log(`in development mode, cannot restart with electron.exe`);
+      ifMainProcessReady = true;
+      mainWindow.webContents.send('main-process-inited');
       return;
     }
     console.log(`restart as admin: ${exePath}`);
@@ -687,11 +592,7 @@ ipcMain.handle('open-external-link', async (event, link) => {
 //---------------------主窗口---------------------
 //创建主窗口
 function createWindow() {
-  //隐藏菜单栏
-  // app.on('browser-window-created', (e, window) => {
-  //   window.setMenu(null);
-  // });
-  const mainWindow = new BrowserWindow({
+  const newMainWindow = new BrowserWindow({
     setMenuBarVisibility: false,
     frame: false,
     show: false,
@@ -707,11 +608,19 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow = newMainWindow;
+  //隐藏菜单栏
+  // app.on('browser-window-created', (e, window) => {
+  //   window.setMenu(null);
+  // });
+  newMainWindow.loadFile('index.html');
 
   //因为需要调整窗口大小，所以需要等待窗口加载完成
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+  newMainWindow.once('ready-to-show', () => {
+    newMainWindow.show();
+    newMainWindow.webContents.send('get-localStorage');
+    console.log('main window is ready');
+    init(newMainWindow);
   });
 }
 
@@ -744,5 +653,166 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+// -===================== 窗口控制 =====================
+//------------------- firstLoad -------------------
+//首次打开时询问用户的默认设置的窗口
+function openFirstLoadWindow() {
+  //创建一个新的窗口
+  const firstLoadWindow = new BrowserWindow({
+    frame: false,
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'firstLoad-preload.js'),
+      contextIsolation: false, // 启用 contextIsolation
+      nodeIntegration: true,
+      webSecurity: false,
+    },
+  });
+  firstLoadWindow.setMenuBarVisibility(false);
+  firstLoadWindow.loadFile('firstLoad.html');
+}
+
+ipcMain.handle('open-first-load-window', async (event) => {
+  openFirstLoadWindow();
+});
+
+
+// -===================== 内部函数 =====================
+let ifMainProcessReady = false;
+
+//-------------------初始化-------------------
+function init(currentWindow) {
+
+  // 激活get-localStorage后，
+  // 渲染进程 通过sync-localStorage 传递数据给主进程
+  // 之后，需要根据这些值进行初始化
+
+  const functionIfUseAdmin = () => {
+    //为什么这里的ifUseAdmin是字符串……导致ifUseAdmin == true这个判断不成立
+    if (ifUseAdmin == "true" && !HMC.isAdmin()) {
+      //如果开启了 useAdmin，则需要以管理员模式重新启动
+      // 通过管理员模式重新启动
+      restartAsAdmin();
+      return;
+    }
+
+    if (ifAskSwitchConfig == "true") {
+      // 如果开启了 在开始时 询问是否切换配置
+      // 则在获取新的配置之后再尝试启动游戏
+      const functionCheckAutoStartGame = () => {
+        //检查是否 开启了 autoStartGame
+        console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
+        if (ifAutoStartGame == "true") {
+          //启动游戏
+          // 之后不再在渲染进程中启动游戏，而是在主进程中启动游戏
+          startModLoader();
+          startGame();
+        }
+
+        //告诉渲染进程，可以加载mod列表了
+        ifMainProcessReady = true;
+        currentWindow.webContents.send('main-process-inited');
+      }
+      setTimeout(() => {
+        //debug
+        console.log('open switch config dialog');
+        functionAfterSync = functionCheckAutoStartGame;
+        functionAfterSyncName = 'check auto start game after sync';
+        //打开切换配置dialog，等待被激活sync-localStorage
+        currentWindow.webContents.send('open-switch-config-dialog');
+      }, 0);
+    }
+    else {
+      //如果没有开启 在开始时 询问是否切换配置
+      //直接根据当前配置启动游戏
+      console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
+      if (ifAutoStartGame == "true") {
+        //启动游戏
+        startModLoader();
+        startGame();
+      }
+
+      //告诉渲染进程，可以加载mod列表了
+      ifMainProcessReady = true;
+      currentWindow.webContents.send('main-process-inited');
+    }
+  }
+
+  functionAfterSync = functionIfUseAdmin;
+  functionAfterSyncName = 'check if use admin after sync';
+  // 通过主窗口设置渲染进程的rootdir
+  currentWindow.webContents.send('get-localStorage');
+}
+
+
+//-------------------功能函数-------------------
+function moveDirectory(from, dest) {
+  let ret = '';
+  //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹
+  fs.readdirSync(from).forEach(file => {
+    //如果说，文件夹已经存在于modResourceBackpack文件夹中，提示用户存在冲突，稍后可以在主页面中手动处理
+    if (fs.existsSync(path.join(dest, file))) {
+      ret = `detect file already exist in ${dest},you can handle it later`;
+      ret += `\nconflict:${file}`;
+      return;
+    }
+    fs.cpSync(path.join(from, file), path.join(dest, file), { recursive: true });
+    //删除Mods文件夹里面的文件夹
+    fs.rmSync(path.join(from, file), { recursive: true, force: true });
+  });
+
+  return ret;
+}
+
+
+// -===================== 对外接口 =====================
+
+//auto move mod 
+ipcMain.handle('auto-move-mod', async (event) => {
+  let ret = '';
+
+  if (!fs.existsSync(modBackpackDir)) {
+    //console.log("modResourceBackpack don't exist,create it");
+    fs.mkdirSync(modBackpackDir);
+    ret = 'modResourceBackpack don\'t exist,succeed to create it,your mods have been moved to modResourceBackpack';
+  }
+  else {
+    ret = 'modResourceBackpack exist,your mods have been moved to modResourceBackpack';
+  }
+
+  //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹
+  ret = moveDirectory(modRootDir, modBackpackDir);
+  return ret;
+});
+
+ipcMain.handle('get-translate', async (event, lang) => {
+  // 读取对应的json文件，文件位于locales文件夹下,文件名为lang.json
+  const langDir = path.join(__dirname, 'locales');
+  const langPath = path.join(langDir, `${lang}.json`);
+  if (fs.existsSync(langPath)) {
+    return JSON.parse(fs.readFileSync(langPath));
+  }
+  else {
+    return {};
+  }
+});
+
+ipcMain.handle('get-main-process-ready', async (event) => {
+  return ifMainProcessReady;
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -1060,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (modRootDir !== '') {
             modRootDirInput.value = modRootDir;
             localStorage.setItem('modRootDir', modRootDir);
-            asyncLocalStorage();
+            syncLocalStorage();
             snack(`Mod root directory set to ${modRootDir}`);
         }
         else {
@@ -1076,7 +1076,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (modBackpackDir !== '') {
             modBackpackDirInput.value = modBackpackDir;
             localStorage.setItem('modBackpackDir', modBackpackDir);
-            asyncLocalStorage();
+            syncLocalStorage();
             snack(`Mod backpack directory set to ${modBackpackDir}`);
         }
         else {
@@ -1093,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (modLoaderDir !== '') {
             modLoaderDirInput.value = modLoaderDir;
             localStorage.setItem('modLoaderDir', modLoaderDir);
-            asyncLocalStorage();
+            syncLocalStorage();
             snack(`Mod loader path set to ${modLoaderDir}`);
         }
         else {
@@ -1109,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (gameDir !== '') {
             gameDirInput.value = gameDir;
             localStorage.setItem('gameDir', gameDir);
-            asyncLocalStorage();
+            syncLocalStorage();
             snack(`Game path set to ${gameDir}`);
         }
         else {
@@ -1849,7 +1849,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 height: window.innerHeight,
             }));
         }
-        asyncLocalStorage();
+        syncLocalStorage();
     });
 
 
@@ -1918,7 +1918,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //-===================================内部函数===================================
     //- 内部函数
-    async function asyncLocalStorage() {
+    async function syncLocalStorage() {
         //获取用户的设置
         const userConfig = {
             lang: lang,
@@ -1929,6 +1929,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ifAutoApply: ifAutoApply,
             ifAutoRefreshInZZZ: ifAutoRefreshInZZZ,
             ifAutoStartGame: ifAutoStartGame,
+            ifAskSwitchConfig: ifAskSwitchConfig,
             ifUseAdmin: ifUseAdmin,
             theme: theme
         };
@@ -2324,8 +2325,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     async function init() {
+        const ifMainProcessReady = await ipcRenderer.invoke('get-main-process-ready');
+        if (!ifMainProcessReady) {
+            //debug
+            console.log(`[${new Date().toLocaleTimeString()}] main process not ready,exit init`);
+            return;
+        }
+
         //debug
-        console.log("init");
+        console.log(`[${new Date().toLocaleTimeString()}] init`);
         // 测试，将ifAskSwitchConfig改为true
         // ifAskSwitchConfig = 'true';
         //debug
@@ -2341,22 +2349,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         //检查是否是开起了在启动时询问切换配置文件
-        if (ifAskSwitchConfig == 'true' && ifAskedSwitchConfig == false) {
-            //展示询问切换配置文件对话框
-            setTimeout(() => {
-                showDialog(switchConfigDialog);
-            }, 500);
-            ifAskedSwitchConfig = true;
-            return;
-        }
-        else {
-            //如果不询问，则直接使用localStorage中的配置。
-            //debug
-            console.log("not ask config, use localStorage");
-        }
+        // if (ifAskSwitchConfig == 'true' && ifAskedSwitchConfig == false) {
+        //     //展示询问切换配置文件对话框
+        //     setTimeout(() => {
+        //         showDialog(switchConfigDialog);
+        //     }, 500);
+        //     ifAskedSwitchConfig = true;
+        //     return;
+        // }
+        // else {
+        //     //如果不询问，则直接使用localStorage中的配置。
+        //     //debug
+        //     console.log("not ask config, use localStorage");
+        // }
 
         // 同步用户设置
-        asyncLocalStorage();
+        //asyncLocalStorage();
         // 设置窗口位置和大小
         await ipcRenderer.invoke('set-bounds', bounds);
         // 设置窗口全屏
@@ -2444,6 +2452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ifAutoRefreshInZZZ: ifAutoRefreshInZZZ,
             ifAutoStartGame: ifAutoStartGame,
             ifUseAdmin: ifUseAdmin,
+            ifAskSwitchConfig: ifAskSwitchConfig,
             theme: theme
         };
 
@@ -2490,7 +2499,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveLocalStorage();
 
         //同步用户设置
-        asyncLocalStorage();
+        syncLocalStorage();
     }
 
     function saveLocalStorage() {
@@ -2600,5 +2609,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         );
     }
+
+    //-===========================主进程消息监听===========================
+    ipcRenderer.on('get-localStorage', (event) => {
+        //debug
+        console.log('main-process get-localStorage');
+        //debug
+        syncLocalStorage();
+    });
+
+    ipcRenderer.on('open-switch-config-dialog', (event) => {
+        //debug
+        console.log('open-switch-config-dialog');
+        showDialog(switchConfigDialog);
+    });
+
+    ipcRenderer.on('main-process-inited', (event) => {
+        //debug
+        console.log('main-process-inited');
+        //初始化
+        init();
+    });
+
 }
 );
+
+
