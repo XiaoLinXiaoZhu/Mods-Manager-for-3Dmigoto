@@ -354,6 +354,93 @@ ipcMain.handle('get-mods', async () => {
   return mods;
 });
 
+//-------------------获取mod信息-------------------
+
+function dealIniFile(iniPath) {
+  const lines = fs.readFileSync(iniPath, 'utf-8').split('\n');
+  let keyswap = [];
+  let flag = false;
+  lines.forEach(line => {
+    //debug
+    //console.log(line);
+    if (line.startsWith('[KeySwap]')) {
+      flag = true;
+      //debug
+      //console.log(`find [KeySwap]`);
+      return;
+    }
+    if (!flag) {
+      return;
+    }
+    if (line.startsWith('[')) {
+      flag = false;
+      return;
+    }
+    let key = '';
+    //匹配 key = xxx 或 key=xxx 或 back = xxx
+    if (line.startsWith('key =') && line.length > 6) {
+      key = line.slice(6).trim();
+    }
+    if (line.startsWith('key=') && line.length > 5) {
+      key = line.slice(5).trim();
+    }
+    if (line.startsWith('back = ') && line.length > 7) {
+      key = line.slice(7).trim();
+    }
+
+
+    if(key === '') {
+      return;
+    }
+    let add = '';
+    // 因为这里的key是代码，将其转化为单个字符可读性会更好
+    switch (key) {
+      case 'VK_UP': add = '↑'; break;
+      case 'VK_DOWN': add = '↓'; break;
+      case 'VK_LEFT': add = '←'; break;
+      case 'VK_RIGHT': add = '→'; break;
+      case 'VK_RETURN': add = '↵'; break;
+      case 'VK_ESCAPE': add = 'ESC'; break;
+      default: add = key; break;
+    }
+
+    if (!keyswap.includes(add)) {
+      keyswap.push(add);
+    }
+
+    //debug
+    //console.log(`keyswap: ${keyswap}`);
+
+  });
+
+  //debug
+  //console.log(`for ini file ${iniPath}, keyswap: ${keyswap}`);
+  return keyswap;
+}
+
+function findIniFile(dir) {
+  let keyswap = [];
+  const files = fs.readdirSync(dir);
+  files.forEach(file => {
+    const filePath = path.join(dir, file);
+    if (fs.statSync(filePath).isDirectory()) {
+      keyswap = keyswap.concat(findIniFile(filePath));
+    }
+    else if (file.endsWith('.ini')) {
+      keyswap = keyswap.concat(dealIniFile(filePath));
+
+      //debug
+      //console.log(`==================for ini file ${filePath}, keyswap: ${keyswap}`);
+    }
+  });
+  return keyswap;
+}
+
+
+function getSwapkeyFromIni(modDir) {
+  return findIniFile(modDir);
+}
+
 ipcMain.handle('get-mod-info', async (event, mod) => {
   //增加纠错
   if (modRootDir === '') {
@@ -368,14 +455,34 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
     console.log(`mod ${mod} not found`);
     return {};
   }
+
   const modDir = path.join(modBackpackDir, mod);
   const modInfoPath = path.join(modDir, 'mod.json');
+  let modInfo = {};
   if (fs.existsSync(modInfoPath)) {
-    // 这里为了兼容老的mod.json文件，如果没有url字段，则添加一个空的url字段
-    const modInfo = JSON.parse(fs.readFileSync(modInfoPath));
+    modInfo = JSON.parse(fs.readFileSync(modInfoPath));
+
+    //然后需要对modInfo进行一些处理，为了兼容老的mod.json文件
+    //如果没有url字段，则添加一个空的url字段
     if (!modInfo.url) {
       modInfo.url = '';
     }
+    // 如果没有keyswap字段，则添加一个空的keyswap字段
+    if (!modInfo.keyswap) {
+      modInfo.keyswap = 'null';
+    }
+
+    // 如果 keyswap 字段是字符串，则转化为数组
+    //debug
+    //console.log(`for mod ${mod}, keyswap: ${modInfo.keyswap}, type: ${typeof modInfo.keyswap}`);
+    if (typeof modInfo.keyswap === 'string') {
+      modInfo.keyswap = [];
+    }
+
+    if (modInfo.keyswap === '') {
+      modInfo.keyswap = [];
+    }
+
     // 如果存在 cover 字段，则将其改为 imagePath
     if (modInfo.cover) {
       //如果也存在imagePath字段，则将cover字段删除
@@ -389,20 +496,30 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
     if (modInfo.imagePath === '') {
       modInfo.imagePath = 'preview.jpg';
     }
-    return modInfo;
   }
   else {
-    //console.log(`modInfoPath not found: ${modInfoPath}`);
     //创建默认的mod.json文件
-    const modInfo = {
+    modInfo = {
       character: 'unknown',
       description: 'no description',
       imagePath: 'preview.jpg',
-      url: ''
+      url: '',
+      keyswap: []
     };
     fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
-    return modInfo;
   }
+
+  //如果不存在 keyswap 字段，则尝试从 ini 文件中读取
+  if (modInfo.keyswap == [] || 1) {
+    modInfo.keyswap = getSwapkeyFromIni(modDir);
+  }
+
+  //如果有更新的mod.json文件，则写入
+  if (modInfo !== JSON.parse(fs.readFileSync(modInfoPath))) {
+    fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
+  }
+
+  return modInfo;
 });
 
 ipcMain.handle('set-mod-info', async (event, mod, modInfo) => {

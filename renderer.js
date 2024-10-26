@@ -812,7 +812,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         //将info显示在 modInfo 中
         modInfoName.textContent = mod;
         modInfoCharacter.textContent = modInfo.character ? modInfo.character : 'Unknown';
-        modInfoDescription.textContent = modInfo.description ? modInfo.description : 'No description';
+        //keyswap 是 一个 列表，用来存储 快捷键信息，将其转换为字符串，之后添加到description中
+        let swapInfo = modInfo.keyswap.length >0 ? "keyswap : " + modInfo.keyswap.join(' ') : 'no keyswap';
+        modInfoDescription.innerHTML = swapInfo + '<br>' + (modInfo.description ? modInfo.description : 'No description');
 
         //获取mod的图片
         let modImagePath = await getModImagePath(mod);
@@ -1897,7 +1899,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const configTaps = configList.querySelectorAll('.tape-container');
         configTaps.forEach(tap => {
             //debug
-           // console.log(`tap:${tap.name} clicked:${tap.clicked}`);
+            // console.log(`tap:${tap.name} clicked:${tap.clicked}`);
             // 为什么这里又是字符串？
             if (tap.clicked == true) {
                 currentConfig = tap.name;
@@ -2264,8 +2266,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             modItem.querySelector('img').src = modImagePath;
             modItem.querySelector('img').alt = mod;
             modItem.querySelector('#mod-item-headline').textContent = mod;
-            modItem.querySelector('#mod-item-subhead').textContent = modCharacter;
-            modItem.querySelector('#mod-item-description').textContent = modDescription;
+            modItem.querySelector('#mod-item-subhead').textContent = modCharacter
+            //keyswap 是 一个 列表，用来存储 快捷键信息，将其转换为字符串，之后添加到description中
+            let swapInfo = modInfo.keyswap.length >0 ? "keyswap : " + modInfo.keyswap.join(' ') : 'no keyswap';
+            modItem.querySelector('#mod-item-description').innerHTML = swapInfo + '<br>' + modDescription;
 
             //debug
             //console.log(`load modItem ${mod} , character:${modCharacter} , description:${modDescription}`);
@@ -2563,7 +2567,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         console.log("saveConfigDialog dismissed");
         //获取用户输入的configName
-        const configName = saveConfigDialog.querySelector('#save-config-name').value? saveConfigDialog.querySelector('#save-config-name').value : 'default';
+        const configName = saveConfigDialog.querySelector('#save-config-name').value ? saveConfigDialog.querySelector('#save-config-name').value : 'default';
         const configDiscription = saveConfigDialog.querySelector('#save-config-description').value;
         //保存用户设置到config.json文件中
         saveConfigToFile(configName, configDiscription);
@@ -2627,7 +2631,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             //将自己取反，其他的全部设置为false
             container.clicked = !container.clicked;
             container.setAttribute('clicked', container.clicked);
-            
+
             const tapeContainers = document.querySelectorAll('.tape-container');
             tapeContainers.forEach(tape => {
                 if (tape != container) {
