@@ -363,7 +363,7 @@ function dealIniFile(iniPath) {
   lines.forEach(line => {
     //debug
     //console.log(line);
-    if (line.startsWith('[KeySwap]')) {
+    if (line.startsWith('[KeySwap')) {
       flag = true;
       //debug
       //console.log(`find [KeySwap]`);
