@@ -137,43 +137,63 @@ function createMainWindow() {
 // -===================== 内部函数 =====================
 //-------------------初始化-------------------
 function init(currentWindow) {
+
   // 激活get-localStorage后，
   // 渲染进程 通过sync-localStorage 传递数据给主进程
   // 之后，需要根据这些值进行初始化
-  const startGameIfNeed = () => {
-    //检查是否 开启了 autoStartGame
-    console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
-    if (ifAutoStartGame == "true") {
-      //启动游戏
-      startModLoader();
-      startGame();
-    }
-    //告诉渲染进程，可以加载mod列表了
-    ifMainProcessReady = true;
-    currentWindow.webContents.send('main-process-inited');
-  }
 
-  functionAfterSync = () => {
+  const functionIfUseAdmin = () => {
+    //为什么这里的ifUseAdmin是字符串……导致ifUseAdmin == true这个判断不成立
     if (ifUseAdmin == "true" && !HMC.isAdmin()) {
       //如果开启了 useAdmin，则需要以管理员模式重新启动
+      // 通过管理员模式重新启动
       restartAsAdmin();
       return;
     }
 
-    if (ifAskSwitchConfig != "true") {
-      startGameIfNeed;
-      return;
-    }
+    if (ifAskSwitchConfig == "true") {
+      // 如果开启了 在开始时 询问是否切换配置
+      // 则在获取新的配置之后再尝试启动游戏
+      const functionCheckAutoStartGame = () => {
+        //检查是否 开启了 autoStartGame
+        console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
+        if (ifAutoStartGame == "true") {
+          //启动游戏
+          // 之后不再在渲染进程中启动游戏，而是在主进程中启动游戏
+          startModLoader();
+          startGame();
+        }
 
-    // 如果开启了 在开始时 询问是否切换配置
-    // 则在获取新的配置之后再尝试启动游戏
-    //debug
-    console.log('open switch config dialog');
-    functionAfterSync = startGameIfNeed;
-    functionAfterSyncName = 'check auto start game after sync';
-    //打开切换配置dialog，等待被激活sync-localStorage
-    currentWindow.webContents.send('open-switch-config-dialog');
+        //告诉渲染进程，可以加载mod列表了
+        ifMainProcessReady = true;
+        currentWindow.webContents.send('main-process-inited');
+      }
+      setTimeout(() => {
+        //debug
+        console.log('open switch config dialog');
+        functionAfterSync = functionCheckAutoStartGame;
+        functionAfterSyncName = 'check auto start game after sync';
+        //打开切换配置dialog，等待被激活sync-localStorage
+        currentWindow.webContents.send('open-switch-config-dialog');
+      }, 0);
+    }
+    else {
+      //如果没有开启 在开始时 询问是否切换配置
+      //直接根据当前配置启动游戏
+      console.log(`ifAutoStartGame: ${ifAutoStartGame}`);
+      if (ifAutoStartGame == "true") {
+        //启动游戏
+        startModLoader();
+        startGame();
+      }
+
+      //告诉渲染进程，可以加载mod列表了
+      ifMainProcessReady = true;
+      currentWindow.webContents.send('main-process-inited');
+    }
   }
+
+  functionAfterSync = functionIfUseAdmin;
   functionAfterSyncName = 'check if use admin after sync';
   // 通过主窗口设置渲染进程的rootdir
   currentWindow.webContents.send('get-localStorage');
