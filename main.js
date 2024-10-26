@@ -363,7 +363,7 @@ function dealIniFile(iniPath) {
   lines.forEach(line => {
     //debug
     //console.log(line);
-    if (line.startsWith('[KeySwap')) {
+    if (line.startsWith('[KeySwap') || line.startsWith('[[KeyGlow')) {
       flag = true;
       //debug
       //console.log(`find [KeySwap]`);
@@ -401,6 +401,7 @@ function dealIniFile(iniPath) {
       case 'VK_RIGHT': add = '→'; break;
       case 'VK_RETURN': add = '↵'; break;
       case 'VK_ESCAPE': add = 'ESC'; break;
+      case 'no_modifiers [': add = '['; break;
       default: add = key; break;
     }
 
@@ -438,7 +439,10 @@ function findIniFile(dir) {
 
 
 function getSwapkeyFromIni(modDir) {
-  return findIniFile(modDir);
+  let keyswap = findIniFile(modDir);
+  // keyswap去重
+  keyswap = Array.from(new Set(keyswap));
+  return keyswap;
 }
 
 ipcMain.handle('get-mod-info', async (event, mod) => {
