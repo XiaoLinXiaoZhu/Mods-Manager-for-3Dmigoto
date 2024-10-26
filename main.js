@@ -389,7 +389,7 @@ function dealIniFile(iniPath) {
     }
 
 
-    if(key === '') {
+    if (key === '') {
       return;
     }
     let add = '';
@@ -510,7 +510,7 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
   }
 
   //如果不存在 keyswap 字段，则尝试从 ini 文件中读取
-  if (modInfo.keyswap == [] || 1) {
+  if (modInfo.keyswap == []) {
     modInfo.keyswap = getSwapkeyFromIni(modDir);
   }
 
@@ -539,6 +539,21 @@ ipcMain.handle('set-mod-info', async (event, mod, modInfo) => {
   const modDir = path.join(modBackpackDir, mod);
   const modInfoPath = path.join(modDir, 'mod.json');
   fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
+});
+
+ipcMain.handle('refresh-mod-info-swapkey', async () => {
+  //遍历mod文件夹，对每个mod的keyswap字段进行更新
+  const mods = fs.readdirSync(modBackpackDir);
+  mods.forEach(mod => {
+    const modDir = path.join(modBackpackDir, mod);
+    const modInfoPath = path.join(modDir, 'mod.json');
+    if (!fs.existsSync(modInfoPath)) {
+      return;
+    }
+    let modInfo = JSON.parse(fs.readFileSync(modInfoPath));
+    modInfo.keyswap = getSwapkeyFromIni(modDir);
+    fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
+  });
 });
 
 

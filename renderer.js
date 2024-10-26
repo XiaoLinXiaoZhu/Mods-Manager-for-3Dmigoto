@@ -1159,6 +1159,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     );
 
+    //-----------刷新 mod-info 中的 swapKey 字段-----------
+    const swapKeyButton = document.getElementById('refresh-mod-info-swapkey-button');
+    swapKeyButton.addEventListener('click', async () => {
+        //刷新所有的mod的swapKey
+        ipcRenderer.invoke('refresh-mod-info-swapkey');
+        snack('Refreshed all mods swapKey');
+    });
+
+    
     //---------更改setting-dialog的样式---------
     //设置页面使用的s-dialog是封装好的，无法通过css修改其样式，所以需要通过js来修改
     const settingsDialogStyle = document.createElement('style');
