@@ -1,4 +1,4 @@
-/* -这里是特定于组件的样式，全局样式请在style-component.css中定义- */
+/* -è¿™é‡Œæ˜¯ç‰¹å®šäºŽç»„ä»¶çš„æ ·å¼ï¼Œå…¨å±€æ ·å¼è¯·åœ¨style-component.cssä¸­å®šä¹‰- */
 @import url(sober-theme.css);
 
 html,
@@ -25,7 +25,7 @@ body {
     background-size: cover;
 }
 
-
+/* -============================ é¢„è®¾åˆ—è¡¨ ============================== */
 #preset-list-drawer {
     width: 180px;
     height: 100%;
@@ -34,15 +34,15 @@ body {
 }
 
 #preset-list-drawer-headline {
-    height: 80px;
+    height: 110px;
     width: 70%;
-    padding-right: 100px;
-    margin-top: 15px;
-    margin-left: 17px;
-    transform: skew(-20deg) translateX(50px);
+    padding-left: 100px;
+    margin-top: 10px;
+    margin-right: 17px;
+    transform: translateX(-50px);
     /* color: var(--s-color-on-primary); */
-    background-color: var(--s-color-background);
-    border: 2px solid var(--s-color-outline);
+    /* border: 2px solid var(--s-color-outline); */
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
     align-content: center;
@@ -51,20 +51,26 @@ body {
     flex-wrap: nowrap;
 }
 
-#preset-list-drawer-headline::after {
+#preset-list-drawer-headline::before {
     content: "";
     position: absolute;
-    top: 10px;
-    left: 143px;
-    bottom: 10px;
-    right: 0px;
-    border-radius: 0px 15px 0px 15px;
-    background-color: var(--s-color-surface-container-high);
+    top: 5px;
+    right: 30px;
+    bottom: 5px;
+    left: 0px;
+    border-radius: 15px;
+    box-shadow: inset 2px 2px 10px var(--s-color-surface-container-high);
+    border-color: var(--s-color-outline-variant);
+    border-width: 2px;
+    background-color: var(--s-color-background);
+    color: var(--s-color-on-surface);
 }
 
 #preset-list-drawer-headline p {
     font-size: 30px;
-    transform: skew(20deg);
+    transform: skew(0deg);
+    position: relative;
+    right: 10px;
 }
 
 #preset-container {
@@ -89,6 +95,10 @@ body {
         transform: translateX(20px);
     }
 }
+
+
+/* -============================ æ¨¡ç»„åˆ—è¡¨ ============================== */
+
 
 #main-page {
     width: 80%;
@@ -190,6 +200,7 @@ body {
     height: 30px;
     border: 0;
 }
+
 /* 
 #mod-container[dragover="true"] {
     .mod-item:hover {
@@ -209,7 +220,7 @@ body {
     flex-wrap: wrap; */
     gap: 12px;
     align-items: center;
-    
+
     justify-content: start;
     justify-items: center;
 
@@ -269,46 +280,52 @@ s-dialog h3 {
 
 
 #control-center {
-    height: 80px;
+    transition: all 0.3s ease-in-out 0s;
+    height: 100px;
     width: 70%;
-    padding-left: 100px;
+    padding-left: 120px;
     margin: 10px 18px 10px 0px;
-    transform: skew(-20deg) translateX(-50px);
-    color: var(--s-color-on-primary);
-    background-color: var(--s-color-background);
-    border: 3px solid var(--s-color-outline);
+    transform: translateX(-50px);
     display: flex;
     flex-direction: column;
     align-content: center;
     justify-content: center;
     align-items: center;
     flex-wrap: nowrap;
+    border-radius: 20px;
 }
 
 #control-center::after {
     content: "";
     position: absolute;
-    top: 10px;
+    top: 5px;
     left: 0;
-    bottom: 10px;
+    bottom: 5px;
     right: 140px;
-    border-radius: 0px 15px 0px 15px;
-    background-color: var(--s-color-surface-container-high);
-    z-index: -1;
+    border-radius: 15px;
+    transition: all 0.3s ease-in-out 0s;
+    box-shadow: inset 2px 2px 10px var(--s-color-surface-container-high);
+    border-color: var(--s-color-outline-variant);
+    border-width: 2px;
+    background-color: var(--s-color-background);
+    color: var(--s-color-on-surface);
 }
 
 #bottom-buttons {
     width: 100%;
-    height: 50%;
+    height: fit-content;
     display: flex;
-    margin: -2px 0;
+    margin: 0px;
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
     align-content: center;
-    transform: skew(20deg);
+    transform: skew(0deg) translateX(12px);
 }
+
+
+/* -============================ æ¨¡ç»„è¿‡æ»¤ ============================== */
 
 #mod-filter-container {
     display: flex;
@@ -323,7 +340,7 @@ s-dialog h3 {
     top: 0;
     left: 0;
     width: 0%;
-    height:  34px;
+    height: 34px;
     margin: 0px 8px;
     transform: skew(-20deg);
     border-radius: 8px;
@@ -339,25 +356,93 @@ s-dialog h3 {
     width: 300px;
     position: relative;
 
-    s-icon{
+    s-icon {
         position: absolute;
         left: 30px;
         transform: scale(1.1);
     }
 
-    p{
+    p {
         position: absolute;
         left: 70px;
     }
 }
 
-/* 右下加按键浮动 *已删除 */
+/* å³ä¸‹åŠ æŒ‰é”®æµ®åŠ¨ *å·²åˆ é™¤ */
 /* #mod-info-controller s-button:hover {
     transform: translateX(30px);
 } */
 
 
+/* -============================ æ¨¡ç»„ä¿¡æ¯ ============================== */
 
+#info-page {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    background-color: var(--s-color-surface-container);
+    border-color: var(--s-color-outline-variant);
+}
+
+#mod-info-headline {
+    padding: 3px 3px 20px 3px;
+    height: fit-content;
+    margin: 10px;
+    margin-bottom: 0;
+    width: calc(100% - 20px);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-content: flex-start;
+    flex-wrap: nowrap;
+    min-height: 100px;
+
+    h2 {
+        white-space: normal;
+        word-break: keep-all;
+        height: fit-content;
+        margin: 30px 0px;
+    }
+
+    p {
+        margin-top: -12px;
+        font-size: small;
+        color: gray;
+        height: fit-content;
+        width: fit-content;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+    }
+
+}
+
+#mod-info-container {
+    height: 100%;
+
+    #img-container {
+        padding: 3px 3px 20px 3px;
+        height: 224px;
+        margin: 10px;
+        width: calc(100% - 20px);
+        border-radius: 20px;
+        overflow: hidden;
+        box-sizing: border-box;
+        padding-bottom: calc(80% + 30px);
+    }
+
+    #mod-info-image {
+        width: 100%;
+        border-radius: 18px;
+        background-image: none;
+        padding-bottom: 80%;
+    }
+}
 
 
 
@@ -365,7 +450,7 @@ s-dialog h3 {
 
 /* -dialog */
 
-/* settings-dialog 进行左右分栏，左侧为设置菜单，右侧为设置内容 */
+/* settings-dialog è¿›è¡Œå·¦å³åˆ†æ ï¼Œå·¦ä¾§ä¸ºè®¾ç½®èœå•ï¼Œå³ä¾§ä¸ºè®¾ç½®å†…å®¹ */
 #settings-dialog-container {
     width: 100%;
     height: 100%;
@@ -375,14 +460,16 @@ s-dialog h3 {
     justify-content: space-evenly;
 }
 
-#settings-menu,#edit-mod-info-dialog-left  {
+#settings-menu,
+#edit-mod-info-dialog-left {
     width: 28%;
     max-width: 180px;
-    margin:0px 10px;
+    margin: 0px 10px;
     height: 100%;
 }
 
-#settings-content,#edit-mod-info-content {
+#settings-content,
+#edit-mod-info-content {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -400,12 +487,12 @@ s-dialog h3 {
     display: none;
 }
 
-#settings-menu .settings-menu-radio:checked + label {
+#settings-menu .settings-menu-radio:checked+label {
     background-color: var(--s-color-secondary-container);
     color: var(--s-color-on-primary);
 }
 
-#settings-menu .settings-menu-radio + label {
+#settings-menu .settings-menu-radio+label {
     display: block;
     padding: 16px 20px;
     border-radius: 9px;
@@ -418,7 +505,7 @@ s-dialog h3 {
     z-index: 1;
 }
 
-#settings-menu .settings-menu-radio + label::after {
+#settings-menu .settings-menu-radio+label::after {
     content: "";
     display: block;
     width: 100%;
@@ -434,10 +521,11 @@ s-dialog h3 {
     z-index: 0;
 }
 
-#language-picker,#theme-picker {
+#language-picker,
+#theme-picker {
     >label {
         margin: 0 2px;
-}
+    }
 }
 
 /* -help-dialog */
@@ -453,7 +541,7 @@ s-dialog h3 {
 #help-menu {
     width: 28%;
     max-width: 180px;
-    margin:0px 10px;
+    margin: 0px 10px;
     height: 100%;
 }
 
@@ -475,12 +563,12 @@ s-dialog h3 {
     display: none;
 }
 
-#help-menu .help-menu-radio:checked + label {
+#help-menu .help-menu-radio:checked+label {
     background-color: var(--s-color-secondary-container);
     color: var(--s-color-on-primary);
 }
 
-#help-menu .help-menu-radio + label {
+#help-menu .help-menu-radio+label {
     display: block;
     padding: 16px 20px;
     border-radius: 9px;
@@ -493,7 +581,7 @@ s-dialog h3 {
     z-index: 1;
 }
 
-#help-menu .help-menu-radio + label::after {
+#help-menu .help-menu-radio+label::after {
     content: "";
     display: block;
     width: 100%;

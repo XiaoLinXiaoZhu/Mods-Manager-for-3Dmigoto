@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let compactMode = false;
     let currentMod = '';
     let ifAskedSwitchConfig = false;
+    let currentConfig = '';
 
 
     //--------------Intersect Observer----------------
@@ -1002,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     autoApplySwitch.addEventListener('change', () => {
         ifAutoApply = autoApplySwitch.checked;
         //保存ifAutoApply
-        localStorage.setItem('ifAutoApply', ifAutoApply);
+        setLoacalStorage('ifAutoApply', ifAutoApply);
         //debug
         console.log("ifAutoApply: " + ifAutoApply);
     });
@@ -1014,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     autoRefreshInZZZSwitch.addEventListener('change', () => {
         ifAutoRefreshInZZZ = autoRefreshInZZZSwitch.checked;
         //保存ifAutoRefreshInZZZ
-        localStorage.setItem('ifAutoRefreshInZZZ', ifAutoRefreshInZZZ);
+        setLoacalStorage('ifAutoRefreshInZZZ', ifAutoRefreshInZZZ);
         //debug
         console.log("ifAutoRefreshInZZZ: " + ifAutoRefreshInZZZ);
     });
@@ -1024,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     autoStartGameSwitch.addEventListener('change', () => {
         ifAutoStartGame = autoStartGameSwitch.checked;
         //保存ifAutoStartGame
-        localStorage.setItem('ifAutoStartGame', ifAutoStartGame);
+        setLoacalStorage('ifAutoStartGame', ifAutoStartGame);
         //debug
         console.log("ifAutoStartGame: " + ifAutoStartGame);
 
@@ -1036,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ifAutoStartGame = false;
                 autoStartGameSwitch.checked = false;
                 //保存ifAutoStartGame
-                localStorage.setItem('ifAutoStartGame', ifAutoStartGame);
+                setLoacalStorage('ifAutoStartGame', ifAutoStartGame);
                 return;
             }
         }
@@ -1047,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     useAdminSwitch.addEventListener('change', () => {
         ifUseAdmin = useAdminSwitch.checked;
         //保存ifUseAdmin
-        localStorage.setItem('ifUseAdmin', ifUseAdmin);
+        setLoacalStorage('ifUseAdmin', ifUseAdmin);
         //debug
         console.log("ifUseAdmin: " + ifUseAdmin);
     });
@@ -1059,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //让 modRootDirInput 的 value属性 为 用户选择的路径
         if (modRootDir !== '') {
             modRootDirInput.value = modRootDir;
-            localStorage.setItem('modRootDir', modRootDir);
+            setLoacalStorage('modRootDir', modRootDir);
             syncLocalStorage();
             snack(`Mod root directory set to ${modRootDir}`);
         }
@@ -1075,7 +1076,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //让 modBackpackDirInput 的 value属性 为 用户选择的路径
         if (modBackpackDir !== '') {
             modBackpackDirInput.value = modBackpackDir;
-            localStorage.setItem('modBackpackDir', modBackpackDir);
+            setLoacalStorage('modBackpackDir', modBackpackDir);
             syncLocalStorage();
             snack(`Mod backpack directory set to ${modBackpackDir}`);
         }
@@ -1092,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //让 modLoaderDirInput 的 value属性 为 用户选择的路径
         if (modLoaderDir !== '') {
             modLoaderDirInput.value = modLoaderDir;
-            localStorage.setItem('modLoaderDir', modLoaderDir);
+            setLoacalStorage('modLoaderDir', modLoaderDir);
             syncLocalStorage();
             snack(`Mod loader path set to ${modLoaderDir}`);
         }
@@ -1108,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //让 gameDirInput 的 value属性 为 用户选择的路径
         if (gameDir !== '') {
             gameDirInput.value = gameDir;
-            localStorage.setItem('gameDir', gameDir);
+            setLoacalStorage('gameDir', gameDir);
             syncLocalStorage();
             snack(`Game path set to ${gameDir}`);
         }
@@ -1129,7 +1130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (files.length > 0) {
                 snack('Config directory is not empty');
             }
-            localStorage.setItem('configRootDir', inputDir);
+            setLoacalStorage('configRootDir', inputDir);
             configRootDir = inputDir;
             snack(`Config path set to ${inputDir}`);
         }
@@ -1150,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         ifAskSwitchConfig = checked;
         //保存ifAskSwitchConfig
-        localStorage.setItem('ifAskSwitchConfig', ifAskSwitchConfig);
+        setLoacalStorage('ifAskSwitchConfig', ifAskSwitchConfig);
         //debug
         console.log("ifAskSwitchConfig: " + ifAskSwitchConfig);
     }
@@ -1381,6 +1382,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function showHelp() {
         // 根据当前的语言显示对应的帮助页面
         if (lang == 'en') {
+            //debug
+            console.log("showing helpDialogEn");
             showDialog(helpDialogEn);
 
             //检查是否有checked的input，如果有，则将其对应的tab显示，否则隐藏所有的tab
@@ -1838,11 +1841,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     window.addEventListener('unload', function (event) {
-        localStorage.setItem('fullscreen', isFullScreen);
+        setLoacalStorage('fullscreen', isFullScreen);
 
 
         if (!isFullScreen) {
-            localStorage.setItem('bounds', JSON.stringify({
+            setLoacalStorage('bounds', JSON.stringify({
                 x: window.screenX,
                 y: window.screenY,
                 width: window.outerWidth,
@@ -1892,7 +1895,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         //读取当前的配置文件
         const configList = document.getElementById('switch-config-list');
         const configTaps = configList.querySelectorAll('.tape-container');
-        let currentConfig = '';
         configTaps.forEach(tap => {
             //debug
            // console.log(`tap:${tap.name} clicked:${tap.clicked}`);
@@ -1918,6 +1920,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //-===================================内部函数===================================
     //- 内部函数
+
     async function syncLocalStorage() {
         //获取用户的设置
         const userConfig = {
@@ -2019,7 +2022,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setLang(newLang) {
         //设置语言
         lang = newLang;
-        localStorage.setItem('lang', lang);
+        setLoacalStorage('lang', lang);
         //debug
         console.log(`lang:${lang}`);
         //设置页面同步修改显示情况
@@ -2032,7 +2035,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setTheme(newTheme) {
         //设置主题
         theme = newTheme;
-        localStorage.setItem('theme', newTheme);
+        setLoacalStorage('theme', newTheme);
         //debug
         console.log(`theme:${newTheme}`);
         //在设置页面同步修改显示情况
@@ -2345,7 +2348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             //展示help
             showHelp();
             //设置showedHelp为true
-            localStorage.setItem('showedHelp', 'true');
+            setLoacalStorage('showedHelp', 'true');
         }
 
         //检查是否是开起了在启动时询问切换配置文件
@@ -2419,7 +2422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showDialog(refreshDialog);
 
         //设置firstOpen为false
-        localStorage.setItem('firstOpen', 'false');
+        setLoacalStorage('firstOpen', 'false');
     }
 
     function saveConfigToFile(configName, configDiscription) {
@@ -2514,6 +2517,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('ifAutoStartGame', ifAutoStartGame);
         localStorage.setItem('ifUseAdmin', ifUseAdmin);
         localStorage.setItem('theme', theme);
+        localStorage.setItem('ifAskSwitchConfig', ifAskSwitchConfig);
+
+        //检测是否选择了配置文件
+        if (currentConfig != '') {
+            localStorage.setItem('currentConfig', currentConfig);
+            // 将当前配置保存在配置文件中
+            saveConfigToFile(currentConfig, '');
+            //debug
+            console.log(`currentConfig:${currentConfig} saved to file`);
+        }
+    }
+
+    function setLoacalStorage(item, value) {
+        localStorage.setItem(item, value);
+
+        //检测是否选择了配置文件
+        if (currentConfig != '') {
+            localStorage.setItem('currentConfig', currentConfig);
+            // 将当前配置保存在配置文件中
+            saveConfigToFile(currentConfig, '');
+            //debug
+            console.log(`currentConfig:${currentConfig} saved to file`);
+        }
+
+        //如果该配置不是 lang，theme，ifAutoApply，ifUseAdmin，则意味着不是重要的配置，可以不用 syncLocalStorage
+        if (item != 'lang' && item != 'theme' && item != 'ifAutoApply' && item != 'ifUseAdmin') {
+            return;
+        }
+        syncLocalStorage();
     }
 
     const saveConfigButton = document.getElementById('save-config-button');
@@ -2531,7 +2563,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         //debug
         console.log("saveConfigDialog dismissed");
         //获取用户输入的configName
-        const configName = saveConfigDialog.querySelector('#save-config-name').value;
+        const configName = saveConfigDialog.querySelector('#save-config-name').value? saveConfigDialog.querySelector('#save-config-name').value : 'default';
         const configDiscription = saveConfigDialog.querySelector('#save-config-description').value;
         //保存用户设置到config.json文件中
         saveConfigToFile(configName, configDiscription);

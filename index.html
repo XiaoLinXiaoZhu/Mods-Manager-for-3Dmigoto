@@ -24,7 +24,7 @@
     <s-drawer style="width: 100%;" id="drawer-page">
       <!-- -预设控制 -->
       <div slot="start" id="preset-list-drawer" class="OO-colunm-center">
-        <div class="right-adhesive-button" id="preset-list-drawer-headline">
+        <div class="OO-button-box" id="preset-list-drawer-headline">
           <p class="font-hongmeng">Presets</p>
         </div>
         <s-divider style="margin-bottom: 0;"></s-divider>
@@ -42,7 +42,7 @@
           <p data-translate-key="edit-preset" style="align-self: auto;width: fit-content;height: fit-content;">编辑预设</p>
         </s-button>
         <div id="placeholder" style="flex: 1;"></div>
-        <div id="control-center" class="left-adhesive-button">
+        <div id="control-center" class="OO-button-box">
           <div id="bottom-buttons">
             <!-- -全屏按钮-->
             <s-tooltip>
@@ -366,26 +366,17 @@
 
       <!-- -属性详情界面 -->
 
-      <div slot="end" id="info-page"
-        style="display: flex;justify-content: flex-start;flex-wrap: nowrap;flex-direction: column;align-items: center;width:300px;background-color: var(--s-color-surface-container);border-color: var(--s-color-outline-variant);">
-        <div class="OO-button-box"
-          style="padding: 3px 3px 20px 3px;height: fit-content;margin: 10px;width: calc(100% - 20px);border-radius: 10px;overflow: hidden;display:flex;flex-direction: column;align-items: center;justify-content: center;align-content: flex-start;flex-wrap: nowrap;min-height: 100px;">
+      <div slot="end" id="info-page">
+        <div class="OO-button-box" id="mod-info-headline">
           <div style="width: 83%;height: fit-content;padding: 10px 0px;">
-            <h2 id="mod-info-name" style="white-space:normal;word-break:keep-all;height: fit-content;margin: 30px 0px;">
-              Mod name</h2>
+            <h2 id="mod-info-name">Mod name</h2>
             <s-divider style="margin-top: -11px;width: 100%;"></s-divider>
-
           </div>
-          <p id="mod-info-character"
-            style="margin-top: -12px;font-size: small;color: gray;height: fit-content;width: fit-content;margin-bottom: 10px;padding-bottom: 10px;">
-            Character</p>
+          <p id="mod-info-character">Character</p>
         </div>
         <div id="mod-info-container" class="OO-colunm-center" style="height: 100%;">
-
-          <div class="OO-button-box" id="img-container"
-            style="padding: 3px 3px 20px 3px;height: 224px;margin: 10px;width: calc(100% - 20px);border-radius: 10px;overflow: hidden;box-sizing: border-box;padding-bottom: calc(80% + 30px) ;">
-            <div class="OO-shade-box OO-center-bg" id="mod-info-image"
-              style="width: 100%;border-radius: 8px;background-image: none;padding-bottom: 80%;">
+          <div class="OO-button-box" id="img-container">
+            <div class="OO-shade-box OO-center-bg" id="mod-info-image">
             </div>
           </div>
           <div class="OO-box OO-shade-box" style="height: auto;display:flex;">
@@ -585,6 +576,14 @@
               </p>
               <s-divider></s-divider>
               <div class="OO-setting-bar">
+                <h3 data-translate-key="switch-config"> 切换配置 </h3>
+                <s-button id="switch-config-button" data-translate-key="switch"
+                  onclick="document.getElementById('switch-config-dialog').show()">
+                  切换配置
+                </s-button>
+              </div>
+              <s-divider></s-divider>
+              <div class="OO-setting-bar">
                 <h3 data-translate-key="save-config"> 保存配置 </h3>
                 <s-button id="save-config-button" data-translate-key="save">
                   保存配置
@@ -758,11 +757,13 @@
         <div id="help-dialog-container">
           <div id="help-menu" class="OO-box">
             <input type="radio" name="help-menu" id="help-preset" class="help-menu-radio" checked>
-            <label for="help-preset" class="font-hongmeng"> 使用preset管理你的mod </label>
+            <label for="help-preset" class="font-hongmeng"> 使用【预设】管理你的mod </label>
             <input type="radio" name="help-menu" id="help-mod" class="help-menu-radio">
             <label for="help-mod" class="help-mod"> 导入mod，配置mod信息 </label>
             <input type="radio" name="help-menu" id="help-auto" class="help-menu-radio">
             <label for="help-auto" class="font-hongmeng"> 自动化 </label>
+            <input type="radio" name="help-menu" id="help-multiple-games" class="help-menu-radio">
+            <label for="help-multiple-games" class="font-hongmeng"> 适配多个游戏 </label>
             <input type="radio" name="help-menu" id="help-trouble" class="help-menu-radio">
             <label for="help-trouble" class="font-hongmeng"> 故障排除 </label>
           </div>
@@ -771,43 +772,43 @@
             <!-- -预设 -->
             <div id="help-dialog-help-preset" class="help-dialog-tab" style="overflow: auto;">
               <div class="OO-setting-bar">
-                <h3> 使用preset管理你的mod </h3>
+                <h3> 使用【预设】管理你的mod </h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p> 你可以将你的一系列mod选项保存到preset中，以便在不同的mod组合中快速切换。所有预设的相关按钮都在右侧的预设栏中。你可以点击标题栏右侧的预设按钮来打开/关闭预设栏。 </p>
+                <p>你可以将一系列的mod选项保存到【预设】中，以便快速切换不同的mod组合。所有预设的相关按钮都在右侧的预设栏里。点击标题栏右侧的预设按钮可以打开或关闭预设栏。</p>
               </div>
               <div class="OO-setting-bar">
-                <h3>创建预设：</h3>
+                <h3>创建【预设】：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>1. 点击 添加预设 按钮,它位于预设栏的中部</p>
+                <p>1. 点击位于预设栏中部的【添加预设】按钮</p>
                 <p>2. 输入预设名称</p>
-                <p>3. 点击 确定 按钮</p>
-                <p>之后，你选中的mod将会被保存到该预设中。</p>
+                <p>3. 点击【确定】按钮</p>
+                <p>之后，当前选中的mod将会被保存到新的预设中。</p>
               </div>
 
               <div class="OO-setting-bar">
-                <h3>应用预设：</h3>
+                <h3>应用【预设】：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>1. 选择你想要应用的预设</p>
-                <p>2. 点击 主页面中的 应用配置 按钮</p>
-                <p>之后，你的预设将会被应用到模组加载器中。</p>
+                <p>1. 选择想要应用的【预设】</p>
+                <p>2. 点击主页面中的【应用配置】按钮</p>
+                <p>随后，所选预设将会被加载到模组加载器中。</p>
               </div>
 
               <div class="OO-setting-bar">
-                <h3>编辑预设：</h3>
+                <h3>编辑【预设】：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>你的所有更改都会被保存到当前预设中，如果你不希望保存，可以创建一个新的临时预设，或者在程序开始时不选择预设。</p>
+                <p>任何对预设的更改都会自动保存。如果不希望保存更改，可以选择不使用预设或创建一个临时预设。</p>
               </div>
 
               <div class="OO-setting-bar">
-                <h3>删除预设：</h3>
+                <h3>删除【预设】：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>1. 点击编辑预设按钮，之后每个预设的右侧会出现删除按钮</p>
-                <p>2. 点击删除按钮，将会删除该预设（你不能删除当前应用的预设）</p>
+                <p>1. 点击【编辑预设】按钮后，每个预设旁边会出现【删除】按钮</p>
+                <p>2. 点击【删除】按钮即可删除该预设（无法删除当前正在使用的预设）</p>
               </div>
 
               <div class="placeholder" style="flex: 1;min-height: 150px;"></div>
@@ -818,70 +819,99 @@
                 <h3>导入mod：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>有两种方式导入mod</p>
-                <p>1. 将mod文件夹拖拽到主窗口中，他将自动把你的mod文件夹移动到modResourceBackpack中，但是在管理员模式下，拖拽动作将会因为安全限制而无法执行</p>
-                <p>2. 手动将文件夹移动到modResourceBackpack中</p>
-                <p>暂时还不支持导入zip文件，如果你需要导入zip文件，请先解压后再导入</p>
+                <p>有两种方法可以导入mod：</p>
+                <p>1. 将mod文件夹拖放到主窗口中，它会自动移动到【modResourceBackpack】中。但在管理员模式下，由于安全限制，拖放功能不可用。</p>
+                <p>2. 手动将文件夹移到【modResourceBackpack】中。</p>
+                <p>目前还不支持直接导入zip文件，请先解压后再进行导入。</p>
               </div>
 
               <div class="OO-setting-bar">
                 <h3>配置mod信息：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>1. 点击mod列表中的mod，右侧将会展示mod的信息，再次点击右侧菜单栏的编辑mod信息按钮，将会弹出编辑mod信息的对话框，按照提示填写mod信息</p>
-                <p>2. 右键mod列表中的mod，将会编辑mod信息的对话框，按照提示填写mod信息</p>
-                <p>之后你的mod信息将会被保存到modResourceBackpack中，你可以在mod列表中看到你的mod信息</p>
+                <p>1. 在mod列表中点击某个mod，在右侧会出现mod的信息。点击右侧菜单栏中的【编辑mod信息】按钮，按照提示填写信息。</p>
+                <p>2. 右键点击mod列表中的mod，同样可以打开编辑对话框填写信息。</p>
+                <p>完成编辑后，mod信息会被保存在【modResourceBackpack】中，并在mod列表中显示。</p>
               </div>
 
               <div class="OO-setting-bar">
                 <h3>配置mod封面：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>有三种方式都能配置mod封面：</p>
-                <p>1. 在编辑mod信息的对话框中，点击设置封面图片按钮，将会打开文件选择器，选择你的封面图片</p>
-                <p>2. 将你的图片拖入mod卡片中，将会自动设置为mod封面（可以从网页中直接拖入）但是在管理员模式下，拖拽动作将会因为安全限制而无法执行</p>
+                <p>有三种方式可以配置mod封面：</p>
+                <p>1. 在编辑mod信息的对话框中，点击【设置封面图片】按钮，然后选择图片。</p>
+                <p>2. 直接将图片拖放到mod卡片上（可以从网页中拖放），但在管理员模式下此功能受限。</p>
+                <p>3. 手动将图片放到mod文件夹中，文件名为cover.jpg或cover.png。</p>
+              </div>
+            </div>
+
+            <!-- -多个游戏 -->
+            <div id="help-dialog-help-multiple-games" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>适配多个游戏</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>程序通过保存不同的配置文件夹来适应不同的游戏。可以在设置中启用询问切换配置，这样启动时程序会询问选择哪个配置文件夹以适配特定的游戏。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>将当前配置保存到配置文件：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. 设置当前游戏的mod根目录、mod背包目录、mod加载器目录和游戏目录。</p>
+                <p>2. 在设置页面的“切换配置”部分指定配置文件夹的位置。</p>
+                <p>3. 点击【保存当前配置到配置文件夹】按钮。</p>
+                <p>4. 之后可以通过设置页面的“切换配置”来切换配置文件夹。</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>切换配置文件夹：</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. 在设置页面的“切换配置”部分点击【切换配置】按钮。</p>
+                <p>2. 程序会根据选择的配置文件夹启动。</p>
+                <p>另外，也可以开启自动询问切换配置的功能，这样每次启动时程序都会询问选择哪个配置文件夹。</p>
               </div>
             </div>
 
             <!-- -自动化 -->
             <div id="help-dialog-help-auto" class="help-dialog-tab" style="overflow: auto;">
               <div class="OO-setting-bar">
-                <h3> 让自动化解放你的双手 </h3>
+                <h3> 让【自动化】解放你的双手 </h3>
               </div>
               <div class="OO-setting-bar">
-                <h3>自动化</h3>
+                <h3>【自动化】</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>本程序能够自动化打开游戏和modLoader，以及在应用mod时自动激活绝区零的窗口并且使其刷新，但是这需要一点配置</p>
+                <p>本程序能够自动启动游戏和modLoader，并在应用mod时激活绝区零的窗口并刷新，但这需要一定的配置。</p>
               </div>
 
               <div class="OO-setting-bar">
                 <h3>自动应用：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>你可以在设置中启用自动应用配置，这样当你选择/取消选择mod时，程序将会自动应用配置，将选择的mod应用到模组加载器中。</p>
+                <p>可以在设置中启用【自动应用】配置，这样每当选择或取消选择mod时，程序会自动应用这些改变。</p>
               </div>
 
               <div class="OO-setting-bar">
                 <h3>自动刷新：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>当 mod 被应用时，程序将会自动激活 zzz 的窗口并且使其刷新，这样你就不需要手动切换窗口了并且按下 F10 刷新了。</p>
+                <p>当mod被应用时，程序会自动激活zzz的窗口并刷新，这样就无需手动操作了。</p>
               </div>
 
               <div class="OO-setting-bar">
                 <h3>自动启动游戏：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>当程序启动时，程序将会自动启动游戏和modLoader，但是这需要在设置中的高级设置中设置游戏目录和modLoader目录。</p>
+                <p>程序启动时可以自动启动游戏和modLoader，但需在高级设置中正确设置游戏和modLoader的路径。</p>
               </div>
 
               <div class="OO-setting-bar">
                 <h3>使用管理员权限：</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>当程序启动时，程序将会使用管理员权限。这样，当自动启动游戏时，游戏也会以管理员权限启动，而不会弹出UAC提示框。但是使用管理员模式会导致拖拽动作被禁用，通过拖拽导入mod和设置mod封面图片将会被禁用。
-                </p>
+                <p>程序启动时将以管理员权限运行，这使得游戏也能以管理员权限启动，避免UAC提示。不过，在管理员模式下，拖放操作将被禁用，因此不能通过拖放来导入mod或设置封面图片。</p>
               </div>
             </div>
 
@@ -891,15 +921,13 @@
                 <h3>故障排除</h3>
               </div>
               <div class="OO-box OO-shade-box">
-                <p>当程序发生故障时，你可以尝试以下方法解决问题：</p>
-                <p>1. 按下 F5 刷新页面，这可能会解决一些问题</p>
-                <p>2. 重启程序，这可能会解决一些问题</p>
-                <p>3. 按下 Ctrl + Shift + I 打开控制台，查看错误信息，这可能会帮助你找到问题</p>
-                <p>如果上述方法都无法解决问题，你可以将控制台中的错误信息截图并且提交到github或者gamebanana上，我会尽力帮助你解决问题</p>
+                <p>如果遇到问题，可以尝试以下步骤解决问题：</p>
+                <p>1. 按F5刷新页面，可能解决某些问题。</p>
+                <p>2. 重启程序，有时候重启就能解决问题。</p>
+                <p>3. 按Ctrl + Shift + I打开开发者工具查看控制台错误信息，有助于定位问题。</p>
+                <p>如果以上方法无效，可以截图控制台错误信息并提交到GitHub或GameBanana寻求帮助。</p>
               </div>
             </div>
-
-
           </div>
         </div>
       </div>
@@ -917,6 +945,8 @@
             <label for="help-preset-en" class="font-hongmeng">Manage your mods with presets</label>
             <input type="radio" name="help-menu-en" id="help-mod-en" class="help-menu-radio">
             <label for="help-mod-en" class="help-mod">Import mods, configure mod information</label>
+            <input type="radio" name="help-menu-en" id="help-multiple-games-en" class="help-menu-radio">
+            <label for="help-multiple-games-en" class="font-hongmeng">Adapt to multiple games</label>
             <input type="radio" name="help-menu-en" id="help-auto-en" class="help-menu-radio">
             <label for="help-auto-en" class="font-hongmeng">Automation</label>
             <input type="radio" name="help-menu-en" id="help-trouble-en" class="help-menu-radio">
@@ -1012,6 +1042,46 @@
                   administrator mode</p>
               </div>
             </div>
+
+
+            <!-- -Multiple games -->
+            <div id="help-dialog-help-multiple-games-en" class="help-dialog-tab" style="overflow: auto;">
+              <div class="OO-setting-bar">
+                <h3>Adapt to multiple games</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>This program adapts to different games by saving different configuration folders. You can enable the
+                  prompt to switch configurations in the settings. This way, when the program starts, it will ask you to
+                  choose which configuration folder to use, adapting to different games.</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Save current configuration:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. Configure the mod root directory, mod backpack directory, mod loader directory, and game directory
+                  for the current game</p>
+                <p>2. Set the location of the configuration folder in the "Switch Configuration" section of the settings
+                  page</p>
+                <p>3. Click "Save current configuration to configuration folder" to save the current configuration to
+                  the configuration folder</p>
+                <p>4. After that, you can click "Switch Configuration" in the "Switch Configuration" section of the
+                  settings page to switch configuration folders</p>
+              </div>
+
+              <div class="OO-setting-bar">
+                <h3>Switch configuration folders:</h3>
+              </div>
+              <div class="OO-box OO-shade-box">
+                <p>1. Click "Switch Configuration" in the "Switch Configuration" section of the settings page</p>
+                <p>2. The program will then use the configuration folder you selected to start</p>
+                <p>Additionally, you can enable the automatic prompt to switch configurations. This way, when the
+                  program starts, it will ask you to choose which configuration folder to use, adapting to different
+                  games.</p>
+              </div>
+            </div>
+
+
 
             <!-- -Automation -->
             <div id="help-dialog-help-auto-en" class="help-dialog-tab" style="overflow: auto;">
@@ -1146,10 +1216,10 @@
       </div>
       <div slot="action" class="OO-setting-bar" style="display: flex;justify-content: center;">
         <h3 data-translate-key="cancel"> 取消 </h3>
-        </div>
-        <div slot="action" class="OO-setting-bar" style="display: flex;justify-content: center;">
-          <h3 data-translate-key="confirm"> 确定 </h3>
-          </div>
+      </div>
+      <div slot="action" class="OO-setting-bar" style="display: flex;justify-content: center;">
+        <h3 data-translate-key="confirm"> 确定 </h3>
+      </div>
     </s-dialog>
 
     <!-- -保存配置 -->
