@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // modRootDir: modLoader用于加载mod的根目录
     let modRootDir = localStorage.getItem('modRootDir') || __dirname;
-    // modBackpackDir: mod的存储目录
-    let modBackpackDir = localStorage.getItem('modBackpackDir') || '';
+    // modSourceDir: mod的存储目录
+    let modSourceDir = localStorage.getItem('modSourceDir') || '';
 
     //是否自动应用,自动在zzz中刷新，使用管理员权限
     let ifAutoApply = localStorage.getItem('ifAutoApply') || false;
@@ -368,14 +368,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log(`handle folder drop: ${item.fullPath}`);
         // 这里的 item.fullPath 是一个虚拟路径，以 / 开头，需要去掉
         const modName = item.fullPath.slice(1);
-        if (fs.existsSync(path.join(modBackpackDir, modName))) {
+        if (fs.existsSync(path.join(modSourceDir, modName))) {
             snack(`Mod ${modName} already exists`);
             return;
         }
-        // 将文件夹拷贝到 modBackpackDir 中
+        // 将文件夹拷贝到 modSourceDir 中
         // 但是这里的 item 的 fullPath 是一个虚拟路径，无法直接使用 fs 进行操作
-        // 但是我们可以递归读取每一个文件，然后将其拷贝到 modBackpackDir 的对应位置
-        copyFolder(item, modBackpackDir);
+        // 但是我们可以递归读取每一个文件，然后将其拷贝到 modSourceDir 的对应位置
+        copyFolder(item, modSourceDir);
         // 复制完成后，刷新 modList
         //debug
         console.log(`Copied folder: ${item.fullPath}`);
@@ -510,12 +510,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     async function updateModCardCover(imageUrl, modItem, mod) {
-        // 将图片保存到modResourceBackpack文件夹中，文件名为preview+后缀名，并且将其保存到mod.json中
+        // 将图片保存到modSource文件夹中，文件名为preview+后缀名，并且将其保存到mod.json中
         //debug
         console.log(`update mod card cover of ${mod} with ${imageUrl}`);
         const imageExt = imageUrl.split(';')[0].split('/')[1];
         const modImageName = `preview.${imageExt}`;
-        const modImageDest = path.join(modBackpackDir, mod, modImageName);
+        const modImageDest = path.join(modSourceDir, mod, modImageName);
         fs.writeFileSync(modImageDest, imageUrl.split(',')[1], 'base64');
 
         // 更新mod.json
@@ -1071,16 +1071,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    //-----------设置 modBackpackDir-----------
-    const modBackpackDirInput = document.getElementById('set-modBackpackDir-input');
-    modBackpackDirInput.addEventListener('click', async () => {
-        const modBackpackDir = await getFilePathsFromSystemDialog('Mod Resource Backpack', 'directory');
-        //让 modBackpackDirInput 的 value属性 为 用户选择的路径
-        if (modBackpackDir !== '') {
-            modBackpackDirInput.value = modBackpackDir;
-            setLoacalStorage('modBackpackDir', modBackpackDir);
+    //-----------设置 modSourceDir-----------
+    const modSourceDirInput = document.getElementById('set-modSourceDir-input');
+    modSourceDirInput.addEventListener('click', async () => {
+        const modSourceDir = await getFilePathsFromSystemDialog('Mod Resource Backpack', 'directory');
+        //让 modSourceDirInput 的 value属性 为 用户选择的路径
+        if (modSourceDir !== '') {
+            modSourceDirInput.value = modSourceDir;
+            setLoacalStorage('modSourceDir', modSourceDir);
             syncLocalStorage();
-            snack(`Mod backpack directory set to ${modBackpackDir}`);
+            snack(`Mod backpack directory set to ${modSourceDir}`);
         }
         else {
             snack('Please select your mod backpack directory');
@@ -1227,8 +1227,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         //显示当前 modRootDir 的值
         modRootDirInput.value = modRootDir;
 
-        //显示当前 modBackpackDir 的值
-        modBackpackDirInput.value = modBackpackDir;
+        //显示当前 modSourceDir 的值
+        modSourceDirInput.value = modSourceDir;
 
         //显示当前 modLoaderDir 的值
         modLoaderDirInput.value = modLoaderDir;
@@ -1456,16 +1456,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const unknownModConfirmButton = document.getElementById('unknown-mod-confirm');
     const unknownModIgnoreButton = document.getElementById('unknown-mod-ignore');
     unknownModConfirmButton.addEventListener('click', async () => {
-        //将Mods文件夹里面的文件夹移动到modResourceBackpack文件夹，跳过已经存在的文件夹
-        const unknownDirs = fs.readdirSync(modRootDir).filter(file => !fs.existsSync(path.join(modBackpackDir, file)));
+        //将Mods文件夹里面的文件夹移动到modSource文件夹，跳过已经存在的文件夹
+        const unknownDirs = fs.readdirSync(modRootDir).filter(file => !fs.existsSync(path.join(modSourceDir, file)));
         unknownDirs.forEach(dir => {
             //移动文件夹,使用异步函数
-            fs.rename(path.join(modRootDir, dir), path.join(modBackpackDir, dir), (err) => {
+            fs.rename(path.join(modRootDir, dir), path.join(modSourceDir, dir), (err) => {
                 if (err) {
                     alert(err);
                 }
                 else {
-                    console.log(`move ${dir} to modResourceBackpack`);
+                    console.log(`move ${dir} to modSource`);
                 }
             });
         });
@@ -1755,7 +1755,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const imagePath = tempImagePath;
         const imageExt = path.extname(imagePath);
         const modImageName = 'preview' + imageExt;
-        const modImageDest = path.join(modBackpackDir, currentMod, modImageName);
+        const modImageDest = path.join(modSourceDir, currentMod, modImageName);
 
         //复制图片
         console.log(`imagePath:${imagePath} \nmodImageDest:${modImageDest}`);
@@ -1938,7 +1938,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             lang: lang,
             modRootDir: modRootDir,
             modLoaderDir: modLoaderDir,
-            modBackpackDir: modBackpackDir,
+            modSourceDir: modSourceDir,
             gameDir: gameDir,
             ifAutoApply: ifAutoApply,
             ifAutoRefreshInZZZ: ifAutoRefreshInZZZ,
@@ -1962,15 +1962,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             snack('Please select modRootDir first');
             return;
         }
-        if (modBackpackDir == '') {
-            snack('Please select modBackpackDir first');
+        if (modSourceDir == '') {
+            snack('Please select modSourceDir first');
             return;
         }
 
-        //检查mods文件夹下是否有modResourceBackpack文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modResourceBackpack文件夹下
+        //检查mods文件夹下是否有modSource文件夹没有的文件夹，如果有则提示用户检测到mod文件夹下有未知文件夹，是否将其移动到modSource文件夹下
         const unknownDirs = fs.readdirSync(modRootDir).filter(file => {
             const filePath = path.join(modRootDir, file);
-            return fs.statSync(filePath).isDirectory() && !fs.existsSync(path.join(modBackpackDir, file));
+            return fs.statSync(filePath).isDirectory() && !fs.existsSync(path.join(modSourceDir, file));
         });
         if (unknownDirs.length > 0) {
             //显示未知文件夹对话框
@@ -2178,7 +2178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function getModImagePath(mod) {
         //图片优先使用modInfo.imagePath，如果没有则尝试使用 mod文件夹下的preview.png或者preview.jpg或者preview.jpeg，如果没有则使用默认图片
         var modImageName = '';
-        const modPath = path.join(modBackpackDir, mod);
+        const modPath = path.join(modSourceDir, mod);
         const modInfo = await ipcRenderer.invoke('get-mod-info', mod);
         const modInfoImagePath = modInfo.imagePath;
 
@@ -2405,7 +2405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("modRootDir: " + modRootDir);
         console.log("gameDir: " + gameDir);
         console.log("modLoaderDir: " + modLoaderDir);
-        console.log("modBackpackDir: " + modBackpackDir);
+        console.log("modSourceDir: " + modSourceDir);
 
         console.log("ifAutoRefreshInZZZ: " + ifAutoRefreshInZZZ);
         console.log("ifAutoApply: " + ifAutoApply);
@@ -2462,7 +2462,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             lang: lang,
             modRootDir: modRootDir,
             modLoaderDir: modLoaderDir,
-            modBackpackDir: modBackpackDir,
+            modSourceDir: modSourceDir,
             gameDir: gameDir,
             ifAutoApply: ifAutoApply,
             ifAutoRefreshInZZZ: ifAutoRefreshInZZZ,
@@ -2503,7 +2503,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setLang(userConfig.lang);
         modRootDir = userConfig.modRootDir;
         modLoaderDir = userConfig.modLoaderDir;
-        modBackpackDir = userConfig.modBackpackDir;
+        modSourceDir = userConfig.modSourceDir;
         gameDir = userConfig.gameDir;
         ifAutoApply = userConfig.ifAutoApply;
         ifAutoRefreshInZZZ = userConfig.ifAutoRefreshInZZZ;
@@ -2523,7 +2523,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('lang', lang);
         localStorage.setItem('modRootDir', modRootDir);
         localStorage.setItem('modLoaderDir', modLoaderDir);
-        localStorage.setItem('modBackpackDir', modBackpackDir);
+        localStorage.setItem('modSourceDir', modSourceDir);
         localStorage.setItem('gameDir', gameDir);
         localStorage.setItem('ifAutoApply', ifAutoApply);
         localStorage.setItem('ifAutoRefreshInZZZ', ifAutoRefreshInZZZ);

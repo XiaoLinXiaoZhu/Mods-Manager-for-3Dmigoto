@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //配置属性
     // modRootDir: mod的根目录, 用于存放 需要应用的mod
     // modLoaderDir: modLoader的路径，用于启动modLoader
-    // modBackpackDir: modBackpack的路径，是mod的备份目录，位于和modRootDir同级目录下
+    // modSourceDIr: modBackpack的路径，是mod的备份目录，位于和modRootDir同级目录下
     // gameDir: 游戏的根目录，用于启动游戏
     // lang: 语言设置
 
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lang: localStorage.getItem('lang') || 'en',
         rootdir: localStorage.getItem('rootdir') || '',
         modLoaderDir: localStorage.getItem('modLoaderDir') || '',
-        modBackpackDir: localStorage.getItem('modBackpackDir') || '',
+        modSourceDIr: localStorage.getItem('modSourceDIr') || '',
         modRootDir: localStorage.getItem('modRootDir') || '',
         gameDir: localStorage.getItem('gameDir') || '',
         ifUseAdmin: localStorage.getItem('ifUseAdmin') || false,
@@ -131,24 +131,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function saveUserConfig() {
-        //保存用户的设置,保存在 localStorage 中
-        localStorage.setItem('lang', userConfig.lang);
-        localStorage.setItem('rootdir', userConfig.rootdir);
-        localStorage.setItem('modLoaderDir', userConfig.modLoaderDir);
-        localStorage.setItem('modBackpackDir', userConfig.modBackpackDir);
-        localStorage.setItem('modRootDir', userConfig.modRootDir);
-        localStorage.setItem('gameDir', userConfig.gameDir);
-        localStorage.setItem('ifUseAdmin', userConfig.ifUseAdmin);
-        localStorage.setItem('ifAutoStartGame', userConfig.ifAutoStartGame);
-        localStorage.setItem('ifAutoApply', userConfig.ifAutoApply);
-        localStorage.setItem('ifAutoRefreshInZZZ', userConfig.ifAutoRefreshInZZZ);
-        localStorage.setItem('theme', userConfig.theme);
-        //debug
-        //console.log(userConfig);
-        //console.log(localStorage);
+    function saveLocalStorage() {
+                //将用户设置保存到localStorage中
+                localStorage.setItem('lang', userConfig.lang);
+                localStorage.setItem('modRootDir', userConfig.modRootDir);
+                localStorage.setItem('modLoaderDir', userConfig.modLoaderDir);
+                localStorage.setItem('modSourceDIr', userConfig.modSourceDIr);
+                localStorage.setItem('gameDir', userConfig.gameDir);
+                localStorage.setItem('ifAutoApply', userConfig.ifAutoApply);
+                localStorage.setItem('ifAutoRefreshInZZZ', userConfig.ifAutoRefreshInZZZ);
+                localStorage.setItem('ifAutoStartGame', userConfig.ifAutoStartGame);
+                localStorage.setItem('ifUseAdmin', userConfig.ifUseAdmin);
+                localStorage.setItem('theme', userConfig.theme);
+    }
 
-        ipcRenderer.invoke('set-modRootDir', userConfig.modRootDir);
+    function saveUserConfig() {
+        saveLocalStorage();
     }
 
     function setLang(newLang) {
@@ -201,11 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
             selectModRootDirInput.value = modRootDir;
             userConfig.modRootDir = modRootDir;
 
-            //创建modResourceBackpack文件夹
-            const modBackpackDir = path.join(path.dirname(modRootDir), 'modResourceBackpack');
-            userConfig.modBackpackDir = modBackpackDir;
-            if (!fs.existsSync(modBackpackDir)) {
-                fs.mkdirSync(modBackpackDir);
+            //创建modSource文件夹
+            const modSourceDIr = path.join(path.dirname(modRootDir), 'modSource');
+            userConfig.modSourceDIr = modSourceDIr;
+            if (!fs.existsSync(modSourceDIr)) {
+                fs.mkdirSync(modSourceDIr);
             }
             saveUserConfig();
         }
@@ -216,15 +214,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(modRootDir);
     });
 
-    //-==================展示 modResourceBackpack 目录的事件监听==================
-    const openModResourceBackpack = document.querySelector('#open-modResourceBackpack');
-    openModResourceBackpack?.addEventListener('click', async () => {
+    //-==================展示 modSource 目录的事件监听==================
+    const openmodSource = document.querySelector('#open-modSource');
+    openmodSource?.addEventListener('click', async () => {
         //增加故障处理
-        if (userConfig.modBackpackDir === '' || !fs.existsSync(userConfig.modBackpackDir)) {
+        if (userConfig.modSourceDIr === '' || !fs.existsSync(userConfig.modSourceDIr)) {
             snack('please select Mods root directory first');
             return;
         }
-        openFolder(userConfig.modBackpackDir);
+        openFolder(userConfig.modSourceDIr);
     });
 
     //autoMove按钮的事件监听
@@ -236,9 +234,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //manualMove按钮的事件监听
     manualMove.addEventListener('click', () => {
-        const modBackpackDir = userConfig.modBackpackDir;
-        if (fs.existsSync(modBackpackDir)) {
-            openFolder(modBackpackDir);
+        const modSourceDIr = userConfig.modSourceDIr;
+        if (fs.existsSync(modSourceDIr)) {
+            openFolder(modSourceDIr);
         }
     }
     );
@@ -250,16 +248,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // 检查modLoaderDir和gameDir是否存在
         console.log(`modLoaderDir:${userConfig.modLoaderDir},gameDir:${userConfig.gameDir}`);
         if (checked) {
-            if (userConfig.modLoaderDir === '' || userConfig.gameDir === '') {
+            if (userConfig.modLoaderDir === '' && userConfig.gameDir === '') {
                 //debug
-                snack('Please set modLoaderDir and gameDir first');
+                snack('Both modLoaderDir and gameDir are not set, please set them first');
                 //恢复原来的ifAutoStartGame
                 autoStartGameSwitch.checked = false;
                 return;
             }
-            if (!fs.existsSync(userConfig.modLoaderDir) || !fs.existsSync(userConfig.gameDir)) {
-                snack('Invalid modLoaderDir or gameDir, please set them in advanced settings');
-                //恢复原来的ifAutoStartGame
+            if (userConfig.modLoaderDir != '' &&!fs.existsSync(userConfig.modLoaderDir) )
+            {
+                snack('modLoaderDir is not exist, please set it first');
+                autoStartGameSwitch.checked = false;
+                return;
+            }
+            if (userConfig.gameDir != '' && !fs.existsSync(userConfig.gameDir)) {
+                snack('gameDir is not exist, please set it first');
                 autoStartGameSwitch.checked = false;
                 return;
             }

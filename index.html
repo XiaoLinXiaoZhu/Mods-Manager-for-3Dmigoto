@@ -511,7 +511,7 @@
               <p data-translate-key="use-admin-info">启动程序时是否使用管理员权限(需要重启程序生效)</p>
             </div>
             <!-- -高级设置 -->
-            <!-- -在这里可以设定 modRootDir，modBackpackDir，modLoaderDir，gameDir -->
+            <!-- -在这里可以设定 modRootDir，modSourceDir，modLoaderDir，gameDir -->
             <div id="settings-dialog-advanced-settings" class="settings-dialog-tab">
               <div class="OO-setting-bar">
                 <h3 data-translate-key="modRootDir"> mod根目录 </h3>
@@ -523,12 +523,12 @@
               <s-divider></s-divider>
 
               <div class="OO-setting-bar">
-                <h3 data-translate-key="modBackpackDir"> mod背包目录 </h3>
+                <h3 data-translate-key="modSourceDir"> mod背包目录 </h3>
                 <s-text-field style="display: grid">
-                  <input type="text" id="set-modBackpackDir-input">
+                  <input type="text" id="set-modSourceDir-input">
                 </s-text-field>
               </div>
-              <p data-translate-key="modBackpackDir-info"> mod背包目录为程序存储mod的位置，当mod被启用时，会从这里创建链接到mod根目录 </p>
+              <p data-translate-key="modSourceDir-info"> mod背包目录为程序存储mod的位置，当mod被启用时，会从这里创建链接到mod根目录 </p>
               <s-divider></s-divider>
 
               <div class="OO-setting-bar">
@@ -826,8 +826,8 @@
               </div>
               <div class="OO-box OO-shade-box">
                 <p>有两种方法可以导入mod：</p>
-                <p>1. 将mod文件夹拖放到主窗口中，它会自动移动到【modResourceBackpack】中。但在管理员模式下，由于安全限制，拖放功能不可用。</p>
-                <p>2. 手动将文件夹移到【modResourceBackpack】中。</p>
+                <p>1. 将mod文件夹拖放到主窗口中，它会自动移动到【modSource】中。但在管理员模式下，由于安全限制，拖放功能不可用。</p>
+                <p>2. 手动将文件夹移到【modSource】中。</p>
                 <p>目前还不支持直接导入zip文件，请先解压后再进行导入。</p>
               </div>
 
@@ -837,7 +837,7 @@
               <div class="OO-box OO-shade-box">
                 <p>1. 在mod列表中点击某个mod，在右侧会出现mod的信息。点击右侧菜单栏中的【编辑mod信息】按钮，按照提示填写信息。</p>
                 <p>2. 右键点击mod列表中的mod，同样可以打开编辑对话框填写信息。</p>
-                <p>完成编辑后，mod信息会被保存在【modResourceBackpack】中，并在mod列表中显示。</p>
+                <p>完成编辑后，mod信息会被保存在【modSource】中，并在mod列表中显示。</p>
               </div>
 
               <div class="OO-setting-bar">
@@ -1016,9 +1016,9 @@
               <div class="OO-box OO-shade-box">
                 <p>There are two ways to import mods</p>
                 <p>1. Drag the mod folder into the main window, and it will automatically move your mod folder to the
-                  modResourceBackpack, but dragging actions will be disabled due to security restrictions when in
+                  modSource, but dragging actions will be disabled due to security restrictions when in
                   administrator mode</p>
-                <p>2. Manually move the folder to the modResourceBackpack</p>
+                <p>2. Manually move the folder to the modSource</p>
                 <p>Zip file imports are not supported at the moment. If you need to import a zip file, please extract it
                   first before importing</p>
               </div>
@@ -1032,7 +1032,7 @@
                   Fill in the mod information as prompted</p>
                 <p>2. Right-click on a mod in the mod list, and a dialog box for editing mod information will pop up.
                   Fill in the mod information as prompted</p>
-                <p>Afterward, your mod information will be saved to the modResourceBackpack, and you can see your mod
+                <p>Afterward, your mod information will be saved to the modSource, and you can see your mod
                   information in the mod list</p>
               </div>
 
@@ -1175,7 +1175,7 @@
       <div slot="headline" data-translate-key="unknown-mod"> 未知mod </div>
       <div slot="text">
         <p data-translate-key="dialog-ask-for-unknown-mod">
-          在mod列表中发现了未知mod，是否添加到modResourceBackup中?
+          在mod列表中发现了未知mod，是否添加到modSourceBackup中?
           如果选择不添加，程序将会忽略这些mod，但是可能会导致这些mod无法被该程序管理，并且可能会导致其他mod无法正常运行。
         </p>
         <p data-translate-key="unknown-mod-list"> 未知mod列表： </p>
@@ -1185,7 +1185,7 @@
       </div>
       <s-button slot="action" type="text" id="unknown-mod-ignore" data-translate-key="ignore">忽略</s-button>
       <s-button slot="action" type="text" id="unknown-mod-confirm"
-        data-translate-key="add-to-modResourceBackpack">添加到modResourceBackup</s-button>
+        data-translate-key="add-to-modSource">添加到modSourceBackup</s-button>
     </s-dialog>
 
 

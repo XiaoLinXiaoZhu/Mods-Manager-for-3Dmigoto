@@ -80,6 +80,7 @@
 
         <s-snackbar></s-snackbar>
 
+        <!-- -询问语言 -->
         <s-dialog id="get-language" class="s-dialog">
             <div slot="headline" class="font-hongmeng">
                 <h3 data-translate-key="dialog-ask-for-language"
@@ -110,9 +111,32 @@
                 data-translate-key="confirm">确定</s-button>
         </s-dialog>
 
+        <!-- -关于这个程序 -->
         <s-dialog id="dialog" class="s-dialog">
             <div slot="headline" class="font-hongmeng">
-                <h3 data-translate-key="dialog-ask-for-mod-root-dir">选择你的Mod文件夹</h3>
+                <h3 data-translate-key="about-program"> 关于本程序 </h3>
+                <div class="OO-box">
+                    <div class="OO-setting-bar">
+                        <h3 data-translate-key="about-principle-info"> 运行原理 </h3>
+                    </div>
+                    <div class="OO-box OO-shade-box">
+                        <p data-translate-key="dialog-about-principle">
+                            本程序通过代理Mods文件夹的方式来实现mod的加载，通过动态调整mod文件夹内部的文件来实现mod的加载，
+                            所以请不要在mod文件夹内添加任何文件！将你的mod添加到modSource文件夹中即可
+                            （默认为同目录下的modSource文件夹）。
+                        </p>
+                        <img src="src/description.png" alt="description" style="width: 100%;height: auto;">
+                    </div>
+                </div>
+            </div>
+            <s-button slot="action" type="text" id="about-terms-cancel" data-translate-key="cancel">取消</s-button>
+            <s-button slot="action" type="text" id="about-terms-confirm" data-translate-key="confirm">确定</s-button>
+        </s-dialog>
+
+        <!-- -询问 mod 文件夹路径 -->
+        <s-dialog id="dialog" class="s-dialog">
+            <div slot="headline" class="font-hongmeng">
+                <h3 data-translate-key="dialog-ask-for-mod-root-dir">选择你的Mods文件夹</h3>
                 <div class="OO-box">
                     <div class="OO-setting-bar">
                         <h3 data-translate-key="mod-root-dir"> Mod文件夹 </h3>
@@ -121,8 +145,9 @@
                         </s-text-field>
                     </div>
                     <p data-translate-key="dialog-about-mod-root-dir">
-                        大部分模组管理器通过读取Mods文件夹内的文件来实现mod的加载，请在这里指定你的Mods文件夹，从而让本程序能够正确管理你的mod。
+                        大部分模组管理器通过读取Mods文件夹内的文件来实现mod的加载，请在这里指定你的Mods文件夹，从而让本程序能够正确管理你的mod。对于3dmigoto来说，这个文件夹通常在它的同目录下，名字为Mods。对于XXMI，它位于类似于 XXMI\ZZMI\Mods 的位置。
                     </p>
+                    <img src="src/description.png" alt="description" style="width: 100%;height: auto;">
                 </div>
             </div>
 
@@ -130,27 +155,50 @@
             <s-button slot="action" type="text" id="mod-root-dir-confirm" data-translate-key="confirm">确定</s-button>
         </s-dialog>
 
-
-        <!-- -展示 modResourceBackpack 文件夹路径 -->
+        <!-- -询问 modSource 文件夹路径 -->
         <s-dialog id="dialog" class="s-dialog">
             <div slot="headline" class="font-hongmeng">
-                <h3 data-translate-key="modResourceBackpack"> modResourceBackpack </h3>
+                <h3 data-translate-key="dialog-ask-for-mod-source-dir"> 选择你的modSource文件夹 </h3>
                 <div class="OO-box">
                     <div class="OO-setting-bar">
-                        <h3 data-translate-key="open-modResourceBackpack"> 点击打开 </h3>
-                        <s-button id="open-modResourceBackpack"
-                            data-translate-key="click-to-open">打开</s-button>
+                        <h3 data-translate-key="mod-source-dir"> modSource文件夹 </h3>
+                        <s-text-field style="display: grid" label="select modSource file" id="select-mod-source-dir">
+                            <input type="text" id="select-mod-source-dir-input">
+                        </s-text-field>
+                    </div>
+                    <p data-translate-key="dialog-about-mod-source-dir">
+                        modSource 文件夹是你应该将mod放入的地方而不是Mods文件夹(默认为Mods同目录下的modSource文件夹)，本程序通过代理Mods文件夹的方式来实现mod的加载，所以请不要在Mods文件夹内添加任何文件！将你的mod添加到modSource文件夹中即可。
+                    </p>
+                    <img src="src/description.png" alt="description" style="width: 100%;height: auto;">
+                </div>
+            </div>
+            <s-button slot="action" type="text" id="mod-source-dir-cancel" data-translate-key="cancel">取消</s-button>
+            <s-button slot="action" type="text" id="mod-source-dir-confirm" data-translate-key="confirm">确定</s-button>
+        </s-dialog>
+
+
+
+        <!-- -展示 modSource 文件夹路径 -->
+        <s-dialog id="dialog" class="s-dialog">
+            <div slot="headline" class="font-hongmeng">
+                <h3 data-translate-key="modSource"> modSource </h3>
+                <div class="OO-box">
+                    <div class="OO-setting-bar">
+                        <h3 data-translate-key="open-modSource"> 点击打开 </h3>
+                        <s-button id="open-modSource" data-translate-key="click-to-open">打开</s-button>
                     </div>
                     <p data-translate-key="dialog-about-modfile" class="OO-box OO-shade-box">
-                        本程序通过动态调整mod文件夹内部的文件来实现mod的加载，所以请不要在mod文件夹内添加任何文件！将你的mod添加到同目录下的modResourceBackpack文件夹中即可。
+                        本程序通过动态调整mod文件夹内部的文件来实现mod的加载，所以请不要在mod文件夹内添加任何文件！将你的mod添加到同目录下的modSource文件夹中即可。
                     </p>
                 </div>
                 <div class="OO-box">
                     <div class="OO-box OO-shade-box">
-                        <p data-translate-key="dialog-ask-if-auto-move"> 是否将当前mod文件夹内的mod移动到modResourceBackpack文件夹中？</p>
+                        <p data-translate-key="dialog-ask-if-auto-move"> 是否将当前mod文件夹内的mod移动到modSource文件夹中？</p>
+                        <p style="color: rgb(255, 142, 142);" data-translate-key="manual-move-info">
+                            如果你仍然不清楚 modSource 和 Mods 文件夹之间的关系，请点击 手动移动，并且将你的 mod 手动移动到 modSource文件夹中。
+                        </p>
                     </div>
                 </div>
-
             </div>
 
             <s-button slot="action" type="text" id="auto-move-mod" data-translate-key="auto-move-mod">自动移动</s-button>
@@ -166,11 +214,11 @@
                     <div class="OO-setting-bar">
                         <h3 data-translate-key="auto-start-game"> 自动启动游戏 </h3>
                         <s-switch id="auto-start-game-switch"></s-switch>
-                        </div>
-                        <p data-translate-key="auto-start-game-info">
-                            启动程序的时候也一并启动游戏和modLoader(需要在进阶设置设置游戏目录和modLoader目录)
-                        </p>
-                        <s-divider></s-divider>
+                    </div>
+                    <p data-translate-key="auto-start-game-info">
+                        启动程序的时候也一并启动游戏和modLoader(需要在进阶设置设置游戏目录和modLoader目录)
+                    </p>
+                    <s-divider></s-divider>
                     <div class="OO-setting-bar">
                         <h3 data-translate-key="modLoader-dir"> 模组加载器 </h3>
                         <s-text-field style="display: grid" label="select modLoader file" id="select-mod-loader-dir">
@@ -239,6 +287,25 @@
             </div>
             <s-button slot="action" type="text" id="admin-cancel" data-translate-key="cancel">取消</s-button>
             <s-button slot="action" type="text" id="admin-confirm" data-translate-key="confirm">确定</s-button>
+        </s-dialog>
+
+        <!-- -告知可以在设置页面再次调整你的设置 -->
+        <s-dialog id="dialog" class="s-dialog">
+            <div slot="headline" class="font-hongmeng">
+                <h3 data-translate-key="dialog-about-settings"> 关于设置 </h3>
+                <div class="OO-box">
+                    <div class="OO-setting-bar">
+                        <h3 data-translate-key="about-settings"> 更多设置 </h3>
+                    </div>
+                    <div class="OO-box OO-shade-box">
+                        <p data-translate-key="dialog-about-settings-info">
+                            更多的设置可以在设置页面中找到，你可以在那里重新设置你的Mods文件夹，modSource文件夹，模组加载器，游戏文件，自动化设置，管理员权限等。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <s-button slot="action" type="text" id="about-settings-cancel" data-translate-key="cancel">取消</s-button>
+            <s-button slot="action" type="text" id="about-settings-confirm" data-translate-key="confirm">确定</s-button>
         </s-dialog>
     </s-page>
 
