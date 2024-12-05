@@ -27,7 +27,7 @@ let mainWindow = null;
 //------------------状态变量------------------
 
 let modRootDir = '';
-let modSourceDIr = '';
+let modSourceDir = '';
 let modLoaderDir = '';
 let gameDir = '';
 let ifUseAdmin = false;
@@ -226,9 +226,9 @@ function moveDirectory(from, dest) {
 ipcMain.handle('auto-move-mod', async (event) => {
   let ret = '';
 
-  if (!fs.existsSync(modSourceDIr)) {
+  if (!fs.existsSync(modSourceDir)) {
     //console.log("modSource don't exist,create it");
-    fs.mkdirSync(modSourceDIr);
+    fs.mkdirSync(modSourceDir);
     ret = 'modSource don\'t exist,succeed to create it,your mods have been moved to modSource';
   }
   else {
@@ -236,7 +236,7 @@ ipcMain.handle('auto-move-mod', async (event) => {
   }
 
   //将Mods文件夹里面的文件夹移动到modSource文件夹
-  ret = moveDirectory(modRootDir, modSourceDIr);
+  ret = moveDirectory(modRootDir, modSourceDir);
   return ret;
 });
 
@@ -264,7 +264,7 @@ ipcMain.handle('get-main-process-ready', async (event) => {
 ipcMain.handle('sync-localStorage', async (event, userConfig) => {
   //读取userConfig中的各个值，将主进程的值设置为userConfig中的值
   modRootDir = userConfig.modRootDir;
-  modSourceDIr = userConfig.modSourceDIr;
+  modSourceDir = userConfig.modSourceDir;
   modLoaderDir = userConfig.modLoaderDir;
   gameDir = userConfig.gameDir;
   ifUseAdmin = userConfig.ifUseAdmin;
@@ -341,13 +341,13 @@ ipcMain.handle('get-mods', async () => {
     //console.log("rootdir is empty");
     modRootDir = __dirname;
   }
-  if (!fs.existsSync(modSourceDIr)) {
+  if (!fs.existsSync(modSourceDir)) {
     //console.log("modSource not found");
     return [];
   }
   //debug
   //console.log(`get-mods rootdir: ${rootdir}`);
-  const modDir = path.join(modSourceDIr);
+  const modDir = path.join(modSourceDir);
   const mods = fs.readdirSync(modDir).filter(file => fs.statSync(path.join(modDir, file)).isDirectory());
   //输出mods
   //console.log(`load mods in ${modDir}: ${mods}`);
@@ -455,12 +455,12 @@ ipcMain.handle('get-mod-info', async (event, mod) => {
     console.log("mod is empty");
     return {};
   }
-  if (!fs.existsSync(path.join(modSourceDIr, mod))) {
+  if (!fs.existsSync(path.join(modSourceDir, mod))) {
     console.log(`mod ${mod} not found`);
     return {};
   }
 
-  const modDir = path.join(modSourceDIr, mod);
+  const modDir = path.join(modSourceDir, mod);
   const modInfoPath = path.join(modDir, 'mod.json');
   let modInfo = {};
   if (fs.existsSync(modInfoPath)) {
@@ -536,20 +536,20 @@ ipcMain.handle('set-mod-info', async (event, mod, modInfo) => {
     console.log("mod is empty");
     return;
   }
-  if (!fs.existsSync(path.join(modSourceDIr, mod))) {
+  if (!fs.existsSync(path.join(modSourceDir, mod))) {
     console.log(`mod ${mod} not found`);
     return;
   }
-  const modDir = path.join(modSourceDIr, mod);
+  const modDir = path.join(modSourceDir, mod);
   const modInfoPath = path.join(modDir, 'mod.json');
   fs.writeFileSync(modInfoPath, JSON.stringify(modInfo));
 });
 
 ipcMain.handle('refresh-mod-info-swapkey', async () => {
   //遍历mod文件夹，对每个mod的keyswap字段进行更新
-  const mods = fs.readdirSync(modSourceDIr);
+  const mods = fs.readdirSync(modSourceDir);
   mods.forEach(mod => {
-    const modDir = path.join(modSourceDIr, mod);
+    const modDir = path.join(modSourceDir, mod);
     const modInfoPath = path.join(modDir, 'mod.json');
     if (!fs.existsSync(modInfoPath)) {
       return;
@@ -565,7 +565,7 @@ ipcMain.handle('refresh-mod-info-swapkey', async () => {
 ipcMain.handle('apply-mods', async (event, mods) => {
   // 删除 未选中的mod 且 存在在modSource文件夹中的mod
   fs.readdirSync(modRootDir).forEach(file => {
-    if (!mods.includes(file) && fs.existsSync(path.join(modSourceDIr, file))) {
+    if (!mods.includes(file) && fs.existsSync(path.join(modSourceDir, file))) {
       // 删除文件夹,包括文件夹内的文件，使用异步方法
       fs.rm(path.join(modRootDir, file), { recursive: true, force: true }, (err) => {
         if (err) {
@@ -579,7 +579,7 @@ ipcMain.handle('apply-mods', async (event, mods) => {
 
   // 复制选中的mod
   mods.forEach(mod => {
-    const src = path.join(modSourceDIr, mod);
+    const src = path.join(modSourceDir, mod);
     const dest = path.join(modRootDir, mod);
     if (!fs.existsSync(dest)) {
       fs.symlinkSync(src, dest, 'junction', (err) => {
@@ -694,7 +694,7 @@ ipcMain.handle('delete-preset', async (event, presetName) => {
 //打开mod文件夹
 ipcMain.handle('open-mod-folder', async (event, mod) => {
   //判断mod是否存在
-  const modDir = path.join(modSourceDIr, mod);
+  const modDir = path.join(modSourceDir, mod);
   if (!fs.existsSync(modDir)) {
     //console.log(`mod ${mod} not found`);
     return;
@@ -705,8 +705,8 @@ ipcMain.handle('open-mod-folder', async (event, mod) => {
 //打开mod.json文件
 ipcMain.handle('open-mod-json', async (event, mod) => {
   //判断mod是否存在
-  const modJsonDir = path.join(modSourceDIr, mod, 'mod.json');
-  const modDir = path.join(modSourceDIr, mod);
+  const modJsonDir = path.join(modSourceDir, mod, 'mod.json');
+  const modDir = path.join(modSourceDir, mod);
   if (!fs.existsSync(modDir)) {
     //console.log(`mod ${mod} not found`);
     return;

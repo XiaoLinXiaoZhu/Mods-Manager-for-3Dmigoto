@@ -2224,6 +2224,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("loadModList");
         //加载mod列表
         mods = await ipcRenderer.invoke('get-mods');
+
+        //debug
+        console.log("✅mods:",mods);
         //获取当前modContainer的所有子元素
         const modContainerCount = modContainer.childElementCount;
 
